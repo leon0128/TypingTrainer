@@ -1,0 +1,927 @@
+# TypingTrainer — Requirements Specification
+
+| Field | Value |
+| --- | --- |
+| Version | 1.0 |
+| Language of record | **English** (all deliverables from this point on) |
+| Status | **Settled.** No open items; ready to implement |
+| Supersedes | v0.3 — all remaining questions resolved |
+
+**Legend**
+
+- 🔵 **Settled** — decided; implement as written.
+- 🟡 **Proposal** — a deviation from the original draft spec, with rationale. All proposals in this version have been accepted.
+
+---
+
+## 1. Product Overview
+
+### 1.1 Purpose
+
+A typing trainer for programmers. Unlike general typing sites, which measure English prose, TypingTrainer measures **code keystrokes** — symbols, camel-case identifiers, brackets, and operators — and reports progress over time.
+
+This is worth training separately: a developer's code typing speed typically lands at 55–70% of their prose speed, and the gap is caused almost entirely by symbol keys.
+
+### 1.2 Goals
+
+| # | Goal |
+| --- | --- |
+| G1 | No perceptible input lag or dropped keystrokes for a full 120-second run (key press to paint within 33 ms / 2 frames) |
+| G2 | Typing feels like an IDE — automatic indentation and automatic closing brackets |
+| G3 | Progress is visible at a glance across daily, weekly, and all-time views |
+| G4 | CPU opponents are calibrated so that a player competes closely with the level near their own skill (40–60% win rate in the matching level band) |
+
+### 1.3 Non-Goals
+
+- Real-time matches against other people; friends; global leaderboards. **Rankings are strictly per-user** and no other user's data is ever displayed.
+- Compiling or executing the practice code.
+- Code completion / suggestions.
+- Playing on phones or tablets (dashboard viewing is supported).
+- Exact keystroke replay of past runs.
+
+### 1.4 Users and Environment
+
+| Item | Value |
+| --- | --- |
+| Audience | The owner plus acquaintances. ~10 registered users, **1–2 concurrent, 5 at peak** |
+| Input device | Physical keyboard required. **US and JIS layouts both supported** |
+| Browsers | Latest 2 versions of Chrome, Edge, Firefox, Safari |
+| Viewport | 1280×720 or larger for play (two code blocks, plus a two-column layout in versus modes) |
+
+### 1.5 Glossary
+
+| Term | Definition |
+| --- | --- |
+| **Block** | A unit of exercise content: a coherent 5–30 line code fragment |
+| **Typing program** | The internal form of a block: a sequence of atoms (§3.2) |
+| **Atom** | `literal`, `auto`, or `separator` — the smallest unit of the typing program |
+| **Separator** | An atom representing inter-token whitespace (a space or a line break) |
+| **Raw keystrokes** | Every key the player pressed |
+| **Effective keystrokes** | Keystrokes that advanced the cursor. **The basis for scoring** |
+| **Miss** | An incorrect keystroke, deduplicated per cursor position |
+| **KPM** | Keystrokes per minute: `effective keystrokes / 2` for a 120-second run |
+| **Ghost** | A simulated opponent reproducing one of the player's own past records |
+
+---
+
+## 2. Functional Requirements Index
+
+| ID | Feature | Priority | Phase |
+| --- | --- | --- | --- |
+| F-01 | Typing engine (matching, auto-insertion, measurement) | Must | P0 |
+| F-02 | Single play | Must | P0 |
+| F-03 | Language selection | Must | P0 |
+| F-04 | Result screen (KPM, accuracy, miss rate, score) | Must | P0 |
+| F-05 | Username + password authentication | Must | P1 |
+| F-06 | Score persistence | Must | P1 |
+| F-07 | Rankings — daily / weekly / all-time, top 10 each, own data only | Must | P1 |
+| F-08 | Play history (list, delete) | Must | P1 |
+| F-09 | Dashboard (three score-trend views) | Must | P2 |
+| F-10 | vs CPU (levels 1–100) and conquest records | Must | P2 |
+| F-11 | Ghost (vs a past personal record) | Should | P3 |
+| F-12 | Appearance settings (font, size, colors) | Should | P3 |
+| F-13 | Key sounds (hit / miss, selectable sound packs) | Should | P3 |
+| F-14 | Localization (en / ja) | Should | P3 |
+| F-15 | Account deletion (erases all data) | Should | P3 |
+| F-16 | Content expansion to 150+ blocks per language | Should | P4 |
+
+---
+
+## 3. Typing Engine
+
+Nearly all technical risk sits here. Automatic bracket closing, automatic indentation, and flexible inter-token spacing interact, so the naive "compare the player's key to the head of the remaining string" approach does not hold up. This section defines an internal representation first, then the matching rules.
+
+### 3.1 Design Approach 🟡
+
+Blocks are **compiled ahead of time into a typing program** (a sequence of atoms). At runtime the engine is a small state machine walking that sequence.
+
+| Approach | Pros | Cons | Verdict |
+| --- | --- | --- | --- |
+| Raw string comparison with runtime special cases | Looks simple at first | Whitespace flexibility × auto-insertion × miss deduplication produce a combinatorial explosion of branches; effectively untestable | ❌ |
+| **Pre-compiled typing program** | Matching reduces to a state machine. Maximum keystrokes per block is fixed, so scores are comparable. Lexing happens once, offline | Requires a compiler stage | ✅ **Adopted** |
+
+Consequences:
+
+- The browser never needs a lexer or grammar binary; the client ships no WASM parsers.
+- The server can re-run the identical engine to validate a submitted result.
+- Adding a language means adding an adapter and recompiling content — the core never changes.
+
+### 3.2 Internal Representation
+
+```ts
+/** Smallest unit of a typing program. */
+export type Atom =
+  /** Characters the player must type. */
+  | { kind: 'literal'; text: string }
+  /**
+   * Characters the engine inserts on the player's behalf: closing brackets and
+   * line indentation. Never typed. `filledBy` is the index of the atom whose
+   * completion makes this text appear as already-typed on screen.
+   */
+  | { kind: 'auto'; text: string; filledBy: number }
+  /**
+   * Inter-token whitespace.
+   * canonical === '\n' -> only Enter is accepted, and it is always required.
+   * canonical === ' '  -> only Space is accepted; `required` per §3.3.1.
+   */
+  | { kind: 'separator'; canonical: '\n' | ' '; required: boolean };
+
+export interface TypingProgram {
+  blockId: string;
+  atoms: Atom[];
+  /** Maximum effective keystrokes: literal characters + separator count. */
+  canonicalKeystrokes: number;
+}
+```
+
+**Relationship to the display.** The screen always shows the **canonical, fully formatted code** — indentation and closing brackets included. The cursor moves left to right through it. The player's input never reflows the layout, so the displayed code can never become syntactically wrong.
+
+### 3.3 Compilation Rules
+
+#### 3.3.1 When a space separator is mandatory 🟡
+
+The original draft said "mandatory when identifier tokens would run together." That misses operator fusion. The generalized rule:
+
+> A separator between tokens `A` and `B` has `required = false` **only if** re-lexing `A.text + B.text` yields exactly `[A, B]`.
+
+| Example | Joined | Re-lexed | `required` |
+| --- | --- | --- | --- |
+| `const` `x` | `constx` | `[constx]` | `true` |
+| `return` `x` | `returnx` | `[returnx]` | `true` |
+| `{` `1` | `{1` | `[{, 1]` | `false` |
+| `+` `+` | `++` | `[++]` | `true` — missed by the draft spec |
+| `-` `>` | `->` | `[->]` | `true` |
+| `<` `<` | `<<` | `[<<]` | `true` |
+| `not` `in` (Python) | `notin` | `[notin]` | `true` |
+
+#### 3.3.2 Accepted keys at separators 🔵 (Q8)
+
+| Canonical form | Accepted key | `required` | Behavior |
+| --- | --- | --- | --- |
+| Line break | **Enter only** | Always `true` | Consuming it triggers automatic insertion of the next line's indentation |
+| In-line space | **Space only** (Tab is rejected) | Per §3.3.1 | Repeated spaces are accepted but counted once (§3.5). If `required = false`, the player may skip straight to the next character |
+
+Rationale for not letting Space stand in for a line break: because the display is fixed to the canonical form, allowing it would not corrupt the code — but it would let a player finish an entire run **without ever pressing Enter**, and automatic indentation (a real IDE keystroke) would drop out of the exercise entirely. In-line spacing keeps the flexibility from the original spec: `{1, 2, 3}`, `{1,2,3}`, and `{1,   2,    3}` are all accepted.
+
+#### 3.3.3 Automatic insertion 🔵
+
+| Target | Rule |
+| --- | --- |
+| Indentation | Every line's leading whitespace becomes an `auto` atom, filled when the preceding Enter is consumed |
+| `)` `]` `}` | Filled when the matching opening character is typed |
+| `'` `"` `` ` `` | String literal **tokens** are identified by the lexer before pairing, so the apostrophe in `"don't"` is never treated as an opening quote |
+| `<` `>` | **Not paired** 🔵 (Q7) — ambiguous with comparison operators |
+| Escapes (`\n`, `\"`) | Remain `literal`; both characters must be typed |
+
+#### 3.3.4 Typing a character that was auto-inserted 🔵 (Q6)
+
+Once an `auto` atom is filled, its characters are **already typed**. Pressing that character is therefore a **miss**, not a no-op.
+
+- Typing `(` immediately renders the matching `)` in the "typed" color.
+- Pressing `)` at that point is a miss, because the character is already on screen.
+- The same applies to auto-inserted indentation: pressing Space at the start of an auto-indented line is a miss 🔵 (Q30). This needs no special handling — once `skipAutoAtoms` has passed the indentation, a space simply fails to match the expected literal character and falls through to `markMiss`.
+
+This mirrors an IDE, where the extra keystroke would insert a duplicate character, and it keeps the maximum effective keystrokes per block fixed.
+
+### 3.4 Runtime Matching Algorithm
+
+```ts
+interface EngineState {
+  program: TypingProgram;
+  atomIndex: number;
+  charIndex: number;
+  /** Whether at least one space has been consumed at the current separator. */
+  separatorConsumed: boolean;
+  /** Whether a miss has already been recorded at the current position. */
+  missMarkedHere: boolean;
+  counters: { raw: number; effective: number; miss: number; ignored: number };
+}
+
+type Verdict = 'CORRECT' | 'MISS' | 'IGNORED' | 'FINISHED';
+
+export function handleKey(state: EngineState, key: string): Verdict {
+  state.counters.raw += 1;
+  skipAutoAtoms(state); // auto atoms are never typed
+
+  const atom = currentAtom(state);
+  if (!atom) return 'FINISHED';
+
+  if (atom.kind === 'separator') {
+    const expectedKey = atom.canonical === '\n' ? 'Enter' : ' ';
+
+    if (key === expectedKey) {
+      if (state.separatorConsumed) {
+        // Consecutive whitespace: accepted, but counted only once.
+        state.counters.ignored += 1;
+        return 'IGNORED';
+      }
+      state.separatorConsumed = true;
+      state.missMarkedHere = false;
+      state.counters.effective += 1;
+      return 'CORRECT';
+    }
+
+    if (isWhitespaceKey(key)) return markMiss(state); // e.g. Tab, or Space where Enter is due
+    if (atom.required && !state.separatorConsumed) return markMiss(state);
+
+    // Optional separator skipped: still credited, see §3.5.
+    if (!state.separatorConsumed) state.counters.effective += 1;
+    advanceAtom(state);
+    return matchLiteral(state, key);
+  }
+
+  return matchLiteral(state, key);
+}
+
+function matchLiteral(state: EngineState, key: string): Verdict {
+  skipAutoAtoms(state);
+  const atom = currentAtom(state);
+  if (!atom || atom.kind !== 'literal') return 'FINISHED';
+
+  if (key === atom.text[state.charIndex]) {
+    state.counters.effective += 1;
+    state.missMarkedHere = false;
+    advanceChar(state);
+    return 'CORRECT';
+  }
+  return markMiss(state);
+}
+
+function markMiss(state: EngineState): Verdict {
+  if (!state.missMarkedHere) {
+    state.counters.miss += 1; // repeated misses at the same position count once
+    state.missMarkedHere = true;
+  }
+  return 'MISS';
+}
+```
+
+**Check against the original spec's example.** Typing `for` but skipping `f`: pressing `o` records a miss and sets `missMarkedHere`; pressing `r` is at the same position, so nothing further is recorded. Total: **one miss**. Matches the requirement.
+
+### 3.5 Scoring Fairness Rule 🟡
+
+**Problem.** Optional separators may be skipped. If only physically pressed keys were counted, skipping them would *lower* the keystroke count and therefore the score — punishing the player for using a permitted shortcut.
+
+**Rule.** A separator credits **one effective keystroke when it is passed**, whether or not a space was actually pressed.
+
+Consequences:
+
+- A block's effective keystroke total equals `canonicalKeystrokes` regardless of typing style.
+- Progress comparisons against CPU and Ghost opponents are exact.
+- For a given block sequence the theoretical maximum score is fixed, so rankings are fair.
+
+### 3.6 Metrics and Score 🔵
+
+Play duration is **fixed at 120 seconds** (§4.1), so all per-minute figures divide by 2.
+
+| Metric | Formula |
+| --- | --- |
+| Effective keystrokes | `effective` |
+| KPM | `effective / 2` |
+| Accuracy | `effective / (effective + miss)` |
+| Miss rate | `1 − accuracy` |
+| **Score** | `round(KPM × accuracy)` (Q1, Q3) |
+| Raw keystrokes | `raw` — diagnostics and anomaly detection only |
+
+Misses are penalized twice, by design: they do not advance the cursor, and they reduce the accuracy multiplier.
+
+### 3.7 Input Handling Notes
+
+| Item | Approach |
+| --- | --- |
+| Event | `keydown`; read `event.key` (`keypress` is deprecated) |
+| Modifiers | Modifier-only presses are not counted. Capitals arrive as uppercase `event.key`, so Shift adds no keystroke |
+| Browser shortcuts | When `Ctrl` or `Meta` is held, pass the event through untouched |
+| `Tab` | `preventDefault()` to block focus movement, then treat as a miss (§3.3.2) |
+| Backspace | **Disabled** 🔵 (Q4). Progress is forward-only |
+| IME | A Japanese IME blocks input entirely. Detect `compositionstart` and show a "turn off your IME" notice |
+| Focus | Keep an off-screen `<input>` focused; auto-pause on `blur` |
+| Timing | `performance.now()` (`Date.now()` can step backwards under NTP correction). Drive the countdown with `requestAnimationFrame` |
+| Rendering | 30 lines × 80 characters ≈ 2,400 nodes. Re-rendering all of them per keystroke is too slow — **memoize per line and repaint only changed lines** |
+| Layouts | Matching is `event.key`-based, so US and JIS layouts work without branching 🔵 (Q26) |
+
+---
+
+## 4. Play Modes
+
+### 4.1 Common Rules 🔵
+
+| Item | Value |
+| --- | --- |
+| Duration | **Fixed at 120 seconds**, not user-configurable. Held as an application constant, not a setting |
+| Blocks on screen | Always at least two: the current block and the next one |
+| Time expiry | The run ends immediately, mid-block if necessary; partial progress counts (Q5) |
+| Versus modes | The player and the opponent receive an **identical block sequence** |
+| Layout | Two columns — **left: player, right: opponent** |
+
+### 4.2 Single Play
+
+Solo. Results are always saved.
+
+### 4.3 vs CPU
+
+#### 4.3.1 Calibration Basis
+
+Published speed figures, converted at the conventional 5 keystrokes per word:
+
+| Reference | Figure | Source summary |
+| --- | --- | --- |
+| Average office worker, prose | ~40 WPM | dev.to, "How Fast Do Developers Actually Type?" |
+| Professional developer, prose | 50–70 WPM | typespeedtest.com |
+| Professional developer, **code** | 30–45 WPM | typingfastest.com, informal survey of 200+ developers |
+| Code / prose ratio | 55–70% | turbotype.co |
+| Official world record, prose | 212 WPM (Dvorak) | Guinness — Barbara Blackburn; 216 WPM sustained for 50 minutes, 227 WPM peak |
+| Sustained competitive speed | 174 WPM at 99.2% accuracy | Sean Wrona, Ultimate Typing Championship |
+| Unofficial peak (15-second burst) | 293–305 WPM | MythicalRocket, 97% accuracy |
+
+**Level 100 = 800 KPM** (160 code WPM): a world-class typist sustaining 200–250 prose WPM, times a 0.65 code factor, lands at 650–800 KPM. The upper end is used, matching "a coin flip against the fastest person alive."
+
+**Level 1 = 50 KPM** 🔵 (Q13): 10 code WPM — below anyone who can find the keys.
+
+#### 4.3.2 Level → Speed
+
+Geometric interpolation, because skill scales multiplicatively.
+
+```
+baseKpm(level) = 50 × (800 / 50) ^ ((level - 1) / 99)
+```
+
+| Level | Base KPM | Code WPM | CPU score | Comparable skill |
+| --- | --- | --- | --- | --- |
+| 1 | 50 | 10 | 50 | Anyone beats this |
+| 10 | 64 | 13 | 64 | Learning to touch-type |
+| 20 | 85 | 17 | 85 | Beginner |
+| 30 | 113 | 23 | 113 | 1–2 years of practice |
+| 40 | 149 | 30 | 149 | Lower end of working developers |
+| **48** | **185** | **37** | **185** | **Average professional developer** |
+| 50 | 197 | 39 | 197 | Slightly above average |
+| 60 | 261 | 52 | 261 | Fast developer |
+| 70 | 345 | 69 | 345 | Fastest on the team |
+| 80 | 457 | 91 | 457 | Entry-level competitive typist |
+| 90 | 605 | 121 | 605 | Top-tier competitive typist |
+| 100 | 800 | 160 | 800 | World class |
+
+Cross-check: an average professional at 39 code WPM (195 KPM) and 95% accuracy scores 185 — an even match against level 48, and a narrow loss to level 50.
+
+**CPU accuracy is 100%** 🔵 (Q28), consistent with the Ghost (§4.4), so `CPU score = base KPM × block multiplier`. The CPU never mis-types, which removes miss simulation from the opponent model entirely and makes the level-to-score mapping the identity function. All variance comes from §4.3.3.
+
+#### 4.3.3 Variance 🟡
+
+The draft's 0.99–1.01 range (±1%) is far smaller than a human's own run-to-run variation (typically ±5%), so every match would end the same way.
+
+```
+blockMultiplier ~ TruncatedNormal(mu = 1.0, sigma = 0.02, clipped to [0.94, 1.06])
+keyInterval     ~ LogNormal(median = 60000 / targetKpm, sigma = 0.20)
+```
+
+| Layer | Distribution | Purpose |
+| --- | --- | --- |
+| Per-block multiplier | Truncated normal, σ = 2%, clipped at ±6% | Gives each match a "form on the day," keeping same-band win rates in the 40–60% range |
+| Per-keystroke jitter | Log-normal, σ = 20% | Avoids a metronome look; leaves mean speed unchanged |
+| Character-class weights | Lowercase/digits 1.0, shifted symbols 1.5, other symbols 1.3, separators 0.8 | Reproduces "slowing down on symbols." Normalized by the block's mean cost so the target KPM still holds |
+
+The RNG seed is issued by the server and stored on the session row, so any match can be reproduced for debugging.
+
+#### 4.3.4 Conquest Records 🔵
+
+| Item | Rule |
+| --- | --- |
+| Condition | `player score >= CPU score`. **A tie counts as a win** (Q16) |
+| Key | `(user, language, level)`. Beating level 50 in Java says nothing about level 50 in C++ |
+| Recorded only in | **vs CPU mode.** A high score in single play never counts toward conquests (Q2) |
+| Duration | Not part of the key — duration is fixed at 120 s (Q14) |
+| Display | Per language: highest level beaten, a grid of levels beaten, total conquest count |
+| On history deletion | **Conquest records are deleted along with the play record** (Q15). They are therefore **derived from `play_sessions`, not stored separately** (§9.3) |
+
+### 4.4 Ghost 🔵
+
+Name settled as **Ghost** (Q11). The `mode` value, DB enum, and UI label all use `ghost`.
+
+| Item | Rule |
+| --- | --- |
+| Opponent behavior | Advances through the same block sequence at a **constant interval**, at **100% accuracy**. No keystroke replay, now or later (Q12) |
+| Source record | The player's personal best for the selected period: daily, weekly, or all-time |
+| Missing record | If no record exists for the selected period, the option is disabled with a short explanation |
+
+**Pace derivation** 🔵 (Q32): because the Ghost never misses, its score equals its KPM. Driving it at the record's *KPM* would make it score higher than the record itself — the original run's accuracy discount would vanish — so beating the Ghost would be strictly harder than beating the record. The Ghost is therefore paced by the recorded **score**:
+
+```
+ghostKpm = recordedScore     // score = KPM × accuracy, and ghost accuracy = 1.0
+```
+
+which makes the Ghost's final score exactly equal to the record, so "beat the Ghost" and "beat your record" mean the same thing.
+
+---
+
+## 5. Content
+
+### 5.1 Block Requirements 🔵
+
+| Item | Rule |
+| --- | --- |
+| Length | 5–30 lines |
+| Coherence | A self-contained unit: a whole function, a declaration through its use, a class definition, imports through a function definition |
+| Dependencies | Core syntax and the standard library only. No third-party packages or frameworks |
+| Characters | **Printable ASCII only** (Q10) |
+| **Comments** | **Not allowed.** Comments are not typing targets, so blocks are generated without them and the validator rejects any comment token (Q10) |
+| Forbidden | Tab characters (indentation is normalized to spaces), trailing whitespace, CRLF, blank lines inside a block |
+
+Prohibiting comments also removes a special case from the engine: there is no longer any "a line comment can only end with a newline" rule to handle.
+
+### 5.2 Authoring Pipeline 🔵 (Q21, Q23)
+
+Blocks are **authored offline and committed to the repository**. There is no LLM call at runtime and no API key in any deployed environment. Generation happens on the author's machine using existing GitHub Copilot Pro and Claude Pro subscriptions, so there is no per-request cost to model.
+
+```
+[ Author drafts blocks with an LLM, locally ]
+        |
+        v  content/blocks/<language>/*.<ext>   (committed source files)
+[ pnpm content:build ]
+        |-- 1. normalize      indentation to spaces, strip trailing whitespace, LF endings
+        |-- 2. syntax check   tree-sitter parse; reject any ERROR node
+        |-- 3. constraints    5-30 lines, ASCII only, no comments, no blank lines, no banned imports
+        |-- 4. dedupe         content hash, plus a similarity threshold across the language
+        |-- 5. compile        emit the typing program (§3.3)
+        v
+[ content/dist/<language>.bundle.json ]  (committed build artifact, versioned by content hash)
+```
+
+Because fragments such as "just a variable declaration" are legal blocks, the checker uses an error-recovering parser (tree-sitter) and, per language, wraps fragments before parsing (for example, wrapping an expression in `function __wrap() { ... }`) so that incompleteness alone does not fail validation.
+
+Review happens through pull requests: a block reaches production only when the bundle is rebuilt and merged. No draft/approval state machine is needed in the database.
+
+### 5.3 Block Selection 🔵
+
+| Rule | Detail |
+| --- | --- |
+| Within a run | **No repeats while unused blocks remain.** Shuffle the language's pool with the session seed and draw without replacement |
+| Pool exhausted mid-run | Reshuffle and continue, excluding the block just played so the same one never appears twice in a row |
+| Across runs | **No memory.** The previous run has no influence on this run's draw (Q, "previous play is not considered") |
+| Sequence issuance | The server issues **20 compiled blocks** with the session. At 800 KPM a 120-second run consumes roughly 1,600 effective keystrokes; even short blocks (~125 keystrokes) cannot exhaust 20. No network call occurs mid-run, and versus opponents are guaranteed identical content |
+
+### 5.4 Languages 🔵 (Q9)
+
+Each language is implemented as an adapter; the core engine knows nothing about any specific language.
+
+```ts
+export interface LanguageAdapter {
+  readonly slug: string;
+  tokenize(source: string): Token[];
+  /** Decides separator requirements between two tokens (§3.3.1). */
+  separatorRule(prev: Token, next: Token): SeparatorRule;
+  /** Characters eligible for automatic closing. */
+  pairRules(): PairRule[];
+  /** Indentation width and style. */
+  indentRule(): IndentRule;
+}
+```
+
+| Stage | Languages |
+| --- | --- |
+| Initial (P0–P2) | **TypeScript, Python, Java, Go** |
+| Later (P3+) | C++, C#, Rust, SQL, Kotlin — adapter addition only |
+
+#### 5.4.1 Per-Language Notes
+
+Recommended implementation order is **TypeScript → Go → Java → Python**, easiest quirks first, with Python still inside P0 so that the hardest case validates the design early.
+
+| Language | Notes |
+| --- | --- |
+| **TypeScript** | Generic `<>` is not auto-paired (§3.3.3). Template literals `` `${x}` `` nest, so pairing must work on lexer tokens. `=>` stays two keystrokes; font ligatures are disabled (§8.2) |
+| **Go** | Line breaks are **semantically significant** — the compiler inserts semicolons at line ends — so every end-of-line separator is `required`. A brace on the following line is a syntax error, so generated blocks are fixed to `gofmt` output. Go's native indentation is tabs; blocks are **normalized to spaces** to remove tab-width variation between environments |
+| **Java** | Verbose, so blocks hit the 30-line cap quickly. Favor **single methods** over whole `import` + class listings. The `@` in annotations is a shifted symbol (cost weight 1.5) |
+| **Python** | The hardest case, because indentation is syntax.<br>• Dedents cannot be expressed by the player, so the canonical indentation is fully precomputed as `auto` atoms.<br>• A line break after `:` is always a required Enter separator.<br>• Compound keywords such as `not in` and `is not` fall out of §3.3.1 as `required = true` automatically.<br>• f-strings embed expressions inside a string token; pair detection must run on the whole token.<br>• Blank lines are forbidden inside blocks (§5.1), which also avoids ambiguity about indentation after them |
+
+---
+
+## 6. Scores, Rankings, Dashboard, History
+
+### 6.1 Rankings 🔵
+
+| Item | Rule |
+| --- | --- |
+| Scope | **The signed-in user only.** No other user's data is ever returned or displayed |
+| Periods | Daily (today), weekly (**Sunday–Saturday**), all-time |
+| Size | Top 10 per period |
+| Order | Score descending; ties broken by earlier timestamp |
+| Partitioning | **By language only** (Q2). Single play, vs CPU, and Ghost runs all compete in one ranking. Duration is fixed, so it is not a partition key |
+| Exclusions | Deleted history is gone from the table, so nothing to exclude |
+
+Mode is deliberately *not* a partition key: all modes use the same engine, the same block pool, and the same 120 seconds, so their scores are directly comparable. A strong vs CPU run belongs on the same board as a strong solo run.
+
+### 6.2 Dashboard 🔵
+
+| View | X axis | Aggregation |
+| --- | --- | --- |
+| Daily | Time of day | Every run that day (raw points) |
+| Weekly | Sunday–Saturday, 7 points | **Best score per day** |
+| All-time | **Only days that were played**, gaps collapsed | Best score per day |
+
+"Collapse the gaps" is implemented by treating the X axis as a **category axis** of played-date labels rather than a time axis: 100 played days out of 365 produce 100 points.
+
+🟡 The all-time series grows without bound, so add a **range filter** (last 30 / 90 / 365 days / all) and paging; several thousand points are unreadable and waste bandwidth. A summary strip sits above the charts: total runs, cumulative keystrokes, best score per language, and highest CPU level beaten.
+
+### 6.3 Play History 🔵
+
+| Item | Rule |
+| --- | --- |
+| Columns | Timestamp, mode, language, KPM, accuracy, score, match result |
+| Filters | Period, mode, language |
+| Deletion | Per row. **Hard delete only** (Q18) — no soft delete, since there is no restore feature. Rankings, dashboard, and conquest records all update immediately because they are derived from the same table |
+| Confirmation | Deletion is irreversible, so it is behind a confirmation dialog |
+| Account deletion | Erases the user and all associated rows (Q19) |
+
+### 6.4 Time Zone Handling 🟡 (Q17)
+
+Taking the browser's time zone on every request would make past daily and weekly aggregates **shift whenever the user travels or changes networks** — last week's record could move into a different week.
+
+| Approach | Verdict |
+| --- | --- |
+| Aggregate by the browser's current time zone | ❌ Past aggregates move; requires runtime conversion on every query |
+| **Fix day boundaries by a profile time zone** — detected from `Intl.DateTimeFormat().resolvedOptions().timeZone` at registration, editable in settings | ✅ **Adopted** |
+
+- Stored per run: `started_at timestamptz` (UTC), `timezone` (IANA name), and denormalized **`local_date`** and **`local_week_start`**.
+- Daily and weekly rankings become simple indexed equality lookups with no time-zone math at query time.
+- Changing the profile time zone triggers a batch recomputation of `local_date` and `local_week_start` for that user. At personal scale this is trivially cheap.
+
+---
+
+## 7. Authentication 🔵
+
+| Item | Approach |
+| --- | --- |
+| Method | **Username and password only** |
+| Password storage | **Argon2id** (OWASP recommendation), with a pepper supplied via environment variable |
+| Session | Server-side session plus an `httpOnly`, `Secure`, `SameSite=Lax` cookie. No browser-stored JWTs, which cannot be revoked |
+| CSRF | `SameSite=Lax` plus Origin validation on state-changing requests |
+| Rate limiting | Per-IP and per-account limits on login and registration, with exponential backoff |
+| Registration policy | **Open sign-up** 🔵 (Q31). Rate limiting on the registration endpoint is the only guard; because rankings are strictly per-user, an unwanted account can see nothing but its own empty data. Tightening to an invite code later requires no schema change |
+
+---
+
+## 8. UI / UX
+
+### 8.1 Play Screen
+
+```
++----------------------------------------------------------+
+|  TypeScript        vs CPU Lv.50                 87s left |
++---------------------------+------------------------------+
+|  YOU                      |  CPU Lv.50                   |
+|  KPM 214  ACC 96%  SCORE  |  KPM 197  ACC 100%  SCORE    |
+|  +----------------------+ |  +-------------------------+ |
+|  | current block        | |  | current block (same)    | |
+|  | typed / cursor /     | |  | progress only           | |
+|  | pending / auto-filled| |  |                         | |
+|  +----------------------+ |  +-------------------------+ |
+|  | next block (dimmed)  | |  | next block (dimmed)     | |
+|  +----------------------+ |  +-------------------------+ |
++---------------------------+------------------------------+
+```
+
+| Character state | Presentation |
+| --- | --- |
+| Typed | Confirmed color |
+| Cursor | Caret plus background highlight |
+| Pending | Waiting color |
+| **Auto-filled** | Same "typed" color as characters the player typed 🔵 (Q6) — a `)` turns typed the moment `(` is pressed |
+| Auto, not yet filled | Dimmed, marking it as something the player will not type |
+| Miss | Flash the cursor position in the error color for ~150 ms |
+
+### 8.2 Appearance Settings 🔵
+
+| Setting | Options |
+| --- | --- |
+| Font | JetBrains Mono, Fira Code, Source Code Pro, IBM Plex Mono, Noto Sans Mono — all open source and **self-hosted**, so there is no CDN dependency and the app works on an offline LAN |
+| Size | 14 / 16 / 18 / 20 / 24 px |
+| Theme | Dark, light, high contrast |
+| Color preset | 3–4 sets covering typed / pending / cursor / error. Designed for color-vision accessibility: state is never conveyed by color alone |
+
+🟡 **Ligatures are disabled.** Rendering `=>` as one glyph breaks the correspondence between character count and pixel position, which misplaces the caret.
+
+### 8.3 Key Sounds 🔵
+
+| Item | Approach |
+| --- | --- |
+| Implementation | **Web Audio API** with pre-decoded `AudioBuffer`s. `<audio>` elements add latency and drop notes under fast typing |
+| Sounds | Separate hit and miss sounds. The miss sound is deliberately soft — an unpleasant one discourages practice |
+| Packs | Three (Mechanical, Soft, Beep) plus off |
+| Polyphony | A voice pool capped at 8, cutting the oldest note, so rapid typing does not pile up |
+| Initialization | Browsers block autoplay: `resume()` the `AudioContext` on the first user gesture |
+| Volume | Adjustable, defaulting low |
+
+### 8.4 Localization 🔵
+
+| Item | Approach |
+| --- | --- |
+| Languages | English (default) and Japanese |
+| Switching | In-app, applied immediately, persisted per user |
+| Copy strategy | **Minimal text; icons and numbers carry the meaning.** An English-only screen should still be usable by a non-English speaker |
+| Implementation | `react-i18next` with JSON resources; `Intl` for numbers, dates, and relative times |
+| Layout | Japanese strings are wider — buttons and labels must wrap rather than clip |
+
+---
+
+## 9. Architecture
+
+### 9.1 Stack
+
+| Layer | Choice | Rationale |
+| --- | --- | --- |
+| Frontend | **React 19 + TypeScript + Vite** | Strongly SPA-shaped; SSR adds nothing here. Vite builds fast and deploys as static files |
+| State | **Zustand** for UI; engine state kept outside React in a ref/reducer | Per-keystroke updates must not go through the React render cycle |
+| Styling | **Tailwind CSS** | Pairs well with CSS custom properties for theming |
+| Charts | **Recharts** | Declarative React API; category axes express the collapsed-gap all-time view directly |
+| API | **NestJS (Fastify adapter)** | Dependency injection, layer separation, and validation are built in, which makes a SOLID structure the default rather than a convention to police |
+| Validation | **Zod** in a shared contracts package | One schema definition shared by the frontend, the API, and the content CLI |
+| ORM | **TypeORM** 🔵 | Chosen. See §9.2 for the specific cautions this implies |
+| Database | **PostgreSQL 16** | Needs `date` columns, composite indexes, and `jsonb`. Runs acceptably on constrained hardware with the tuning in §9.7 |
+| Lexing | **tree-sitter**, content CLI only | Official grammars for all four initial languages, error recovery for fragments, and a de facto standard (GitHub, Neovim, Zed). Never shipped to the browser |
+| Auth | Cookie session + **Argon2id** | §7 |
+| Testing | **Vitest**, **fast-check** (property-based), **Playwright** | The engine's input space is combinatorial, so property-based tests carry most of the weight |
+| Containers | **Docker** + Compose, multi-arch via `buildx` | One image tag serving both amd64 and arm64 |
+| Reverse proxy | **Caddy** | Automatic certificate issuance and renewal in two lines of config |
+| CI/CD | **GitHub Actions → GHCR** | Standard |
+
+### 9.2 Working with TypeORM
+
+TypeORM is the selected ORM. Its integration with NestJS (`@nestjs/typeorm`) is the officially documented path, and decorator-based entities fit the module structure well. Three cautions apply:
+
+| Caution | Practice |
+| --- | --- |
+| `synchronize` | **Always `false`** outside local development. Schema changes go through generated migrations (`typeorm migration:generate`), which are committed and reviewed |
+| Relation loading | Prefer explicit `relations` or `QueryBuilder` joins. Lazy relations produce N+1 queries that are easy to miss |
+| Ranking and dashboard queries | Write them with `QueryBuilder` (or raw SQL in a repository method) rather than the find API. They need `DISTINCT ON` / window functions for per-day maxima, which the find API cannot express |
+| Date columns | Map `local_date` and `local_week_start` to `date` (not `timestamp`) so equality comparisons hit the indexes |
+
+### 9.3 Data Model
+
+```mermaid
+erDiagram
+    users ||--|| user_preferences : has
+    users ||--o{ play_sessions : plays
+    programming_languages ||--o{ play_sessions : used_in
+```
+
+Only three substantive tables are needed. Two things that were separate in earlier drafts are now derived:
+
+- **Conquest records** are computed from `play_sessions`, because deleting a run must also delete the conquest it produced (Q15). A separate durable table would contradict that.
+- **Code blocks** live in the repository and ship inside the image as a compiled bundle (§5.2) 🔵 (Q29), so no `code_blocks` table exists. Roughly 600 KB in memory for 600 blocks, with no seeding step and no coupling between content updates and database migrations.
+
+```sql
+CREATE TABLE users (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  username      citext UNIQUE NOT NULL,
+  password_hash text NOT NULL,
+  timezone      text NOT NULL DEFAULT 'UTC',   -- IANA name
+  locale        text NOT NULL DEFAULT 'en',
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE play_sessions (
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id            uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  mode               text NOT NULL,            -- 'single' | 'cpu' | 'ghost'
+  language_id        int  NOT NULL REFERENCES programming_languages(id),
+  duration_sec       int  NOT NULL DEFAULT 120,
+  started_at         timestamptz NOT NULL,
+  timezone           text NOT NULL,
+  local_date         date NOT NULL,            -- denormalized, profile time zone applied
+  local_week_start   date NOT NULL,            -- denormalized, preceding Sunday
+  raw_keystrokes     int  NOT NULL,
+  effective_keystrokes int NOT NULL,
+  miss_count         int  NOT NULL,
+  kpm                numeric(7,2) NOT NULL,
+  accuracy           numeric(5,4) NOT NULL,
+  score              int  NOT NULL,
+  cpu_level          int,                      -- mode = 'cpu' only
+  ghost_period       text,                     -- mode = 'ghost' only: 'daily' | 'weekly' | 'total'
+  opponent_score     int,
+  result             text,                     -- 'win' | 'lose'  (ties stored as 'win', Q16)
+  rng_seed           bigint NOT NULL,
+  content_revision   text NOT NULL,            -- content bundle hash; lets a run be reproduced
+  app_version        text NOT NULL
+);
+
+CREATE INDEX idx_sessions_daily
+  ON play_sessions (user_id, language_id, local_date, score DESC);
+CREATE INDEX idx_sessions_weekly
+  ON play_sessions (user_id, language_id, local_week_start, score DESC);
+CREATE INDEX idx_sessions_alltime
+  ON play_sessions (user_id, language_id, score DESC);
+CREATE INDEX idx_sessions_conquest
+  ON play_sessions (user_id, language_id, cpu_level)
+  WHERE mode = 'cpu' AND result = 'win';
+```
+
+Conquest state is then a straightforward aggregate:
+
+```sql
+SELECT language_id, cpu_level, MIN(started_at) AS first_defeated_at, COUNT(*) AS defeat_count
+FROM play_sessions
+WHERE user_id = $1 AND mode = 'cpu' AND result = 'win'
+GROUP BY language_id, cpu_level;
+```
+
+Storing `rng_seed` and `content_revision` means a past run's exact block sequence can be regenerated on demand, which removes the need for a join table recording which blocks were served.
+
+### 9.4 Project Structure (pnpm workspaces monorepo)
+
+```
+typing-trainer/
+├── apps/
+│   ├── web/                      # React SPA
+│   │   └── src/
+│   │       ├── features/         # play, ranking, dashboard, history, settings, auth
+│   │       ├── components/
+│   │       ├── hooks/
+│   │       └── lib/              # api client, i18n, audio
+│   └── api/                      # NestJS
+│       └── src/
+│           ├── modules/          # auth, play, ranking, dashboard, history, preferences
+│           │   └── play/
+│           │       ├── play.controller.ts     # HTTP boundary
+│           │       ├── play.service.ts        # use cases
+│           │       ├── play.repository.ts      # persistence (TypeORM)
+│           │       └── dto/
+│           ├── entities/         # TypeORM entities
+│           ├── migrations/
+│           └── common/           # guards, filters, interceptors
+├── packages/
+│   ├── typing-engine/            # pure logic, no DOM or Node dependency; shared client/server
+│   ├── block-compiler/           # source -> typing program (tree-sitter, language adapters)
+│   ├── scoring/                  # score formula, CPU speed model, Ghost pacing
+│   └── contracts/                # Zod schemas and types (API contract)
+├── content/
+│   ├── blocks/<language>/        # committed block sources
+│   └── dist/                     # committed compiled bundles
+├── tools/
+│   └── content-cli/              # normalize, validate, compile, report
+└── infra/
+    ├── docker/
+    └── compose.yaml
+```
+
+Design points:
+
+- `typing-engine` is **framework-free pure functions**, so the server can replay a submitted result through the same code. UI behavior and validation cannot drift apart.
+- `block-compiler` isolates the heavy dependency (tree-sitter) and never enters the browser bundle.
+- `contracts` is the single source of truth for request and response shapes.
+- A new language is an added `LanguageAdapter` — the core is closed for modification (open/closed principle).
+
+### 9.5 API
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/api/auth/register` | Create an account |
+| POST | `/api/auth/login` | Sign in (issues the session cookie) |
+| POST | `/api/auth/logout` | Sign out |
+| GET | `/api/auth/me` | Current user |
+| DELETE | `/api/auth/me` | Delete the account and all data |
+| GET | `/api/languages` | Available languages |
+| POST | `/api/play/sessions` | **Start a run.** Returns 20 compiled blocks, the RNG seed, and CPU or Ghost parameters |
+| POST | `/api/play/sessions/:id/result` | Submit a result; validated server-side |
+| GET | `/api/rankings` | `?period=daily\|weekly\|total&language=` |
+| GET | `/api/dashboard` | `?period=daily\|weekly\|total&from=&to=` |
+| GET | `/api/history` | Paged list |
+| DELETE | `/api/history/:id` | Delete one run |
+| GET | `/api/cpu-conquests` | Conquest state per language |
+| GET / PUT | `/api/preferences` | Appearance, sound, locale, time zone |
+
+Starting a run on the server matters for three reasons: the block sequence and seed are authoritative, so opponents provably receive identical content; the result submission can be checked against what was actually issued; and validation reuses `typing-engine` rather than a second implementation.
+
+### 9.6 Non-Functional Requirements
+
+| Area | Requirement |
+| --- | --- |
+| Responsiveness | Key press to paint within 33 ms; 60 fps sustained during a run with no GC-induced frame drops |
+| Timing accuracy | Based on `performance.now()`; total run length accurate to ±50 ms |
+| API latency | Rankings and dashboard p95 under 300 ms at 10,000 runs per user |
+| Concurrency | **1–2 typical, 5 peak** concurrent players; ~10 registered accounts (Q25) |
+| Availability | Best effort, no SLA |
+| Backups | Daily `pg_dump`, 7 days retained, copied off the host |
+| Observability | Health check endpoint, container restart policy, structured logs |
+| Accessibility | Fully keyboard operable; no state conveyed by color alone |
+
+### 9.7 Deployment 🔵 (Q27)
+
+**Primary target: AWS Lightsail. Documented fallback: Raspberry Pi 3 B+.** Images are built for both with `docker buildx` (`linux/amd64`, `linux/arm64`) and published under one tag, so the same Compose file deploys to either.
+
+Composition: `caddy` (TLS and static file serving) → `api` (NestJS) → `db` (PostgreSQL, named volume). The frontend is a static build served by Caddy; no Node runtime is needed for it.
+
+#### Bandwidth
+
+The concern behind the Pi fallback is Lightsail's monthly transfer allowance. At this scale it is not a binding constraint:
+
+| Traffic | Size |
+| --- | --- |
+| First visit (JS, CSS, two self-hosted fonts, brotli) | ~500 KB |
+| Repeat visit | ~0 — assets are content-hashed and cached immutably |
+| Per run: 20 compiled blocks + result POST | ~30 KB |
+| Rankings and dashboard view | ~20 KB |
+| **5 users × 20 runs/day × ~50 KB** | **~150 MB / month** |
+
+Mitigations if the figure ever matters: put **Cloudflare's free proxy in front**, which serves static assets from the edge (cutting origin egress to near zero) and hides the origin address; keep long-lived immutable cache headers; ship brotli-compressed bundles; code-split the dashboard away from the play screen.
+
+#### Raspberry Pi 3 B+ constraints
+
+The Pi 3 B+ has **1 GB of RAM** and a modest CPU, which is the real limit — not bandwidth. It is workable because all typing logic runs in the browser and the server is almost purely I/O bound, but it needs deliberate tuning:
+
+| Item | Setting |
+| --- | --- |
+| OS | 64-bit Raspberry Pi OS Lite, required to run the `linux/arm64` images |
+| PostgreSQL | `shared_buffers = 128MB`, `work_mem = 4MB`, `effective_cache_size = 512MB`, `max_connections = 20` |
+| API | `--max-old-space-size=256`; a single Node process, no cluster mode |
+| Memory headroom | 1 GB swap on the SSD, or zram |
+| Storage | **Boot from a USB SSD.** SD cards wear out under database writes |
+| Exposure | **Cloudflare Tunnel**, which removes the need for port forwarding, a static IP, or dynamic DNS, and greatly reduces exposed surface |
+
+Expected steady-state footprint: PostgreSQL ~200 MB, API ~150 MB, Caddy ~20 MB — comfortable within 1 GB for this user count.
+
+---
+
+## 10. Phases
+
+Ordered to retire the largest technical risk (the typing engine) first.
+
+| Phase | Contents | Exit criteria |
+| --- | --- | --- |
+| **P0 — Engine PoC** | `typing-engine` and `block-compiler` for all four languages; single play screen; ~20 hand-written blocks; no database, no auth | Auto-closing, auto-indentation, space flexibility, and miss deduplication all behave as specified on real hardware, with no perceptible lag. Python validated |
+| **P1 — MVP** | Auth, score persistence, three rankings, history with delete, Docker image, first deployment | Usable daily by one person |
+| **P2 — Visibility and competition** | Dashboard, vs CPU with conquest records | G3 and G4 met |
+| **P3 — Polish** | Ghost, appearance settings, key sounds, en/ja localization, account deletion | Presentable to others |
+| **P4 — Content** | Grow to 150+ blocks per language; add languages | Pool targets met (Q22: 50 per language at launch, 150+ eventually) |
+
+If P0 shows the engine cannot be built to specification or does not feel right, §3 is narrowed — most likely the space flexibility and the scope of automatic insertion. Leaving that ambiguous past P0 would propagate rework into the score definition, the schema, and CPU balance simultaneously.
+
+---
+
+## 11. Risks
+
+| # | Risk | Impact | Mitigation |
+| --- | --- | --- | --- |
+| R1 | Matching rules are intricate; edge-case bugs keep surfacing | The core experience breaks | Pure functions plus property-based tests asserting invariants over random input sequences. Build it fully in P0 |
+| R2 | Per-keystroke re-rendering stalls input | G1 missed | Per-line memoization, engine state outside React, measured in DevTools before optimizing further |
+| R3 | Authored blocks contain syntax errors, non-ASCII, comments, or framework dependencies | Content quality drops | Automated validation in the content CLI, enforced in CI; review via pull request |
+| R4 | Too few blocks, so runs feel repetitive | Practice value and motivation drop | 20 blocks issued per run and no repeats until the pool cycles; pool target 150 per language |
+| R5 | Raspberry Pi 3 B+ runs out of memory | Service stops | Tuning in §9.7, restart policies, daily backups; Lightsail remains the primary target |
+| R6 | Time zone change corrupts aggregates | Past records display incorrectly | Profile time zone plus a recomputation batch (§6.4) |
+| R7 | Score definition changes later | Old records become incomparable | `app_version` is recorded on every run; a definition change either migrates old rows or starts a separate board — never silently mixes them |
+| R8 | Hard delete means an accidental deletion is unrecoverable | Lost records | Confirmation dialog, plus the daily backup as the only recovery path. Accepted consequence of Q18 |
+
+---
+
+## 12. Open Items
+
+None. All questions raised during specification review are resolved; see Appendix B.
+
+---
+
+## Appendix A — Sources for the Speed Figures
+
+| Figure | Source |
+| --- | --- |
+| Developer prose and code speeds; the symbol-key effect | typespeedtest.com, turbotype.co, typingfastest.com |
+| Average office worker speed | dev.to, "How Fast Do Developers Actually Type?" |
+| World records — official, unofficial, sustained competitive | typingzen.com, Tom's Hardware |
+
+These are industry articles and community measurements rather than peer-reviewed studies. The **level 100 figure of 800 KPM is a design target derived from the "even match against the fastest person alive" intent**, not a measured record. Re-tune against real data in P2.
+
+## Appendix B — Decision Log
+
+| Version | Item | Decision |
+| --- | --- | --- |
+| 0.2 | Q21 content generation | Offline authoring, validation, no runtime AI |
+| 0.2 | Q9 initial languages | TypeScript, Python, Java, Go |
+| 0.2 | Q11 mode name | Ghost |
+| 0.3 | Document language | English for all deliverables |
+| 0.3 | Q1 / Q3 scoring | `round(KPM × accuracy)`, effective keystrokes, accuracy to the first power |
+| 0.3 | Q2 partitioning | Rankings by language only; conquests by language and level, vs CPU mode only |
+| 0.3 | Q4 backspace | Disabled |
+| 0.3 | Q5 time expiry | Partial block progress counts |
+| 0.3 | Q6 auto-inserted characters | Rendered as typed; typing them is a miss |
+| 0.3 | Q7 angle brackets | Not auto-paired |
+| 0.3 | Q8 separators | End-of-line Enter required; in-line Space only, Tab rejected |
+| 0.3 | Q10 content | ASCII only; no comments in blocks |
+| 0.3 | Q12 Ghost | Constant interval from KPM, 100% accuracy, no replay ever |
+| 0.3 | Q13 CPU range | 50 KPM at level 1, 800 KPM at level 100 |
+| 0.3 | Q14 / duration | 120 seconds fixed, not configurable, not a partition key |
+| 0.3 | Q15 conquests | Deleted with their play record; therefore derived, not stored |
+| 0.3 | Q16 ties | A tie counts as a win |
+| 0.3 | Q17 time zone | Profile time zone, detected at registration |
+| 0.3 | Q18 deletion | Hard delete only |
+| 0.3 | Q19 account deletion | Erases all data |
+| 0.3 | Q20 | External identity providers are out of scope and not documented |
+| 0.3 | Q22 pool size | 50 per language at launch, 150+ eventually |
+| 0.3 | Q23 authoring | Generated locally and committed to the repository |
+| 0.3 | Q24 mobile | Dashboard viewing only |
+| 0.3 | Q25 scale | 1–2 concurrent, 5 peak, ~10 accounts, acquaintances |
+| 0.3 | Q26 keyboard layout | US and JIS both supported |
+| 0.3 | Q27 hosting | Lightsail primary, Raspberry Pi 3 B+ documented fallback, multi-arch images |
+| 0.3 | Block selection | No repeats until the pool cycles within a run; no cross-run memory |
+| 0.3 | ORM | TypeORM |
+| 1.0 | Q28 CPU accuracy | 100%, so `CPU score = base KPM × block multiplier` |
+| 1.0 | Q29 block storage | Compiled bundle shipped in the image; no database table |
+| 1.0 | Q30 auto-indent overtyping | Counted as a miss, consistent with Q6 |
+| 1.0 | Q31 registration | Open sign-up, protected only by rate limiting |
+| 1.0 | Q32 Ghost pacing | Paced by the recorded score, so beating the Ghost equals beating the record |

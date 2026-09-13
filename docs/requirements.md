@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.10 |
+| Version | 1.11 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.9 — exact score rounding, play session timing, and result validation (Appendix B) |
+| Supersedes | v1.10 — content CLI pipeline, toolchain checks, and bundle format (Appendix B) |
 
 **Legend**
 
@@ -482,20 +482,32 @@ Blocks are **authored offline and committed to the repository**. There is no LLM
 ```
 [ Author drafts blocks with an LLM, locally ]
         |
-        v  content/blocks/<language>/*.<ext>   (committed source files)
-[ pnpm content:build ]
-        |-- 1. normalize      indentation to spaces, strip trailing whitespace, LF endings
-        |-- 2. syntax check   tree-sitter parse; reject any ERROR node
-        |-- 3. constraints    5-30 lines, ASCII only, no comments, no blank lines, no banned imports
-        |-- 4. dedupe         content hash, plus a similarity threshold across the language
-        |-- 5. compile        emit the typing program (§3.3)
+        v  content/blocks/<language>/<name>.<ext>   (committed source files; blockId = <language>/<name>)
+[ pnpm content:build ]   (all stages)        [ pnpm content:check ]   (stages marked * need no toolchain)
+        |-- 1. discover        file naming and unique block ids *
+        |-- 2. format          byte-equal to the formatter: Prettier defaults *, gofmt, google-java-format, black (py312)
+        |-- 3. toolchain       TypeScript syntax diagnostics *, gofmt -e, javac parse, CPython 3.12 compile() with warnings as errors
+        |-- 4. tree-sitter     parse each (wrapped) fragment; reject ERROR and MISSING nodes *
+        |-- 5. constraints     5-30 lines, block shape per language, stdlib-only imports *
+        |-- 6. compile         emit the typing program (§3.3) with block-compiler *
+        |-- 7. dedupe          content hash, plus token 4-gram similarity across the language *
         v
-[ content/dist/<language>.bundle.json ]  (committed build artifact, versioned by content hash)
+[ content/dist/<language>.bundle.json ]  (committed; revision = SHA-256 of the canonical blocks JSON)
+[ content/dist/toolchains.json ]         (formatter and compiler versions used by the last full build)
 ```
 
 Because fragments such as "just a variable declaration" are legal blocks, the checker uses an error-recovering parser (tree-sitter) and, per language, wraps fragments before parsing (for example, wrapping an expression in `function __wrap() { ... }`) so that incompleteness alone does not fail validation.
 
-**Known gap in fragment validation** 🟡 (v1.8). tree-sitter grammars are tolerant of errors that only a language's compiler reports. Measured with `tree-sitter-python` 0.25.0: it accepts `01`, `1_`, `1if y else 2`, a t-string, and a `def` whose body is not indented, while it does flag `0b12`, `0o8`, `1__0`, `0x`, and `1e`. The Python adapter's scanner already rejects `1_`, `1if`, t-strings, and the missing indentation, but not `01` or `0b12`. The content CLI therefore needs a compile check with each language's own toolchain in addition to tree-sitter — for Python, CPython 3.12 `compile()` with warnings treated as errors (as `python:golden` already does for fixtures). The other languages' grammars have not been measured yet and must be checked the same way when the content CLI is built.
+**Toolchains decide, tree-sitter screens** 🟡 (v1.8, v1.11). tree-sitter grammars are error-tolerant and miss mistakes that each language's own compiler reports, so the language toolchain (stage 3) is the authoritative syntax check, run locally and in a dedicated CI job. tree-sitter (stage 4, WebAssembly) runs everywhere, including the regular CI job without toolchains, as a fast screen. Measured with tree-sitter TypeScript 0.23.2, Go 0.25.0, Java 0.23.5, and Python 0.25.0:
+
+| Language | tree-sitter misses (toolchain catches) | tree-sitter wrongly rejects |
+| --- | --- | --- |
+| TypeScript | `08` (leading zero) | — |
+| Go | an opening brace on the next line | — |
+| Java | `'ab'` (multi-character char literal) | `1__0`, a valid literal |
+| Python | `01`, `1_`, `1if y else 2`, t-strings, a `def` without an indented body | — |
+
+A block that tree-sitter wrongly rejects is rewritten rather than exempted, keeping the regular CI check simple.
 
 Review happens through pull requests: a block reaches production only when the bundle is rebuilt and merged. No draft/approval state machine is needed in the database.
 
@@ -1020,3 +1032,5 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.10 | Exact score rounding | The score is computed as the integer ratio `effective² / (2 × (effective + miss))` rounded half up, because multiplying floating-point KPM and accuracy can fall just below an exact half (165 effective, 60 misses: 60.49999999999999) (§3.6) |
 | 1.10 | Play session timing | The countdown starts with the first keystroke and stops while paused; a run idle (wall time since issue minus run time) for more than 15 minutes is discarded; finishing every block early ends the run with KPM still `effective / 2` (§4.1) |
 | 1.10 | Result validation | Results come with a keystroke log that the server replays with `typing-engine`; only aggregates are stored and the log is discarded, consistent with §1.3. A submission delayed past the grace period is rejected even for a legitimate run, with replay as the only remedy (§9.8) |
+| 1.11 | Content CLI pipeline | Stages: discover, formatter equality, toolchain syntax check, tree-sitter, constraints, compile, dedupe; `content:check` runs the toolchain-free stages in regular CI and a dedicated job runs `content:build` with toolchains. The toolchain is the authoritative syntax check because every measured tree-sitter grammar misses errors (and tree-sitter-java rejects the valid `1__0`) (§5.2) |
+| 1.11 | Content bundle format | `ContentBundleSchema` in contracts: schema version, language, blocks sorted by blockId, and a revision that hashes the canonical blocks JSON; toolchain versions live in `content/dist/toolchains.json` so the toolchain-free check can compare bundles byte for byte (§5.2) |

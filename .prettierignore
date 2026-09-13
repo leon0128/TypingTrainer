@@ -1,5 +1,7 @@
 pnpm-lock.yaml
 dist/
 coverage/
+# Compiler fixtures are block sources whose exact whitespace is under test.
+**/test/fixtures/
 # The specification is hand-formatted; keep Prettier from reflowing its tables.
 docs/

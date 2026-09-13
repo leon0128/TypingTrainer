@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.1 |
+| Version | 1.2 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.0 — typing engine transition rules corrected during P0 (Appendix B) |
+| Supersedes | v1.1 — TypeScript adapter lexing and per-language token fusion (Appendix B) |
 
 **Legend**
 
@@ -154,6 +154,8 @@ The original draft said "mandatory when identifier tokens would run together." T
 | `<` `<` | `<<` | `[<<]` | `true` |
 | `not` `in` (Python) | `notin` | `[notin]` | `true` |
 
+> The examples above are language-neutral illustrations. Whether two tokens fuse is decided by each language's own lexer (§5.4): TypeScript has no `->` token, so `-` `>` re-lexes to `[-, >]` and that separator is optional in TypeScript, whereas Java lexes `->` as one token and the separator is required there. 🟡 (v1.2)
+
 #### 3.3.2 Accepted keys at separators 🔵 (Q8, revised in v1.1)
 
 | Canonical form | Accepted key | `required` | Behavior |
@@ -184,6 +186,8 @@ Once an `auto` atom is filled, its characters are **already typed**. Pressing th
 - The same applies to auto-inserted indentation: pressing Space at the start of an auto-indented line is a miss 🔵 (Q30). This needs no special handling — once `settle` has passed the indentation, a space simply fails to match the expected literal character and falls through to `markMiss`.
 
 This mirrors an IDE, where the extra keystroke would insert a duplicate character, and it keeps the maximum effective keystrokes per block fixed.
+
+**Literal after a separator** 🟡 (v1.2). A literal atom that follows a separator, ignoring any `auto` atoms between them, must not start with a space: Space would be consumed or ignored by the separator and could never reach the literal (§3.4). Lexer tokens never begin with whitespace, but the text part of a template literal can — `` `${ user.id } (x)` `` yields a separator, an auto `}`, then the literal ` (x` — so the block compiler rejects this shape with a positioned error, and `TypingProgramSchema` enforces it as a final check.
 
 ### 3.4 Runtime Matching Algorithm 🟡 (revised in v1.1)
 
@@ -664,12 +668,14 @@ Taking the browser's time zone on every request would make past daily and weekly
 | Validation | **Zod** in a shared contracts package | One schema definition shared by the frontend, the API, and the content CLI |
 | ORM | **TypeORM** 🔵 | Chosen. See §9.2 for the specific cautions this implies |
 | Database | **PostgreSQL 16** | Needs `date` columns, composite indexes, and `jsonb`. Runs acceptably on constrained hardware with the tuning in §9.7 |
-| Lexing | **tree-sitter**, content CLI only | Official grammars for all four initial languages, error recovery for fragments, and a de facto standard (GitHub, Neovim, Zed). Never shipped to the browser |
+| Lexing | **tree-sitter**, content CLI only. The `block-compiler` TypeScript adapter uses the official `typescript` package instead 🟡 (v1.2, see below) | Official grammars for all four initial languages, error recovery for fragments, and a de facto standard (GitHub, Neovim, Zed). Never shipped to the browser |
 | Auth | Cookie session + **Argon2id** | §7 |
 | Testing | **Vitest**, **fast-check** (property-based), **Playwright** | The engine's input space is combinatorial, so property-based tests carry most of the weight |
 | Containers | **Docker** + Compose, multi-arch via `buildx` | One image tag serving both amd64 and arm64 |
 | Reverse proxy | **Caddy** | Automatic certificate issuance and renewal in two lines of config |
 | CI/CD | **GitHub Actions → GHCR** | Standard |
+
+**Deviation (v1.2): lexing in the TypeScript adapter.** The `block-compiler` TypeScript adapter tokenizes with the official `typescript` package rather than tree-sitter. tree-sitter is a parser that builds a syntax tree; it offers no lexer entry point for the token-level operation §3.3.1 depends on — joining two tokens and re-lexing the result to check whether it still yields exactly `[A, B]`. The TypeScript compiler exposes precisely that operation through its scanner (`createScanner`, with `reScanGreaterToken`, `reScanTemplateToken`, and `reScanSlashToken` for context-dependent tokens), and its parser supplies context-correct token boundaries, such as `>>` closing two type-argument lists rather than forming a shift operator. The package is pure JavaScript and, like every `block-compiler` dependency, never enters the browser bundle. It is pinned to TypeScript 6.x because TypeScript 7 no longer ships this JavaScript API. Adapters for other languages choose their lexer individually. The content pipeline is unchanged: `tools/content-cli` still uses tree-sitter to syntax-check fragments (§5.2).
 
 ### 9.2 Working with TypeORM
 
@@ -959,3 +965,6 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.1 | Engine: miss deduplication | `missMarkedHere` is cleared when the cursor position `(atomIndex, charIndex)` actually advances, rather than when a verdict is `CORRECT` |
 | 1.1 | Engine: purity | `handleKey(state, key)` returns a new state instead of mutating its input |
 | 1.1 | Accuracy with no input | `effective + miss = 0` yields accuracy `0` |
+| 1.2 | TypeScript adapter lexing | The `typescript` package (6.x) replaces tree-sitter in the block-compiler TypeScript adapter only, because §3.3.1 needs token-level re-lexing; `tools/content-cli` still uses tree-sitter for fragment validation (§5.2, §9.1) |
+| 1.2 | Token fusion is per language | The §3.3.1 table is illustrative; each adapter's lexer decides fusion (e.g. `-` `>` is optional in TypeScript, required in Java) |
+| 1.2 | Literal after a separator | A literal following a separator (ignoring auto atoms) must not start with a space. Template substitutions such as `${ user.id } (x)` can produce it, so block-compiler rejects it with a positioned error and TypingProgramSchema enforces it (§3.3) |

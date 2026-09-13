@@ -62,6 +62,8 @@ export function countCanonicalKeystrokes(atoms: readonly Atom[]): number {
  * 3. The first typed (non-auto) atom is not a separator.
  * 4. A required in-line space separator is always followed by a literal somewhere later.
  * 5. A line-break separator is always required.
+ * 6. A literal that follows a separator (ignoring auto atoms) does not start with a space.
+ *    Otherwise Space would be consumed or ignored by the separator and could never reach it.
  */
 export const TypingProgramSchema = z
   .object({
@@ -89,6 +91,23 @@ export const TypingProgramSchema = z
         message: 'the first typed atom must be a literal',
       });
     }
+
+    let previousTyped: (typeof atoms)[number] | undefined;
+    atoms.forEach((atom, index) => {
+      if (atom.kind === 'auto') return;
+      if (
+        atom.kind === 'literal' &&
+        previousTyped?.kind === 'separator' &&
+        atom.text.startsWith(' ')
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['atoms', index, 'text'],
+          message: 'a literal following a separator must not start with a space',
+        });
+      }
+      previousTyped = atom;
+    });
 
     let literalSeenFromEnd = false;
     for (let index = atoms.length - 1; index >= 0; index -= 1) {

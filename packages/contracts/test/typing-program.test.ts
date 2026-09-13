@@ -76,6 +76,14 @@ describe('TypingProgramSchema', () => {
     );
   });
 
+  it('rejects a literal starting with a space right after a separator', () => {
+    const message = 'a literal following a separator must not start with a space';
+    expect(issues(program([L('a'), S(false), L(' b')]))).toContain(message);
+    expect(issues(program([L('('), S(false), A(')', 0), L(' b')]))).toContain(message);
+    // A space inside a string token is fine: the literal follows the opening quote.
+    expect(issues(program([L('"'), L(' b'), A('"', 0)]))).toEqual([]);
+  });
+
   it('rejects an optional line-break separator', () => {
     expect(
       issues(program([L('a'), { kind: 'separator', canonical: '\n', required: false }, L('b')])),

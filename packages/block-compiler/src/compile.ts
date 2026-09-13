@@ -123,6 +123,14 @@ function buildAtoms(
       addWhitespace(gap, cursor, previous, token);
     }
 
+    if (token.text.includes('\n')) {
+      // Atoms never contain line breaks (§3.2), e.g. a raw string spanning lines.
+      report('multiline-token', 'a token must not span lines', token.start, token.end);
+      cursor = token.end;
+      previous = token;
+      continue;
+    }
+
     let offset = token.start;
     for (const piece of token.pieces) {
       if (piece.text === '') throw new Error(`Adapter "${adapter.slug}" returned an empty piece`);

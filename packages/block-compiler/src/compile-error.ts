@@ -17,6 +17,7 @@ export type CompileErrorCode =
   | 'unclosed-open'
   // Stage 2: typing program constraints (§3.3).
   | 'space-literal-after-separator'
+  | 'multiline-token'
   // Stage 3: fail-safe. The output violated TypingProgramSchema, which indicates a compiler bug.
   | 'invalid-program';
 

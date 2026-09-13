@@ -7,6 +7,9 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "scripts": {
+    "go:golden": "cd scripts/go-reference && go run . ../../test/fixtures/go ../../test/fixtures/go/golden.json"
+  },
   "dependencies": {
     "@typing-trainer/contracts": "workspace:*",
     "typescript": "~6.0.3"

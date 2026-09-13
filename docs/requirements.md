@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.3 |
+| Version | 1.4 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.2 — padding atom and tightened auto invariants (Appendix B) |
+| Supersedes | v1.3 — Go adapter lexing, Go block shape, whitespace and token constraints (Appendix B) |
 
 **Legend**
 
@@ -465,7 +465,7 @@ which makes the Ghost's final score exactly equal to the record, so "beat the Gh
 | Dependencies | Core syntax and the standard library only. No third-party packages or frameworks |
 | Characters | **Printable ASCII only** (Q10) |
 | **Comments** | **Not allowed.** Comments are not typing targets, so blocks are generated without them and the validator rejects any comment token (Q10) |
-| Forbidden | Tab characters (indentation is normalized to spaces), trailing whitespace, CRLF, blank lines inside a block |
+| Forbidden | Tab characters (indentation is normalized to spaces), trailing whitespace, CRLF, blank lines inside a block; runs of spaces between tokens, except alignment spaces a language's formatter inserts (§3.3.3); tokens spanning lines, such as multi-line raw strings 🟡 (v1.4) |
 
 Prohibiting comments also removes a special case from the engine: there is no longer any "a line comment can only end with a newline" rule to handle.
 
@@ -529,7 +529,7 @@ Recommended implementation order is **TypeScript → Go → Java → Python**, e
 | Language | Notes |
 | --- | --- |
 | **TypeScript** | Generic `<>` is not auto-paired (§3.3.3). Template literals `` `${x}` `` nest, so pairing must work on lexer tokens. `=>` stays two keystrokes; font ligatures are disabled (§8.2) |
-| **Go** | Line breaks are **semantically significant** — the compiler inserts semicolons at line ends — so every end-of-line separator is `required`. A brace on the following line is a syntax error, so generated blocks are fixed to `gofmt` output. Go's native indentation is tabs; blocks are **normalized to spaces** to remove tab-width variation between environments |
+| **Go** | Line breaks are **semantically significant** — the compiler inserts semicolons at line ends — so every end-of-line separator is `required`. A brace on the following line is a syntax error, so generated blocks are fixed to `gofmt` output. Go's native indentation is tabs; blocks are **normalized to spaces** to remove tab-width variation between environments. Normalization converts each leading tab to **4 spaces**, and gofmt's alignment spaces become `padding` atoms (§3.3.3). Because gofmt inserts blank lines between top-level declarations of different kinds, a Go block holds **exactly one top-level declaration** 🟡 (v1.4) |
 | **Java** | Verbose, so blocks hit the 30-line cap quickly. Favor **single methods** over whole `import` + class listings. The `@` in annotations is a shifted symbol (cost weight 1.5) |
 | **Python** | The hardest case, because indentation is syntax.<br>• Dedents cannot be expressed by the player, so the canonical indentation is fully precomputed as `auto` atoms.<br>• A line break after `:` is always a required Enter separator.<br>• Compound keywords such as `not in` and `is not` fall out of §3.3.1 as `required = true` automatically.<br>• f-strings embed expressions inside a string token; pair detection must run on the whole token.<br>• Blank lines are forbidden inside blocks (§5.1), which also avoids ambiguity about indentation after them |
 
@@ -678,7 +678,7 @@ Taking the browser's time zone on every request would make past daily and weekly
 | Validation | **Zod** in a shared contracts package | One schema definition shared by the frontend, the API, and the content CLI |
 | ORM | **TypeORM** 🔵 | Chosen. See §9.2 for the specific cautions this implies |
 | Database | **PostgreSQL 16** | Needs `date` columns, composite indexes, and `jsonb`. Runs acceptably on constrained hardware with the tuning in §9.7 |
-| Lexing | **tree-sitter**, content CLI only. The `block-compiler` TypeScript adapter uses the official `typescript` package instead 🟡 (v1.2, see below) | Official grammars for all four initial languages, error recovery for fragments, and a de facto standard (GitHub, Neovim, Zed). Never shipped to the browser |
+| Lexing | **tree-sitter**, content CLI only. The `block-compiler` TypeScript adapter uses the official `typescript` package, and the Go adapter a scanner checked against `go/scanner`, instead 🟡 (v1.2, v1.4, see below) | Official grammars for all four initial languages, error recovery for fragments, and a de facto standard (GitHub, Neovim, Zed). Never shipped to the browser |
 | Auth | Cookie session + **Argon2id** | §7 |
 | Testing | **Vitest**, **fast-check** (property-based), **Playwright** | The engine's input space is combinatorial, so property-based tests carry most of the weight |
 | Containers | **Docker** + Compose, multi-arch via `buildx` | One image tag serving both amd64 and arm64 |
@@ -686,6 +686,8 @@ Taking the browser's time zone on every request would make past daily and weekly
 | CI/CD | **GitHub Actions → GHCR** | Standard |
 
 **Deviation (v1.2): lexing in the TypeScript adapter.** The `block-compiler` TypeScript adapter tokenizes with the official `typescript` package rather than tree-sitter. tree-sitter is a parser that builds a syntax tree; it offers no lexer entry point for the token-level operation §3.3.1 depends on — joining two tokens and re-lexing the result to check whether it still yields exactly `[A, B]`. The TypeScript compiler exposes precisely that operation through its scanner (`createScanner`, with `reScanGreaterToken`, `reScanTemplateToken`, and `reScanSlashToken` for context-dependent tokens), and its parser supplies context-correct token boundaries, such as `>>` closing two type-argument lists rather than forming a shift operator. The package is pure JavaScript and, like every `block-compiler` dependency, never enters the browser bundle. It is pinned to TypeScript 6.x because TypeScript 7 no longer ships this JavaScript API. Adapters for other languages choose their lexer individually. The content pipeline is unchanged: `tools/content-cli` still uses tree-sitter to syntax-check fragments (§5.2).
+
+**Deviation (v1.4): lexing in the Go adapter.** No JavaScript port of `go/scanner` exists, and tree-sitter cannot re-lex token pairs (see above), so the Go adapter uses a scanner written from the lexical elements of the Go specification. `packages/block-compiler/scripts/go-reference`, run with `pnpm --filter @typing-trainer/block-compiler go:golden`, checks that every Go fixture is byte-for-byte `gofmt` output and records the official `go/scanner` tokens for each fixture and for a table of token pairs. Tests compare the TypeScript scanner against that committed golden data, so CI needs no Go toolchain. Without a parser, the Go adapter reports lexical errors and an opening brace on its own line; grammar errors are left to `tools/content-cli` (§5.2).
 
 ### 9.2 Working with TypeORM
 
@@ -980,3 +982,6 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.2 | Literal after a separator | A literal following a separator (ignoring auto atoms) must not start with a space. Template substitutions such as `${ user.id } (x)` can produce it, so block-compiler rejects it with a positioned error and TypingProgramSchema enforces it (§3.3) |
 | 1.2 | §9.4 package description | Aligned with the implementation: `block-compiler` lexers are chosen per adapter (the TypeScript adapter uses the `typescript` package), and tree-sitter is used only by `tools/content-cli` (§5.2, §9.1) |
 | 1.3 | Padding atom and auto invariants | **Invariant contradiction found during P0 implementation.** `TypingProgramSchema` documented an auto atom as filled by "a literal (an opening bracket or quote) or a line break", but only checked "an earlier literal or line break", and a language-neutral schema cannot know which characters open a pair. Found while adding gofmt alignment: alignment spaces are now a separate `padding` atom kind without `filledBy`, and the auto rule is tightened to what the schema can verify — indentation is filled by the line break immediately before it, closers by an earlier literal (§3.2, §3.3.3, §3.4, §8.1) |
+| 1.4 | Go adapter lexing | A scanner written from the Go specification, pinned to the official `go/scanner` by golden data committed from `go:golden`; CI runs without Go (§9.1) |
+| 1.4 | Go block shape | Blocks are gofmt output with leading tabs normalized to 4 spaces, gofmt alignment kept as `padding`, and exactly one top-level declaration, because gofmt inserts blank lines between declarations of different kinds (§5.4.1) |
+| 1.4 | Whitespace and token constraints | A run of spaces between tokens is a compile error unless the language's formatter aligns code (gofmt → `padding`); a token spanning lines is a compile error (§5.1) |

@@ -1,0 +1,4411 @@
+{
+  "generatedBy": "go1.26.3 go/scanner",
+  "fixtures": [
+    {
+      "name": "composite.go",
+      "sha256": "3786a4cc84ee8cd002efe2391f55777b0e5ecfb2986efd52ff3dcfbd63e5e9f1",
+      "tokens": [
+        {
+          "text": "func",
+          "start": 0,
+          "end": 4
+        },
+        {
+          "text": "defaults",
+          "start": 5,
+          "end": 13
+        },
+        {
+          "text": "(",
+          "start": 13,
+          "end": 14
+        },
+        {
+          "text": ")",
+          "start": 14,
+          "end": 15
+        },
+        {
+          "text": "map",
+          "start": 16,
+          "end": 19
+        },
+        {
+          "text": "[",
+          "start": 19,
+          "end": 20
+        },
+        {
+          "text": "string",
+          "start": 20,
+          "end": 26
+        },
+        {
+          "text": "]",
+          "start": 26,
+          "end": 27
+        },
+        {
+          "text": "[",
+          "start": 27,
+          "end": 28
+        },
+        {
+          "text": "]",
+          "start": 28,
+          "end": 29
+        },
+        {
+          "text": "int",
+          "start": 29,
+          "end": 32
+        },
+        {
+          "text": "{",
+          "start": 33,
+          "end": 34
+        },
+        {
+          "text": "type",
+          "start": 36,
+          "end": 40
+        },
+        {
+          "text": "limit",
+          "start": 41,
+          "end": 46
+        },
+        {
+          "text": "struct",
+          "start": 47,
+          "end": 53
+        },
+        {
+          "text": "{",
+          "start": 54,
+          "end": 55
+        },
+        {
+          "text": "Name",
+          "start": 58,
+          "end": 62
+        },
+        {
+          "text": "string",
+          "start": 63,
+          "end": 69
+        },
+        {
+          "text": "Max",
+          "start": 72,
+          "end": 75
+        },
+        {
+          "text": "int",
+          "start": 77,
+          "end": 80
+        },
+        {
+          "text": "}",
+          "start": 82,
+          "end": 83
+        },
+        {
+          "text": "limits",
+          "start": 85,
+          "end": 91
+        },
+        {
+          "text": ":=",
+          "start": 92,
+          "end": 94
+        },
+        {
+          "text": "[",
+          "start": 95,
+          "end": 96
+        },
+        {
+          "text": "]",
+          "start": 96,
+          "end": 97
+        },
+        {
+          "text": "limit",
+          "start": 97,
+          "end": 102
+        },
+        {
+          "text": "{",
+          "start": 102,
+          "end": 103
+        },
+        {
+          "text": "{",
+          "start": 103,
+          "end": 104
+        },
+        {
+          "text": "Name",
+          "start": 104,
+          "end": 108
+        },
+        {
+          "text": ":",
+          "start": 108,
+          "end": 109
+        },
+        {
+          "text": "\"cpu\"",
+          "start": 110,
+          "end": 115
+        },
+        {
+          "text": ",",
+          "start": 115,
+          "end": 116
+        },
+        {
+          "text": "Max",
+          "start": 117,
+          "end": 120
+        },
+        {
+          "text": ":",
+          "start": 120,
+          "end": 121
+        },
+        {
+          "text": "4",
+          "start": 122,
+          "end": 123
+        },
+        {
+          "text": "}",
+          "start": 123,
+          "end": 124
+        },
+        {
+          "text": ",",
+          "start": 124,
+          "end": 125
+        },
+        {
+          "text": "{",
+          "start": 126,
+          "end": 127
+        },
+        {
+          "text": "Name",
+          "start": 127,
+          "end": 131
+        },
+        {
+          "text": ":",
+          "start": 131,
+          "end": 132
+        },
+        {
+          "text": "\"memory\"",
+          "start": 133,
+          "end": 141
+        },
+        {
+          "text": ",",
+          "start": 141,
+          "end": 142
+        },
+        {
+          "text": "Max",
+          "start": 143,
+          "end": 146
+        },
+        {
+          "text": ":",
+          "start": 146,
+          "end": 147
+        },
+        {
+          "text": "512",
+          "start": 148,
+          "end": 151
+        },
+        {
+          "text": "}",
+          "start": 151,
+          "end": 152
+        },
+        {
+          "text": "}",
+          "start": 152,
+          "end": 153
+        },
+        {
+          "text": "sizes",
+          "start": 155,
+          "end": 160
+        },
+        {
+          "text": ":=",
+          "start": 161,
+          "end": 163
+        },
+        {
+          "text": "map",
+          "start": 164,
+          "end": 167
+        },
+        {
+          "text": "[",
+          "start": 167,
+          "end": 168
+        },
+        {
+          "text": "string",
+          "start": 168,
+          "end": 174
+        },
+        {
+          "text": "]",
+          "start": 174,
+          "end": 175
+        },
+        {
+          "text": "[",
+          "start": 175,
+          "end": 176
+        },
+        {
+          "text": "]",
+          "start": 176,
+          "end": 177
+        },
+        {
+          "text": "int",
+          "start": 177,
+          "end": 180
+        },
+        {
+          "text": "{",
+          "start": 180,
+          "end": 181
+        },
+        {
+          "text": "\"small\"",
+          "start": 184,
+          "end": 191
+        },
+        {
+          "text": ":",
+          "start": 191,
+          "end": 192
+        },
+        {
+          "text": "{",
+          "start": 194,
+          "end": 195
+        },
+        {
+          "text": "1",
+          "start": 195,
+          "end": 196
+        },
+        {
+          "text": ",",
+          "start": 196,
+          "end": 197
+        },
+        {
+          "text": "2",
+          "start": 198,
+          "end": 199
+        },
+        {
+          "text": "}",
+          "start": 199,
+          "end": 200
+        },
+        {
+          "text": ",",
+          "start": 200,
+          "end": 201
+        },
+        {
+          "text": "\"medium\"",
+          "start": 204,
+          "end": 212
+        },
+        {
+          "text": ":",
+          "start": 212,
+          "end": 213
+        },
+        {
+          "text": "{",
+          "start": 214,
+          "end": 215
+        },
+        {
+          "text": "4",
+          "start": 215,
+          "end": 216
+        },
+        {
+          "text": ",",
+          "start": 216,
+          "end": 217
+        },
+        {
+          "text": "8",
+          "start": 218,
+          "end": 219
+        },
+        {
+          "text": ",",
+          "start": 219,
+          "end": 220
+        },
+        {
+          "text": "16",
+          "start": 221,
+          "end": 223
+        },
+        {
+          "text": "}",
+          "start": 223,
+          "end": 224
+        },
+        {
+          "text": ",",
+          "start": 224,
+          "end": 225
+        },
+        {
+          "text": "\"none\"",
+          "start": 228,
+          "end": 234
+        },
+        {
+          "text": ":",
+          "start": 234,
+          "end": 235
+        },
+        {
+          "text": "{",
+          "start": 238,
+          "end": 239
+        },
+        {
+          "text": "}",
+          "start": 239,
+          "end": 240
+        },
+        {
+          "text": ",",
+          "start": 240,
+          "end": 241
+        },
+        {
+          "text": "}",
+          "start": 243,
+          "end": 244
+        },
+        {
+          "text": "for",
+          "start": 246,
+          "end": 249
+        },
+        {
+          "text": "_",
+          "start": 250,
+          "end": 251
+        },
+        {
+          "text": ",",
+          "start": 251,
+          "end": 252
+        },
+        {
+          "text": "l",
+          "start": 253,
+          "end": 254
+        },
+        {
+          "text": ":=",
+          "start": 255,
+          "end": 257
+        },
+        {
+          "text": "range",
+          "start": 258,
+          "end": 263
+        },
+        {
+          "text": "limits",
+          "start": 264,
+          "end": 270
+        },
+        {
+          "text": "{",
+          "start": 271,
+          "end": 272
+        },
+        {
+          "text": "sizes",
+          "start": 275,
+          "end": 280
+        },
+        {
+          "text": "[",
+          "start": 280,
+          "end": 281
+        },
+        {
+          "text": "l",
+          "start": 281,
+          "end": 282
+        },
+        {
+          "text": ".",
+          "start": 282,
+          "end": 283
+        },
+        {
+          "text": "Name",
+          "start": 283,
+          "end": 287
+        },
+        {
+          "text": "]",
+          "start": 287,
+          "end": 288
+        },
+        {
+          "text": "=",
+          "start": 289,
+          "end": 290
+        },
+        {
+          "text": "[",
+          "start": 291,
+          "end": 292
+        },
+        {
+          "text": "]",
+          "start": 292,
+          "end": 293
+        },
+        {
+          "text": "int",
+          "start": 293,
+          "end": 296
+        },
+        {
+          "text": "{",
+          "start": 296,
+          "end": 297
+        },
+        {
+          "text": "l",
+          "start": 297,
+          "end": 298
+        },
+        {
+          "text": ".",
+          "start": 298,
+          "end": 299
+        },
+        {
+          "text": "Max",
+          "start": 299,
+          "end": 302
+        },
+        {
+          "text": "}",
+          "start": 302,
+          "end": 303
+        },
+        {
+          "text": "}",
+          "start": 305,
+          "end": 306
+        },
+        {
+          "text": "return",
+          "start": 308,
+          "end": 314
+        },
+        {
+          "text": "sizes",
+          "start": 315,
+          "end": 320
+        },
+        {
+          "text": "}",
+          "start": 321,
+          "end": 322
+        }
+      ]
+    },
+    {
+      "name": "defer.go",
+      "sha256": "a4661809552a7a2e81c598d5ce9183e64ae4688c8d5ab1de7ff4493eb05ad4d0",
+      "tokens": [
+        {
+          "text": "func",
+          "start": 0,
+          "end": 4
+        },
+        {
+          "text": "safeDivide",
+          "start": 5,
+          "end": 15
+        },
+        {
+          "text": "(",
+          "start": 15,
+          "end": 16
+        },
+        {
+          "text": "a",
+          "start": 16,
+          "end": 17
+        },
+        {
+          "text": ",",
+          "start": 17,
+          "end": 18
+        },
+        {
+          "text": "b",
+          "start": 19,
+          "end": 20
+        },
+        {
+          "text": "int",
+          "start": 21,
+          "end": 24
+        },
+        {
+          "text": ")",
+          "start": 24,
+          "end": 25
+        },
+        {
+          "text": "(",
+          "start": 26,
+          "end": 27
+        },
+        {
+          "text": "result",
+          "start": 27,
+          "end": 33
+        },
+        {
+          "text": "int",
+          "start": 34,
+          "end": 37
+        },
+        {
+          "text": ",",
+          "start": 37,
+          "end": 38
+        },
+        {
+          "text": "err",
+          "start": 39,
+          "end": 42
+        },
+        {
+          "text": "error",
+          "start": 43,
+          "end": 48
+        },
+        {
+          "text": ")",
+          "start": 48,
+          "end": 49
+        },
+        {
+          "text": "{",
+          "start": 50,
+          "end": 51
+        },
+        {
+          "text": "defer",
+          "start": 53,
+          "end": 58
+        },
+        {
+          "text": "func",
+          "start": 59,
+          "end": 63
+        },
+        {
+          "text": "(",
+          "start": 63,
+          "end": 64
+        },
+        {
+          "text": ")",
+          "start": 64,
+          "end": 65
+        },
+        {
+          "text": "{",
+          "start": 66,
+          "end": 67
+        },
+        {
+          "text": "if",
+          "start": 70,
+          "end": 72
+        },
+        {
+          "text": "r",
+          "start": 73,
+          "end": 74
+        },
+        {
+          "text": ":=",
+          "start": 75,
+          "end": 77
+        },
+        {
+          "text": "recover",
+          "start": 78,
+          "end": 85
+        },
+        {
+          "text": "(",
+          "start": 85,
+          "end": 86
+        },
+        {
+          "text": ")",
+          "start": 86,
+          "end": 87
+        },
+        {
+          "text": ";",
+          "start": 87,
+          "end": 88
+        },
+        {
+          "text": "r",
+          "start": 89,
+          "end": 90
+        },
+        {
+          "text": "!=",
+          "start": 91,
+          "end": 93
+        },
+        {
+          "text": "nil",
+          "start": 94,
+          "end": 97
+        },
+        {
+          "text": "{",
+          "start": 98,
+          "end": 99
+        },
+        {
+          "text": "err",
+          "start": 103,
+          "end": 106
+        },
+        {
+          "text": "=",
+          "start": 107,
+          "end": 108
+        },
+        {
+          "text": "fmt",
+          "start": 109,
+          "end": 112
+        },
+        {
+          "text": ".",
+          "start": 112,
+          "end": 113
+        },
+        {
+          "text": "Errorf",
+          "start": 113,
+          "end": 119
+        },
+        {
+          "text": "(",
+          "start": 119,
+          "end": 120
+        },
+        {
+          "text": "\"recovered: %v\"",
+          "start": 120,
+          "end": 135
+        },
+        {
+          "text": ",",
+          "start": 135,
+          "end": 136
+        },
+        {
+          "text": "r",
+          "start": 137,
+          "end": 138
+        },
+        {
+          "text": ")",
+          "start": 138,
+          "end": 139
+        },
+        {
+          "text": "}",
+          "start": 142,
+          "end": 143
+        },
+        {
+          "text": "}",
+          "start": 145,
+          "end": 146
+        },
+        {
+          "text": "(",
+          "start": 146,
+          "end": 147
+        },
+        {
+          "text": ")",
+          "start": 147,
+          "end": 148
+        },
+        {
+          "text": "return",
+          "start": 150,
+          "end": 156
+        },
+        {
+          "text": "a",
+          "start": 157,
+          "end": 158
+        },
+        {
+          "text": "/",
+          "start": 159,
+          "end": 160
+        },
+        {
+          "text": "b",
+          "start": 161,
+          "end": 162
+        },
+        {
+          "text": ",",
+          "start": 162,
+          "end": 163
+        },
+        {
+          "text": "nil",
+          "start": 164,
+          "end": 167
+        },
+        {
+          "text": "}",
+          "start": 168,
+          "end": 169
+        }
+      ]
+    },
+    {
+      "name": "generics.go",
+      "sha256": "8e4821a268784bc5d53580e6e9c863c41544d4f8c14e2f7e37bc8da157a77054",
+      "tokens": [
+        {
+          "text": "func",
+          "start": 0,
+          "end": 4
+        },
+        {
+          "text": "Map",
+          "start": 5,
+          "end": 8
+        },
+        {
+          "text": "[",
+          "start": 8,
+          "end": 9
+        },
+        {
+          "text": "T",
+          "start": 9,
+          "end": 10
+        },
+        {
+          "text": ",",
+          "start": 10,
+          "end": 11
+        },
+        {
+          "text": "U",
+          "start": 12,
+          "end": 13
+        },
+        {
+          "text": "any",
+          "start": 14,
+          "end": 17
+        },
+        {
+          "text": "]",
+          "start": 17,
+          "end": 18
+        },
+        {
+          "text": "(",
+          "start": 18,
+          "end": 19
+        },
+        {
+          "text": "xs",
+          "start": 19,
+          "end": 21
+        },
+        {
+          "text": "[",
+          "start": 22,
+          "end": 23
+        },
+        {
+          "text": "]",
+          "start": 23,
+          "end": 24
+        },
+        {
+          "text": "T",
+          "start": 24,
+          "end": 25
+        },
+        {
+          "text": ",",
+          "start": 25,
+          "end": 26
+        },
+        {
+          "text": "f",
+          "start": 27,
+          "end": 28
+        },
+        {
+          "text": "func",
+          "start": 29,
+          "end": 33
+        },
+        {
+          "text": "(",
+          "start": 33,
+          "end": 34
+        },
+        {
+          "text": "T",
+          "start": 34,
+          "end": 35
+        },
+        {
+          "text": ")",
+          "start": 35,
+          "end": 36
+        },
+        {
+          "text": "U",
+          "start": 37,
+          "end": 38
+        },
+        {
+          "text": ")",
+          "start": 38,
+          "end": 39
+        },
+        {
+          "text": "[",
+          "start": 40,
+          "end": 41
+        },
+        {
+          "text": "]",
+          "start": 41,
+          "end": 42
+        },
+        {
+          "text": "U",
+          "start": 42,
+          "end": 43
+        },
+        {
+          "text": "{",
+          "start": 44,
+          "end": 45
+        },
+        {
+          "text": "out",
+          "start": 47,
+          "end": 50
+        },
+        {
+          "text": ":=",
+          "start": 51,
+          "end": 53
+        },
+        {
+          "text": "make",
+          "start": 54,
+          "end": 58
+        },
+        {
+          "text": "(",
+          "start": 58,
+          "end": 59
+        },
+        {
+          "text": "[",
+          "start": 59,
+          "end": 60
+        },
+        {
+          "text": "]",
+          "start": 60,
+          "end": 61
+        },
+        {
+          "text": "U",
+          "start": 61,
+          "end": 62
+        },
+        {
+          "text": ",",
+          "start": 62,
+          "end": 63
+        },
+        {
+          "text": "0",
+          "start": 64,
+          "end": 65
+        },
+        {
+          "text": ",",
+          "start": 65,
+          "end": 66
+        },
+        {
+          "text": "len",
+          "start": 67,
+          "end": 70
+        },
+        {
+          "text": "(",
+          "start": 70,
+          "end": 71
+        },
+        {
+          "text": "xs",
+          "start": 71,
+          "end": 73
+        },
+        {
+          "text": ")",
+          "start": 73,
+          "end": 74
+        },
+        {
+          "text": ")",
+          "start": 74,
+          "end": 75
+        },
+        {
+          "text": "for",
+          "start": 77,
+          "end": 80
+        },
+        {
+          "text": "_",
+          "start": 81,
+          "end": 82
+        },
+        {
+          "text": ",",
+          "start": 82,
+          "end": 83
+        },
+        {
+          "text": "x",
+          "start": 84,
+          "end": 85
+        },
+        {
+          "text": ":=",
+          "start": 86,
+          "end": 88
+        },
+        {
+          "text": "range",
+          "start": 89,
+          "end": 94
+        },
+        {
+          "text": "xs",
+          "start": 95,
+          "end": 97
+        },
+        {
+          "text": "{",
+          "start": 98,
+          "end": 99
+        },
+        {
+          "text": "out",
+          "start": 102,
+          "end": 105
+        },
+        {
+          "text": "=",
+          "start": 106,
+          "end": 107
+        },
+        {
+          "text": "append",
+          "start": 108,
+          "end": 114
+        },
+        {
+          "text": "(",
+          "start": 114,
+          "end": 115
+        },
+        {
+          "text": "out",
+          "start": 115,
+          "end": 118
+        },
+        {
+          "text": ",",
+          "start": 118,
+          "end": 119
+        },
+        {
+          "text": "f",
+          "start": 120,
+          "end": 121
+        },
+        {
+          "text": "(",
+          "start": 121,
+          "end": 122
+        },
+        {
+          "text": "x",
+          "start": 122,
+          "end": 123
+        },
+        {
+          "text": ")",
+          "start": 123,
+          "end": 124
+        },
+        {
+          "text": ")",
+          "start": 124,
+          "end": 125
+        },
+        {
+          "text": "}",
+          "start": 127,
+          "end": 128
+        },
+        {
+          "text": "return",
+          "start": 130,
+          "end": 136
+        },
+        {
+          "text": "out",
+          "start": 137,
+          "end": 140
+        },
+        {
+          "text": "}",
+          "start": 141,
+          "end": 142
+        }
+      ]
+    },
+    {
+      "name": "goroutine.go",
+      "sha256": "e2b9a42a9e2309a3e6373c185debe3e5a7ba3a54dd7004656edeb1c6e8e376c6",
+      "tokens": [
+        {
+          "text": "func",
+          "start": 0,
+          "end": 4
+        },
+        {
+          "text": "sumSquares",
+          "start": 5,
+          "end": 15
+        },
+        {
+          "text": "(",
+          "start": 15,
+          "end": 16
+        },
+        {
+          "text": "values",
+          "start": 16,
+          "end": 22
+        },
+        {
+          "text": "[",
+          "start": 23,
+          "end": 24
+        },
+        {
+          "text": "]",
+          "start": 24,
+          "end": 25
+        },
+        {
+          "text": "int",
+          "start": 25,
+          "end": 28
+        },
+        {
+          "text": ")",
+          "start": 28,
+          "end": 29
+        },
+        {
+          "text": "int",
+          "start": 30,
+          "end": 33
+        },
+        {
+          "text": "{",
+          "start": 34,
+          "end": 35
+        },
+        {
+          "text": "var",
+          "start": 37,
+          "end": 40
+        },
+        {
+          "text": "wg",
+          "start": 41,
+          "end": 43
+        },
+        {
+          "text": "sync",
+          "start": 44,
+          "end": 48
+        },
+        {
+          "text": ".",
+          "start": 48,
+          "end": 49
+        },
+        {
+          "text": "WaitGroup",
+          "start": 49,
+          "end": 58
+        },
+        {
+          "text": "results",
+          "start": 60,
+          "end": 67
+        },
+        {
+          "text": ":=",
+          "start": 68,
+          "end": 70
+        },
+        {
+          "text": "make",
+          "start": 71,
+          "end": 75
+        },
+        {
+          "text": "(",
+          "start": 75,
+          "end": 76
+        },
+        {
+          "text": "chan",
+          "start": 76,
+          "end": 80
+        },
+        {
+          "text": "int",
+          "start": 81,
+          "end": 84
+        },
+        {
+          "text": ",",
+          "start": 84,
+          "end": 85
+        },
+        {
+          "text": "len",
+          "start": 86,
+          "end": 89
+        },
+        {
+          "text": "(",
+          "start": 89,
+          "end": 90
+        },
+        {
+          "text": "values",
+          "start": 90,
+          "end": 96
+        },
+        {
+          "text": ")",
+          "start": 96,
+          "end": 97
+        },
+        {
+          "text": ")",
+          "start": 97,
+          "end": 98
+        },
+        {
+          "text": "for",
+          "start": 100,
+          "end": 103
+        },
+        {
+          "text": "_",
+          "start": 104,
+          "end": 105
+        },
+        {
+          "text": ",",
+          "start": 105,
+          "end": 106
+        },
+        {
+          "text": "v",
+          "start": 107,
+          "end": 108
+        },
+        {
+          "text": ":=",
+          "start": 109,
+          "end": 111
+        },
+        {
+          "text": "range",
+          "start": 112,
+          "end": 117
+        },
+        {
+          "text": "values",
+          "start": 118,
+          "end": 124
+        },
+        {
+          "text": "{",
+          "start": 125,
+          "end": 126
+        },
+        {
+          "text": "wg",
+          "start": 129,
+          "end": 131
+        },
+        {
+          "text": ".",
+          "start": 131,
+          "end": 132
+        },
+        {
+          "text": "Add",
+          "start": 132,
+          "end": 135
+        },
+        {
+          "text": "(",
+          "start": 135,
+          "end": 136
+        },
+        {
+          "text": "1",
+          "start": 136,
+          "end": 137
+        },
+        {
+          "text": ")",
+          "start": 137,
+          "end": 138
+        },
+        {
+          "text": "go",
+          "start": 141,
+          "end": 143
+        },
+        {
+          "text": "func",
+          "start": 144,
+          "end": 148
+        },
+        {
+          "text": "(",
+          "start": 148,
+          "end": 149
+        },
+        {
+          "text": "n",
+          "start": 149,
+          "end": 150
+        },
+        {
+          "text": "int",
+          "start": 151,
+          "end": 154
+        },
+        {
+          "text": ")",
+          "start": 154,
+          "end": 155
+        },
+        {
+          "text": "{",
+          "start": 156,
+          "end": 157
+        },
+        {
+          "text": "defer",
+          "start": 161,
+          "end": 166
+        },
+        {
+          "text": "wg",
+          "start": 167,
+          "end": 169
+        },
+        {
+          "text": ".",
+          "start": 169,
+          "end": 170
+        },
+        {
+          "text": "Done",
+          "start": 170,
+          "end": 174
+        },
+        {
+          "text": "(",
+          "start": 174,
+          "end": 175
+        },
+        {
+          "text": ")",
+          "start": 175,
+          "end": 176
+        },
+        {
+          "text": "results",
+          "start": 180,
+          "end": 187
+        },
+        {
+          "text": "\u003c-",
+          "start": 188,
+          "end": 190
+        },
+        {
+          "text": "n",
+          "start": 191,
+          "end": 192
+        },
+        {
+          "text": "*",
+          "start": 193,
+          "end": 194
+        },
+        {
+          "text": "n",
+          "start": 195,
+          "end": 196
+        },
+        {
+          "text": "}",
+          "start": 199,
+          "end": 200
+        },
+        {
+          "text": "(",
+          "start": 200,
+          "end": 201
+        },
+        {
+          "text": "v",
+          "start": 201,
+          "end": 202
+        },
+        {
+          "text": ")",
+          "start": 202,
+          "end": 203
+        },
+        {
+          "text": "}",
+          "start": 205,
+          "end": 206
+        },
+        {
+          "text": "wg",
+          "start": 208,
+          "end": 210
+        },
+        {
+          "text": ".",
+          "start": 210,
+          "end": 211
+        },
+        {
+          "text": "Wait",
+          "start": 211,
+          "end": 215
+        },
+        {
+          "text": "(",
+          "start": 215,
+          "end": 216
+        },
+        {
+          "text": ")",
+          "start": 216,
+          "end": 217
+        },
+        {
+          "text": "close",
+          "start": 219,
+          "end": 224
+        },
+        {
+          "text": "(",
+          "start": 224,
+          "end": 225
+        },
+        {
+          "text": "results",
+          "start": 225,
+          "end": 232
+        },
+        {
+          "text": ")",
+          "start": 232,
+          "end": 233
+        },
+        {
+          "text": "sum",
+          "start": 235,
+          "end": 238
+        },
+        {
+          "text": ":=",
+          "start": 239,
+          "end": 241
+        },
+        {
+          "text": "0",
+          "start": 242,
+          "end": 243
+        },
+        {
+          "text": "for",
+          "start": 245,
+          "end": 248
+        },
+        {
+          "text": "r",
+          "start": 249,
+          "end": 250
+        },
+        {
+          "text": ":=",
+          "start": 251,
+          "end": 253
+        },
+        {
+          "text": "range",
+          "start": 254,
+          "end": 259
+        },
+        {
+          "text": "results",
+          "start": 260,
+          "end": 267
+        },
+        {
+          "text": "{",
+          "start": 268,
+          "end": 269
+        },
+        {
+          "text": "sum",
+          "start": 272,
+          "end": 275
+        },
+        {
+          "text": "+=",
+          "start": 276,
+          "end": 278
+        },
+        {
+          "text": "r",
+          "start": 279,
+          "end": 280
+        },
+        {
+          "text": "}",
+          "start": 282,
+          "end": 283
+        },
+        {
+          "text": "return",
+          "start": 285,
+          "end": 291
+        },
+        {
+          "text": "sum",
+          "start": 292,
+          "end": 295
+        },
+        {
+          "text": "}",
+          "start": 296,
+          "end": 297
+        }
+      ]
+    },
+    {
+      "name": "if-else.go",
+      "sha256": "12f7f5c67a57d8aa6a3b3cff0885e1e836b36753faca31e426ccf397153a70f0",
+      "tokens": [
+        {
+          "text": "func",
+          "start": 0,
+          "end": 4
+        },
+        {
+          "text": "sign",
+          "start": 5,
+          "end": 9
+        },
+        {
+          "text": "(",
+          "start": 9,
+          "end": 10
+        },
+        {
+          "text": "n",
+          "start": 10,
+          "end": 11
+        },
+        {
+          "text": "int",
+          "start": 12,
+          "end": 15
+        },
+        {
+          "text": ")",
+          "start": 15,
+          "end": 16
+        },
+        {
+          "text": "string",
+          "start": 17,
+          "end": 23
+        },
+        {
+          "text": "{",
+          "start": 24,
+          "end": 25
+        },
+        {
+          "text": "if",
+          "start": 27,
+          "end": 29
+        },
+        {
+          "text": "n",
+          "start": 30,
+          "end": 31
+        },
+        {
+          "text": "\u003e",
+          "start": 32,
+          "end": 33
+        },
+        {
+          "text": "0",
+          "start": 34,
+          "end": 35
+        },
+        {
+          "text": "{",
+          "start": 36,
+          "end": 37
+        },
+        {
+          "text": "return",
+          "start": 40,
+          "end": 46
+        },
+        {
+          "text": "\"positive\"",
+          "start": 47,
+          "end": 57
+        },
+        {
+          "text": "}",
+          "start": 59,
+          "end": 60
+        },
+        {
+          "text": "else",
+          "start": 61,
+          "end": 65
+        },
+        {
+          "text": "if",
+          "start": 66,
+          "end": 68
+        },
+        {
+          "text": "n",
+          "start": 69,
+          "end": 70
+        },
+        {
+          "text": "\u003c",
+          "start": 71,
+          "end": 72
+        },
+        {
+          "text": "0",
+          "start": 73,
+          "end": 74
+        },
+        {
+          "text": "{",
+          "start": 75,
+          "end": 76
+        },
+        {
+          "text": "return",
+          "start": 79,
+          "end": 85
+        },
+        {
+          "text": "\"negative\"",
+          "start": 86,
+          "end": 96
+        },
+        {
+          "text": "}",
+          "start": 98,
+          "end": 99
+        },
+        {
+          "text": "else",
+          "start": 100,
+          "end": 104
+        },
+        {
+          "text": "{",
+          "start": 105,
+          "end": 106
+        },
+        {
+          "text": "return",
+          "start": 109,
+          "end": 115
+        },
+        {
+          "text": "\"zero\"",
+          "start": 116,
+          "end": 122
+        },
+        {
+          "text": "}",
+          "start": 124,
+          "end": 125
+        },
+        {
+          "text": "}",
+          "start": 126,
+          "end": 127
+        }
+      ]
+    },
+    {
+      "name": "literals.go",
+      "sha256": "29a971600dcdeb298c87dbe80f452ada191b5aa418ae41891239ba4fe7c145e5",
+      "tokens": [
+        {
+          "text": "func",
+          "start": 0,
+          "end": 4
+        },
+        {
+          "text": "literals",
+          "start": 5,
+          "end": 13
+        },
+        {
+          "text": "(",
+          "start": 13,
+          "end": 14
+        },
+        {
+          "text": ")",
+          "start": 14,
+          "end": 15
+        },
+        {
+          "text": "[",
+          "start": 16,
+          "end": 17
+        },
+        {
+          "text": "]",
+          "start": 17,
+          "end": 18
+        },
+        {
+          "text": "any",
+          "start": 18,
+          "end": 21
+        },
+        {
+          "text": "{",
+          "start": 22,
+          "end": 23
+        },
+        {
+          "text": "return",
+          "start": 25,
+          "end": 31
+        },
+        {
+          "text": "[",
+          "start": 32,
+          "end": 33
+        },
+        {
+          "text": "]",
+          "start": 33,
+          "end": 34
+        },
+        {
+          "text": "any",
+          "start": 34,
+          "end": 37
+        },
+        {
+          "text": "{",
+          "start": 37,
+          "end": 38
+        },
+        {
+          "text": "'x'",
+          "start": 38,
+          "end": 41
+        },
+        {
+          "text": ",",
+          "start": 41,
+          "end": 42
+        },
+        {
+          "text": "'\\n'",
+          "start": 43,
+          "end": 47
+        },
+        {
+          "text": ",",
+          "start": 47,
+          "end": 48
+        },
+        {
+          "text": "\"tab\\tstop\"",
+          "start": 49,
+          "end": 60
+        },
+        {
+          "text": ",",
+          "start": 60,
+          "end": 61
+        },
+        {
+          "text": "`C:\\dir`",
+          "start": 62,
+          "end": 70
+        },
+        {
+          "text": ",",
+          "start": 70,
+          "end": 71
+        },
+        {
+          "text": "0x_FF",
+          "start": 72,
+          "end": 77
+        },
+        {
+          "text": ",",
+          "start": 77,
+          "end": 78
+        },
+        {
+          "text": "1_000",
+          "start": 79,
+          "end": 84
+        },
+        {
+          "text": ",",
+          "start": 84,
+          "end": 85
+        },
+        {
+          "text": "1e3",
+          "start": 86,
+          "end": 89
+        },
+        {
+          "text": ",",
+          "start": 89,
+          "end": 90
+        },
+        {
+          "text": ".5",
+          "start": 91,
+          "end": 93
+        },
+        {
+          "text": ",",
+          "start": 93,
+          "end": 94
+        },
+        {
+          "text": "2i",
+          "start": 95,
+          "end": 97
+        },
+        {
+          "text": ",",
+          "start": 97,
+          "end": 98
+        },
+        {
+          "text": "0b1010",
+          "start": 99,
+          "end": 105
+        },
+        {
+          "text": ",",
+          "start": 105,
+          "end": 106
+        },
+        {
+          "text": "0o17",
+          "start": 107,
+          "end": 111
+        },
+        {
+          "text": "}",
+          "start": 111,
+          "end": 112
+        },
+        {
+          "text": "}",
+          "start": 113,
+          "end": 114
+        }
+      ]
+    },
+    {
+      "name": "multi-return.go",
+      "sha256": "1e6fa5acf536f9e1266be19208e20742abdfb4ae39baf2262e7da3ef0e884f14",
+      "tokens": [
+        {
+          "text": "func",
+          "start": 0,
+          "end": 4
+        },
+        {
+          "text": "divide",
+          "start": 5,
+          "end": 11
+        },
+        {
+          "text": "(",
+          "start": 11,
+          "end": 12
+        },
+        {
+          "text": "a",
+          "start": 12,
+          "end": 13
+        },
+        {
+          "text": ",",
+          "start": 13,
+          "end": 14
+        },
+        {
+          "text": "b",
+          "start": 15,
+          "end": 16
+        },
+        {
+          "text": "int",
+          "start": 17,
+          "end": 20
+        },
+        {
+          "text": ")",
+          "start": 20,
+          "end": 21
+        },
+        {
+          "text": "(",
+          "start": 22,
+          "end": 23
+        },
+        {
+          "text": "int",
+          "start": 23,
+          "end": 26
+        },
+        {
+          "text": ",",
+          "start": 26,
+          "end": 27
+        },
+        {
+          "text": "error",
+          "start": 28,
+          "end": 33
+        },
+        {
+          "text": ")",
+          "start": 33,
+          "end": 34
+        },
+        {
+          "text": "{",
+          "start": 35,
+          "end": 36
+        },
+        {
+          "text": "if",
+          "start": 38,
+          "end": 40
+        },
+        {
+          "text": "b",
+          "start": 41,
+          "end": 42
+        },
+        {
+          "text": "==",
+          "start": 43,
+          "end": 45
+        },
+        {
+          "text": "0",
+          "start": 46,
+          "end": 47
+        },
+        {
+          "text": "{",
+          "start": 48,
+          "end": 49
+        },
+        {
+          "text": "return",
+          "start": 52,
+          "end": 58
+        },
+        {
+          "text": "0",
+          "start": 59,
+          "end": 60
+        },
+        {
+          "text": ",",
+          "start": 60,
+          "end": 61
+        },
+        {
+          "text": "errors",
+          "start": 62,
+          "end": 68
+        },
+        {
+          "text": ".",
+          "start": 68,
+          "end": 69
+        },
+        {
+          "text": "New",
+          "start": 69,
+          "end": 72
+        },
+        {
+          "text": "(",
+          "start": 72,
+          "end": 73
+        },
+        {
+          "text": "\"division by zero\"",
+          "start": 73,
+          "end": 91
+        },
+        {
+          "text": ")",
+          "start": 91,
+          "end": 92
+        },
+        {
+          "text": "}",
+          "start": 94,
+          "end": 95
+        },
+        {
+          "text": "q",
+          "start": 97,
+          "end": 98
+        },
+        {
+          "text": ",",
+          "start": 98,
+          "end": 99
+        },
+        {
+          "text": "r",
+          "start": 100,
+          "end": 101
+        },
+        {
+          "text": ":=",
+          "start": 102,
+          "end": 104
+        },
+        {
+          "text": "a",
+          "start": 105,
+          "end": 106
+        },
+        {
+          "text": "/",
+          "start": 106,
+          "end": 107
+        },
+        {
+          "text": "b",
+          "start": 107,
+          "end": 108
+        },
+        {
+          "text": ",",
+          "start": 108,
+          "end": 109
+        },
+        {
+          "text": "a",
+          "start": 110,
+          "end": 111
+        },
+        {
+          "text": "%",
+          "start": 111,
+          "end": 112
+        },
+        {
+          "text": "b",
+          "start": 112,
+          "end": 113
+        },
+        {
+          "text": "return",
+          "start": 115,
+          "end": 121
+        },
+        {
+          "text": "q",
+          "start": 122,
+          "end": 123
+        },
+        {
+          "text": "+",
+          "start": 124,
+          "end": 125
+        },
+        {
+          "text": "r",
+          "start": 126,
+          "end": 127
+        },
+        {
+          "text": ",",
+          "start": 127,
+          "end": 128
+        },
+        {
+          "text": "nil",
+          "start": 129,
+          "end": 132
+        },
+        {
+          "text": "}",
+          "start": 133,
+          "end": 134
+        }
+      ]
+    },
+    {
+      "name": "operators.go",
+      "sha256": "56da4eef3dedd58861238478cba70018590b44e4153ebc77792dbf1ffb303d05",
+      "tokens": [
+        {
+          "text": "func",
+          "start": 0,
+          "end": 4
+        },
+        {
+          "text": "bits",
+          "start": 5,
+          "end": 9
+        },
+        {
+          "text": "(",
+          "start": 9,
+          "end": 10
+        },
+        {
+          "text": "a",
+          "start": 10,
+          "end": 11
+        },
+        {
+          "text": ",",
+          "start": 11,
+          "end": 12
+        },
+        {
+          "text": "b",
+          "start": 13,
+          "end": 14
+        },
+        {
+          "text": "uint8",
+          "start": 15,
+          "end": 20
+        },
+        {
+          "text": ",",
+          "start": 20,
+          "end": 21
+        },
+        {
+          "text": "ch",
+          "start": 22,
+          "end": 24
+        },
+        {
+          "text": "chan",
+          "start": 25,
+          "end": 29
+        },
+        {
+          "text": "uint8",
+          "start": 30,
+          "end": 35
+        },
+        {
+          "text": ")",
+          "start": 35,
+          "end": 36
+        },
+        {
+          "text": "uint8",
+          "start": 37,
+          "end": 42
+        },
+        {
+          "text": "{",
+          "start": 43,
+          "end": 44
+        },
+        {
+          "text": "mask",
+          "start": 46,
+          "end": 50
+        },
+        {
+          "text": ":=",
+          "start": 51,
+          "end": 53
+        },
+        {
+          "text": "a",
+          "start": 54,
+          "end": 55
+        },
+        {
+          "text": "\u0026^",
+          "start": 56,
+          "end": 58
+        },
+        {
+          "text": "b",
+          "start": 59,
+          "end": 60
+        },
+        {
+          "text": "a",
+          "start": 62,
+          "end": 63
+        },
+        {
+          "text": "\u003c\u003c=",
+          "start": 64,
+          "end": 67
+        },
+        {
+          "text": "1",
+          "start": 68,
+          "end": 69
+        },
+        {
+          "text": "b",
+          "start": 71,
+          "end": 72
+        },
+        {
+          "text": "--",
+          "start": 72,
+          "end": 74
+        },
+        {
+          "text": "v",
+          "start": 76,
+          "end": 77
+        },
+        {
+          "text": ":=",
+          "start": 78,
+          "end": 80
+        },
+        {
+          "text": "\u003c-",
+          "start": 81,
+          "end": 83
+        },
+        {
+          "text": "ch",
+          "start": 83,
+          "end": 85
+        },
+        {
+          "text": "return",
+          "start": 87,
+          "end": 93
+        },
+        {
+          "text": "a",
+          "start": 94,
+          "end": 95
+        },
+        {
+          "text": "\u003c\u003c",
+          "start": 95,
+          "end": 97
+        },
+        {
+          "text": "2",
+          "start": 97,
+          "end": 98
+        },
+        {
+          "text": "|",
+          "start": 99,
+          "end": 100
+        },
+        {
+          "text": "b",
+          "start": 101,
+          "end": 102
+        },
+        {
+          "text": "+",
+          "start": 103,
+          "end": 104
+        },
+        {
+          "text": "mask",
+          "start": 105,
+          "end": 109
+        },
+        {
+          "text": "-",
+          "start": 110,
+          "end": 111
+        },
+        {
+          "text": "-",
+          "start": 112,
+          "end": 113
+        },
+        {
+          "text": "v",
+          "start": 113,
+          "end": 114
+        },
+        {
+          "text": "}",
+          "start": 115,
+          "end": 116
+        }
+      ]
+    },
+    {
+      "name": "switch.go",
+      "sha256": "7e68c6a438406970ecd87b5cd49a4dbb74cce5396ffc7ee8a11c75b48a8458aa",
+      "tokens": [
+        {
+          "text": "func",
+          "start": 0,
+          "end": 4
+        },
+        {
+          "text": "describe",
+          "start": 5,
+          "end": 13
+        },
+        {
+          "text": "(",
+          "start": 13,
+          "end": 14
+        },
+        {
+          "text": "x",
+          "start": 14,
+          "end": 15
+        },
+        {
+          "text": "any",
+          "start": 16,
+          "end": 19
+        },
+        {
+          "text": ")",
+          "start": 19,
+          "end": 20
+        },
+        {
+          "text": "string",
+          "start": 21,
+          "end": 27
+        },
+        {
+          "text": "{",
+          "start": 28,
+          "end": 29
+        },
+        {
+          "text": "switch",
+          "start": 31,
+          "end": 37
+        },
+        {
+          "text": "v",
+          "start": 38,
+          "end": 39
+        },
+        {
+          "text": ":=",
+          "start": 40,
+          "end": 42
+        },
+        {
+          "text": "x",
+          "start": 43,
+          "end": 44
+        },
+        {
+          "text": ".",
+          "start": 44,
+          "end": 45
+        },
+        {
+          "text": "(",
+          "start": 45,
+          "end": 46
+        },
+        {
+          "text": "type",
+          "start": 46,
+          "end": 50
+        },
+        {
+          "text": ")",
+          "start": 50,
+          "end": 51
+        },
+        {
+          "text": "{",
+          "start": 52,
+          "end": 53
+        },
+        {
+          "text": "case",
+          "start": 55,
+          "end": 59
+        },
+        {
+          "text": "int",
+          "start": 60,
+          "end": 63
+        },
+        {
+          "text": ":",
+          "start": 63,
+          "end": 64
+        },
+        {
+          "text": "return",
+          "start": 67,
+          "end": 73
+        },
+        {
+          "text": "fmt",
+          "start": 74,
+          "end": 77
+        },
+        {
+          "text": ".",
+          "start": 77,
+          "end": 78
+        },
+        {
+          "text": "Sprintf",
+          "start": 78,
+          "end": 85
+        },
+        {
+          "text": "(",
+          "start": 85,
+          "end": 86
+        },
+        {
+          "text": "\"int %d\"",
+          "start": 86,
+          "end": 94
+        },
+        {
+          "text": ",",
+          "start": 94,
+          "end": 95
+        },
+        {
+          "text": "v",
+          "start": 96,
+          "end": 97
+        },
+        {
+          "text": ")",
+          "start": 97,
+          "end": 98
+        },
+        {
+          "text": "case",
+          "start": 100,
+          "end": 104
+        },
+        {
+          "text": "string",
+          "start": 105,
+          "end": 111
+        },
+        {
+          "text": ":",
+          "start": 111,
+          "end": 112
+        },
+        {
+          "text": "return",
+          "start": 115,
+          "end": 121
+        },
+        {
+          "text": "\"string \"",
+          "start": 122,
+          "end": 131
+        },
+        {
+          "text": "+",
+          "start": 132,
+          "end": 133
+        },
+        {
+          "text": "v",
+          "start": 134,
+          "end": 135
+        },
+        {
+          "text": "default",
+          "start": 137,
+          "end": 144
+        },
+        {
+          "text": ":",
+          "start": 144,
+          "end": 145
+        },
+        {
+          "text": "return",
+          "start": 148,
+          "end": 154
+        },
+        {
+          "text": "\"unknown\"",
+          "start": 155,
+          "end": 164
+        },
+        {
+          "text": "}",
+          "start": 166,
+          "end": 167
+        },
+        {
+          "text": "}",
+          "start": 168,
+          "end": 169
+        }
+      ]
+    }
+  ],
+  "pairs": [
+    {
+      "prev": "func",
+      "next": "defaults",
+      "tokens": [
+        "funcdefaults"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ")",
+      "next": "map",
+      "tokens": [
+        ")",
+        "map"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "int",
+      "next": "{",
+      "tokens": [
+        "int",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "type",
+      "next": "limit",
+      "tokens": [
+        "typelimit"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "limit",
+      "next": "struct",
+      "tokens": [
+        "limitstruct"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "struct",
+      "next": "{",
+      "tokens": [
+        "struct",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "Name",
+      "next": "string",
+      "tokens": [
+        "Namestring"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "Max",
+      "next": "int",
+      "tokens": [
+        "Maxint"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "limits",
+      "next": ":=",
+      "tokens": [
+        "limits",
+        ":="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":=",
+      "next": "[",
+      "tokens": [
+        ":=",
+        "["
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":",
+      "next": "\"cpu\"",
+      "tokens": [
+        ":",
+        "\"cpu\""
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "Max",
+      "tokens": [
+        ",",
+        "Max"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":",
+      "next": "4",
+      "tokens": [
+        ":",
+        "4"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "{",
+      "tokens": [
+        ",",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":",
+      "next": "\"memory\"",
+      "tokens": [
+        ":",
+        "\"memory\""
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":",
+      "next": "512",
+      "tokens": [
+        ":",
+        "512"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "sizes",
+      "next": ":=",
+      "tokens": [
+        "sizes",
+        ":="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":=",
+      "next": "map",
+      "tokens": [
+        ":=",
+        "map"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":",
+      "next": "{",
+      "tokens": [
+        ":",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "2",
+      "tokens": [
+        ",",
+        "2"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "8",
+      "tokens": [
+        ",",
+        "8"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "16",
+      "tokens": [
+        ",",
+        "16"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "for",
+      "next": "_",
+      "tokens": [
+        "for_"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "l",
+      "tokens": [
+        ",",
+        "l"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "l",
+      "next": ":=",
+      "tokens": [
+        "l",
+        ":="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":=",
+      "next": "range",
+      "tokens": [
+        ":=",
+        "range"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "range",
+      "next": "limits",
+      "tokens": [
+        "rangelimits"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "limits",
+      "next": "{",
+      "tokens": [
+        "limits",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "]",
+      "next": "=",
+      "tokens": [
+        "]",
+        "="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "=",
+      "next": "[",
+      "tokens": [
+        "=",
+        "["
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "sizes",
+      "tokens": [
+        "returnsizes"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "func",
+      "next": "safeDivide",
+      "tokens": [
+        "funcsafeDivide"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "b",
+      "tokens": [
+        ",",
+        "b"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "b",
+      "next": "int",
+      "tokens": [
+        "bint"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ")",
+      "next": "(",
+      "tokens": [
+        ")",
+        "("
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "result",
+      "next": "int",
+      "tokens": [
+        "resultint"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "err",
+      "tokens": [
+        ",",
+        "err"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "err",
+      "next": "error",
+      "tokens": [
+        "errerror"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ")",
+      "next": "{",
+      "tokens": [
+        ")",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "defer",
+      "next": "func",
+      "tokens": [
+        "deferfunc"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "if",
+      "next": "r",
+      "tokens": [
+        "ifr"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "r",
+      "next": ":=",
+      "tokens": [
+        "r",
+        ":="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":=",
+      "next": "recover",
+      "tokens": [
+        ":=",
+        "recover"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ";",
+      "next": "r",
+      "tokens": [
+        ";",
+        "r"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "r",
+      "next": "!=",
+      "tokens": [
+        "r",
+        "!="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "!=",
+      "next": "nil",
+      "tokens": [
+        "!=",
+        "nil"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "nil",
+      "next": "{",
+      "tokens": [
+        "nil",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "err",
+      "next": "=",
+      "tokens": [
+        "err",
+        "="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "=",
+      "next": "fmt",
+      "tokens": [
+        "=",
+        "fmt"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "r",
+      "tokens": [
+        ",",
+        "r"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "a",
+      "tokens": [
+        "returna"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "a",
+      "next": "/",
+      "tokens": [
+        "a",
+        "/"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "/",
+      "next": "b",
+      "tokens": [
+        "/",
+        "b"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "nil",
+      "tokens": [
+        ",",
+        "nil"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "func",
+      "next": "Map",
+      "tokens": [
+        "funcMap"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "U",
+      "tokens": [
+        ",",
+        "U"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "U",
+      "next": "any",
+      "tokens": [
+        "Uany"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "xs",
+      "next": "[",
+      "tokens": [
+        "xs",
+        "["
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "f",
+      "tokens": [
+        ",",
+        "f"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "f",
+      "next": "func",
+      "tokens": [
+        "ffunc"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ")",
+      "next": "U",
+      "tokens": [
+        ")",
+        "U"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ")",
+      "next": "[",
+      "tokens": [
+        ")",
+        "["
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "U",
+      "next": "{",
+      "tokens": [
+        "U",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "out",
+      "next": ":=",
+      "tokens": [
+        "out",
+        ":="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":=",
+      "next": "make",
+      "tokens": [
+        ":=",
+        "make"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "0",
+      "tokens": [
+        ",",
+        "0"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "len",
+      "tokens": [
+        ",",
+        "len"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "x",
+      "tokens": [
+        ",",
+        "x"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "x",
+      "next": ":=",
+      "tokens": [
+        "x",
+        ":="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "range",
+      "next": "xs",
+      "tokens": [
+        "rangexs"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "xs",
+      "next": "{",
+      "tokens": [
+        "xs",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "out",
+      "next": "=",
+      "tokens": [
+        "out",
+        "="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "=",
+      "next": "append",
+      "tokens": [
+        "=",
+        "append"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "out",
+      "tokens": [
+        "returnout"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "func",
+      "next": "sumSquares",
+      "tokens": [
+        "funcsumSquares"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "values",
+      "next": "[",
+      "tokens": [
+        "values",
+        "["
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ")",
+      "next": "int",
+      "tokens": [
+        ")",
+        "int"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "var",
+      "next": "wg",
+      "tokens": [
+        "varwg"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "wg",
+      "next": "sync",
+      "tokens": [
+        "wgsync"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "results",
+      "next": ":=",
+      "tokens": [
+        "results",
+        ":="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "chan",
+      "next": "int",
+      "tokens": [
+        "chanint"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "v",
+      "tokens": [
+        ",",
+        "v"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "v",
+      "next": ":=",
+      "tokens": [
+        "v",
+        ":="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "range",
+      "next": "values",
+      "tokens": [
+        "rangevalues"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "values",
+      "next": "{",
+      "tokens": [
+        "values",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "go",
+      "next": "func",
+      "tokens": [
+        "gofunc"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "n",
+      "next": "int",
+      "tokens": [
+        "nint"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "defer",
+      "next": "wg",
+      "tokens": [
+        "deferwg"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "results",
+      "next": "\u003c-",
+      "tokens": [
+        "results",
+        "\u003c-"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u003c-",
+      "next": "n",
+      "tokens": [
+        "\u003c-",
+        "n"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "n",
+      "next": "*",
+      "tokens": [
+        "n",
+        "*"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "*",
+      "next": "n",
+      "tokens": [
+        "*",
+        "n"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "sum",
+      "next": ":=",
+      "tokens": [
+        "sum",
+        ":="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":=",
+      "next": "0",
+      "tokens": [
+        ":=",
+        "0"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "for",
+      "next": "r",
+      "tokens": [
+        "forr"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "range",
+      "next": "results",
+      "tokens": [
+        "rangeresults"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "results",
+      "next": "{",
+      "tokens": [
+        "results",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "sum",
+      "next": "+=",
+      "tokens": [
+        "sum",
+        "+="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "+=",
+      "next": "r",
+      "tokens": [
+        "+=",
+        "r"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "sum",
+      "tokens": [
+        "returnsum"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "func",
+      "next": "sign",
+      "tokens": [
+        "funcsign"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ")",
+      "next": "string",
+      "tokens": [
+        ")",
+        "string"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "string",
+      "next": "{",
+      "tokens": [
+        "string",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "if",
+      "next": "n",
+      "tokens": [
+        "ifn"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "n",
+      "next": "\u003e",
+      "tokens": [
+        "n",
+        "\u003e"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u003e",
+      "next": "0",
+      "tokens": [
+        "\u003e",
+        "0"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "0",
+      "next": "{",
+      "tokens": [
+        "0",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "\"positive\"",
+      "tokens": [
+        "return",
+        "\"positive\""
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "}",
+      "next": "else",
+      "tokens": [
+        "}",
+        "else"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "else",
+      "next": "if",
+      "tokens": [
+        "elseif"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "n",
+      "next": "\u003c",
+      "tokens": [
+        "n",
+        "\u003c"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u003c",
+      "next": "0",
+      "tokens": [
+        "\u003c",
+        "0"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "\"negative\"",
+      "tokens": [
+        "return",
+        "\"negative\""
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "else",
+      "next": "{",
+      "tokens": [
+        "else",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "\"zero\"",
+      "tokens": [
+        "return",
+        "\"zero\""
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "func",
+      "next": "literals",
+      "tokens": [
+        "funcliterals"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "any",
+      "next": "{",
+      "tokens": [
+        "any",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "[",
+      "tokens": [
+        "return",
+        "["
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "'\\n'",
+      "tokens": [
+        ",",
+        "'\\n'"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "\"tab\\tstop\"",
+      "tokens": [
+        ",",
+        "\"tab\\tstop\""
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "`C:\\dir`",
+      "tokens": [
+        ",",
+        "`C:\\dir`"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "0x_FF",
+      "tokens": [
+        ",",
+        "0x_FF"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "1_000",
+      "tokens": [
+        ",",
+        "1_000"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "1e3",
+      "tokens": [
+        ",",
+        "1e3"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": ".5",
+      "tokens": [
+        ",",
+        ".5"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "2i",
+      "tokens": [
+        ",",
+        "2i"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "0b1010",
+      "tokens": [
+        ",",
+        "0b1010"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "0o17",
+      "tokens": [
+        ",",
+        "0o17"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "func",
+      "next": "divide",
+      "tokens": [
+        "funcdivide"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "error",
+      "tokens": [
+        ",",
+        "error"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "if",
+      "next": "b",
+      "tokens": [
+        "ifb"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "b",
+      "next": "==",
+      "tokens": [
+        "b",
+        "=="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "==",
+      "next": "0",
+      "tokens": [
+        "==",
+        "0"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "0",
+      "tokens": [
+        "return0"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "errors",
+      "tokens": [
+        ",",
+        "errors"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":=",
+      "next": "a",
+      "tokens": [
+        ":=",
+        "a"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "a",
+      "tokens": [
+        ",",
+        "a"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "q",
+      "tokens": [
+        "returnq"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "q",
+      "next": "+",
+      "tokens": [
+        "q",
+        "+"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "+",
+      "next": "r",
+      "tokens": [
+        "+",
+        "r"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "func",
+      "next": "bits",
+      "tokens": [
+        "funcbits"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "b",
+      "next": "uint8",
+      "tokens": [
+        "buint8"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ",",
+      "next": "ch",
+      "tokens": [
+        ",",
+        "ch"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "ch",
+      "next": "chan",
+      "tokens": [
+        "chchan"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "chan",
+      "next": "uint8",
+      "tokens": [
+        "chanuint8"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ")",
+      "next": "uint8",
+      "tokens": [
+        ")",
+        "uint8"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "uint8",
+      "next": "{",
+      "tokens": [
+        "uint8",
+        "{"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "mask",
+      "next": ":=",
+      "tokens": [
+        "mask",
+        ":="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "a",
+      "next": "\u0026^",
+      "tokens": [
+        "a",
+        "\u0026^"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u0026^",
+      "next": "b",
+      "tokens": [
+        "\u0026^",
+        "b"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "a",
+      "next": "\u003c\u003c=",
+      "tokens": [
+        "a",
+        "\u003c\u003c="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u003c\u003c=",
+      "next": "1",
+      "tokens": [
+        "\u003c\u003c=",
+        "1"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":=",
+      "next": "\u003c-",
+      "tokens": [
+        ":=",
+        "\u003c-"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "2",
+      "next": "|",
+      "tokens": [
+        "2",
+        "|"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "|",
+      "next": "b",
+      "tokens": [
+        "|",
+        "b"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "b",
+      "next": "+",
+      "tokens": [
+        "b",
+        "+"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "+",
+      "next": "mask",
+      "tokens": [
+        "+",
+        "mask"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "mask",
+      "next": "-",
+      "tokens": [
+        "mask",
+        "-"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "-",
+      "next": "-",
+      "tokens": [
+        "--"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "func",
+      "next": "describe",
+      "tokens": [
+        "funcdescribe"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "x",
+      "next": "any",
+      "tokens": [
+        "xany"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "switch",
+      "next": "v",
+      "tokens": [
+        "switchv"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":=",
+      "next": "x",
+      "tokens": [
+        ":=",
+        "x"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "case",
+      "next": "int",
+      "tokens": [
+        "caseint"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "fmt",
+      "tokens": [
+        "returnfmt"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "case",
+      "next": "string",
+      "tokens": [
+        "casestring"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "\"string \"",
+      "tokens": [
+        "return",
+        "\"string \""
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\"string \"",
+      "next": "+",
+      "tokens": [
+        "\"string \"",
+        "+"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "+",
+      "next": "v",
+      "tokens": [
+        "+",
+        "v"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "\"unknown\"",
+      "tokens": [
+        "return",
+        "\"unknown\""
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "+",
+      "next": "+",
+      "tokens": [
+        "++"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u003c",
+      "next": "-",
+      "tokens": [
+        "\u003c-"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u0026",
+      "next": "^",
+      "tokens": [
+        "\u0026^"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u0026^",
+      "next": "=",
+      "tokens": [
+        "\u0026^="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ":",
+      "next": "=",
+      "tokens": [
+        ":="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "=",
+      "next": "=",
+      "tokens": [
+        "=="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "!",
+      "next": "=",
+      "tokens": [
+        "!="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u003c",
+      "next": "\u003c",
+      "tokens": [
+        "\u003c\u003c"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u003e",
+      "next": "\u003e",
+      "tokens": [
+        "\u003e\u003e"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u003e",
+      "next": "=",
+      "tokens": [
+        "\u003e="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u003c\u003c",
+      "next": "=",
+      "tokens": [
+        "\u003c\u003c="
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u0026",
+      "next": "\u0026",
+      "tokens": [
+        "\u0026\u0026"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "|",
+      "next": "|",
+      "tokens": [
+        "||"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ".",
+      "next": ".",
+      "tokens": [
+        ".",
+        "."
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "...",
+      "next": ".",
+      "tokens": [
+        "...",
+        "."
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "1",
+      "next": ".",
+      "tokens": [
+        "1."
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "1",
+      "next": ".5",
+      "tokens": [
+        "1.5"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": ".",
+      "next": "5",
+      "tokens": [
+        ".5"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "0",
+      "next": "x",
+      "tokens": [
+        "0x"
+      ],
+      "errors": 1
+    },
+    {
+      "prev": "0x1",
+      "next": "p",
+      "tokens": [
+        "0x1p"
+      ],
+      "errors": 1
+    },
+    {
+      "prev": "1",
+      "next": "e",
+      "tokens": [
+        "1e"
+      ],
+      "errors": 1
+    },
+    {
+      "prev": "1",
+      "next": "i",
+      "tokens": [
+        "1i"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "1",
+      "next": "in",
+      "tokens": [
+        "1i",
+        "n"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "1",
+      "next": "_000",
+      "tokens": [
+        "1_000"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "0b1",
+      "next": "2",
+      "tokens": [
+        "0b12"
+      ],
+      "errors": 1
+    },
+    {
+      "prev": "08",
+      "next": "9",
+      "tokens": [
+        "089"
+      ],
+      "errors": 1
+    },
+    {
+      "prev": "1",
+      "next": "2",
+      "tokens": [
+        "12"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "x",
+      "next": "1",
+      "tokens": [
+        "x1"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "return",
+      "next": "x",
+      "tokens": [
+        "returnx"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "a",
+      "next": "\u003c\u003c",
+      "tokens": [
+        "a",
+        "\u003c\u003c"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "'a'",
+      "next": "b",
+      "tokens": [
+        "'a'",
+        "b"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\"s\"",
+      "next": "x",
+      "tokens": [
+        "\"s\"",
+        "x"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "`raw`",
+      "next": "x",
+      "tokens": [
+        "`raw`",
+        "x"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "i",
+      "next": "++",
+      "tokens": [
+        "i",
+        "++"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "b",
+      "next": "--",
+      "tokens": [
+        "b",
+        "--"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "\u003c-",
+      "next": "ch",
+      "tokens": [
+        "\u003c-",
+        "ch"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "chan",
+      "next": "\u003c-",
+      "tokens": [
+        "chan",
+        "\u003c-"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "=",
+      "next": "\u003c-",
+      "tokens": [
+        "=",
+        "\u003c-"
+      ],
+      "errors": 0
+    },
+    {
+      "prev": "'\\n'",
+      "next": "x",
+      "tokens": [
+        "'\\n'",
+        "x"
+      ],
+      "errors": 0
+    }
+  ]
+}

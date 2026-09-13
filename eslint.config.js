@@ -8,8 +8,14 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-  // Compiler fixtures are block sources whose exact whitespace is under test.
-  globalIgnores(['**/dist/', '**/node_modules/', '**/coverage/', '**/test/fixtures/']),
+  // Block sources (compiler fixtures and content) are data whose exact text is under test.
+  globalIgnores([
+    '**/dist/',
+    '**/node_modules/',
+    '**/coverage/',
+    '**/test/fixtures/',
+    'content/blocks/',
+  ]),
 
   js.configs.recommended,
   tseslint.configs.strictTypeChecked,
@@ -67,6 +73,25 @@ export default defineConfig(
     files: ['apps/web/src/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
     languageOptions: { globals: globals.browser },
+    rules: {
+      // The block compiler and its TypeScript dependency must never enter the browser bundle
+      // (§9.4); apps/web uses them only in tests.
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@typing-trainer/block-compiler',
+              message: 'block-compiler is test-only in apps/web and must not reach the bundle.',
+            },
+            {
+              name: 'typescript',
+              message: 'The TypeScript compiler must not reach the browser bundle.',
+            },
+          ],
+        },
+      ],
+    },
   },
 
   prettier,

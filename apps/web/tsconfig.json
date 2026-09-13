@@ -8,6 +8,8 @@
     "types": ["vite/client"]
   },
   "include": ["src", "test", "vite.config.ts"],
+  // Fixtures are block sources compared byte for byte, not part of this program.
+  "exclude": ["test/fixtures"],
   "references": [
     { "path": "../../packages/contracts" },
     { "path": "../../packages/typing-engine" },

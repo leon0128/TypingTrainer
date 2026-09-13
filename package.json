@@ -11,7 +11,9 @@
     "typecheck": "tsc -b",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "content:build": "pnpm --filter @typing-trainer/content-cli run build",
+    "content:check": "pnpm --filter @typing-trainer/content-cli run check"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

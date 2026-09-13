@@ -16,6 +16,9 @@ export type {
 export { normalizeIndentation } from './normalize';
 export type { NormalizeIndentationOptions } from './normalize';
 export { goAdapter } from './adapters/go';
+export { GoTokenKind } from './adapters/go-scanner';
+export { JavaTokenKind } from './adapters/java-scanner';
+export { PythonTokenKind } from './adapters/python-scanner';
 export { javaAdapter } from './adapters/java';
 export { pythonAdapter } from './adapters/python';
 export { typescriptAdapter } from './adapters/typescript';

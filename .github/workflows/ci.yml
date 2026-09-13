@@ -29,3 +29,6 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Content check
+        run: pnpm content:check

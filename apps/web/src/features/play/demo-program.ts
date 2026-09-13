@@ -9,7 +9,7 @@ const R: Atom = { kind: 'separator', canonical: ' ', required: true };
 const NL: Atom = { kind: 'separator', canonical: '\n', required: true };
 
 /**
- * Hand-written typing program for content/blocks/typescript/p0-demo.ts, verified against the
+ * Hand-written typing program for apps/web/test/fixtures/p0-demo.ts, verified against the
  * block compiler's output in apps/web/test/demo-program.test.ts. Atom index ranges on the right.
  */
 // prettier-ignore

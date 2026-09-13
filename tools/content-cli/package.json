@@ -5,5 +5,23 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsx src/cli.ts build --root ../..",
+    "check": "tsx src/cli.ts check --root ../.."
+  },
+  "dependencies": {
+    "@typing-trainer/block-compiler": "workspace:*",
+    "@typing-trainer/contracts": "workspace:*",
+    "prettier": "3.9.6",
+    "tree-sitter-go": "0.25.0",
+    "tree-sitter-java": "0.23.5",
+    "tree-sitter-python": "0.25.0",
+    "tree-sitter-typescript": "0.23.2",
+    "typescript": "~6.0.3",
+    "web-tree-sitter": "0.27.0"
+  },
+  "devDependencies": {
+    "tsx": "4.23.13"
   }
 }

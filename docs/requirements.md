@@ -5,7 +5,7 @@
 | Version | 1.10 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.9 — exact score rounding (Appendix B) |
+| Supersedes | v1.9 — exact score rounding, play session timing, and result validation (Appendix B) |
 
 **Legend**
 
@@ -354,6 +354,10 @@ Misses are penalized twice, by design: they do not advance the cursor, and they 
 | Duration | **Fixed at 120 seconds**, not user-configurable. Held as an application constant, not a setting |
 | Blocks on screen | Always at least two: the current block and the next one |
 | Time expiry | The run ends immediately, mid-block if necessary; partial progress counts (Q5) |
+| Countdown start | The countdown starts with the first keystroke, not when the session is issued or the screen appears 🟡 (v1.10) |
+| Pauses | Losing focus pauses the countdown (§3.7); run time excludes pauses 🟡 (v1.10) |
+| Idle limit | **Idle time** is the wall-clock time since the session was issued minus the run time consumed, so it includes the wait before the first key and every pause, however they are split. A run idle for more than **15 minutes** is discarded and never saved; the client stops it and the server rejects it using its own clock (§9.8) 🟡 (v1.10) |
+| All blocks done early | If all issued blocks are finished before 120 seconds, the run ends then; KPM is still `effective / 2` 🟡 (v1.10) |
 | Versus modes | The player and the opponent receive an **identical block sequence** |
 | Layout | Two columns — **left: player, right: opponent** |
 
@@ -894,6 +898,18 @@ Expected steady-state footprint: PostgreSQL ~200 MB, API ~150 MB, Caddy ~20 MB �
 
 ---
 
+### 9.8 Result Validation and Keystroke Logs 🟡 (v1.10)
+
+| Item | Rule |
+| --- | --- |
+| Submitted data | With the result, the client submits the run's keystroke log: the engine keys as one string (Enter as `\n`, Tab as `\t`) and the run time between consecutive keys in whole milliseconds, pauses excluded. At most 12,000 keys (`SessionLogSchema` in `contracts`) |
+| Validation | The server replays the log with `typing-engine` against the blocks it issued and recomputes every counter and metric; the client's own numbers are not trusted. Live play and replay apply the same function with the same millisecond rounding, so they always agree. The specific plausibility checks (effective keystrokes against the blocks reached, run-time consistency, human speed limits) are defined with the play session API |
+| Retention | Only the aggregates are stored in `play_sessions`. The raw log is discarded after validation and never persisted, which keeps exact keystroke replay of past runs out of scope (§1.3) |
+| Idle rejection | The server rejects a result when the time from issuing the session to receiving the submission exceeds 120 seconds plus the 15-minute idle limit plus 30 seconds of grace, measured on its own clock (§4.1) |
+| Known limitation | Because idle rejection uses the time the submission reaches the server, a legitimate run whose submission is delayed beyond the grace period — a laptop going to sleep, a dropped connection — is rejected. The only remedy is to play again; at this scale no recovery mechanism is provided |
+
+---
+
 ## 10. Phases
 
 Ordered to retire the largest technical risk (the typing engine) first.
@@ -1002,3 +1018,5 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.8 | tree-sitter validation gap | `tree-sitter-python` 0.25.0 accepts `01`, `1_`, `1if`, t-strings, and a missing indented block, so the content CLI must add a compile check with each language's toolchain; other grammars are still to be measured (§5.2) |
 | 1.9 | Initial content in P1 | P1 completes only with the Q22 launch target of 50 blocks per language, since P1 is when the service starts being used: with 20 blocks per run issued from a pool of about 20, every run would replay nearly the same blocks (§5.3, R4). P4 keeps the 150+ target (§10) |
 | 1.10 | Exact score rounding | The score is computed as the integer ratio `effective² / (2 × (effective + miss))` rounded half up, because multiplying floating-point KPM and accuracy can fall just below an exact half (165 effective, 60 misses: 60.49999999999999) (§3.6) |
+| 1.10 | Play session timing | The countdown starts with the first keystroke and stops while paused; a run idle (wall time since issue minus run time) for more than 15 minutes is discarded; finishing every block early ends the run with KPM still `effective / 2` (§4.1) |
+| 1.10 | Result validation | Results come with a keystroke log that the server replays with `typing-engine`; only aggregates are stored and the log is discarded, consistent with §1.3. A submission delayed past the grace period is rejected even for a legitimate run, with replay as the only remedy (§9.8) |

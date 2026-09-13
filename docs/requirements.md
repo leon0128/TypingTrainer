@@ -154,7 +154,7 @@ The original draft said "mandatory when identifier tokens would run together." T
 | `<` `<` | `<<` | `[<<]` | `true` |
 | `not` `in` (Python) | `notin` | `[notin]` | `true` |
 
-> The examples above are language-neutral illustrations. Whether two tokens fuse is decided by each language's own lexer (§5.4): TypeScript has no `->` token, so `-` `>` re-lexes to `[-, >]` and that separator is optional in TypeScript, whereas Java lexes `->` as one token and the separator is required there. 🟡 (v1.2)
+> The examples above are language-neutral illustrations. Whether two tokens fuse is decided by each language's own lexer (§5.4): TypeScript has no `->` token, so `-` `>` re-lexes to `[-, >]` and that separator is optional in TypeScript, whereas Java lexes `->` as one token and the separator is required there. Re-lexing is also deliberately conservative: the TypeScript adapter always rescans `>` as the longest operator it could start, so where nested type arguments end right before an assignment or comparison — `const cache: Map<string, Array<number>> = new Map();` — the final `>` and `=` re-lex as `>=` and the space before `=` is required, even though the parser would not fuse them in a type context. 🟡 (v1.2)
 
 #### 3.3.2 Accepted keys at separators 🔵 (Q8, revised in v1.1)
 
@@ -783,7 +783,7 @@ typing-trainer/
 │           └── common/           # guards, filters, interceptors
 ├── packages/
 │   ├── typing-engine/            # pure logic, no DOM or Node dependency; shared client/server
-│   ├── block-compiler/           # source -> typing program (tree-sitter, language adapters)
+│   ├── block-compiler/           # source -> typing program (language adapters; lexer chosen per adapter)
 │   ├── scoring/                  # score formula, CPU speed model, Ghost pacing
 │   └── contracts/                # Zod schemas and types (API contract)
 ├── content/
@@ -799,7 +799,7 @@ typing-trainer/
 Design points:
 
 - `typing-engine` is **framework-free pure functions**, so the server can replay a submitted result through the same code. UI behavior and validation cannot drift apart.
-- `block-compiler` isolates the heavy dependency (tree-sitter) and never enters the browser bundle.
+- `block-compiler` isolates compile-time lexing dependencies and never enters the browser bundle. Each language adapter chooses its own lexer — the TypeScript adapter uses the official `typescript` package's parser and scanner (§9.1) — while tree-sitter is used only by `tools/content-cli` for fragment validation (§5.2).
 - `contracts` is the single source of truth for request and response shapes.
 - A new language is an added `LanguageAdapter` — the core is closed for modification (open/closed principle).
 
@@ -968,3 +968,4 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.2 | TypeScript adapter lexing | The `typescript` package (6.x) replaces tree-sitter in the block-compiler TypeScript adapter only, because §3.3.1 needs token-level re-lexing; `tools/content-cli` still uses tree-sitter for fragment validation (§5.2, §9.1) |
 | 1.2 | Token fusion is per language | The §3.3.1 table is illustrative; each adapter's lexer decides fusion (e.g. `-` `>` is optional in TypeScript, required in Java) |
 | 1.2 | Literal after a separator | A literal following a separator (ignoring auto atoms) must not start with a space. Template substitutions such as `${ user.id } (x)` can produce it, so block-compiler rejects it with a positioned error and TypingProgramSchema enforces it (§3.3) |
+| 1.2 | §9.4 package description | Aligned with the implementation: `block-compiler` lexers are chosen per adapter (the TypeScript adapter uses the `typescript` package), and tree-sitter is used only by `tools/content-cli` (§5.2, §9.1) |

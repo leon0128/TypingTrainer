@@ -180,4 +180,33 @@ describe('live session and log replay (property)', () => {
       { numRuns: 300 },
     );
   });
+
+  it('agrees with the live session for fractional key times around the 120-second end', () => {
+    fc.assert(
+      fc.property(
+        keyStream,
+        // Keys start within a few milliseconds of the end, at fractions that round down, to the
+        // nearest half, or up, and continue in sub-millisecond steps. Without millisecond rounding
+        // in sessionKey, a key at 119 999.6 ms would count live but expire in the replayed log.
+        fc.integer({ min: 119_995, max: 120_000 }),
+        fc.constantFrom(0, 0.4, 0.5, 0.6),
+        fc.array(fc.constantFrom(0, 0.3, 0.5, 0.7, 1), { minLength: 1, maxLength: 12 }),
+        ({ programs, keys }, startWholeMs, startFraction, gaps) => {
+          let live = createSession(programs);
+          let time = startWholeMs + startFraction;
+          const logged: LoggedKey[] = [];
+          keys.forEach((key, index) => {
+            live = sessionKey(live, key, time).state;
+            logged.push({ key, activeMs: time });
+            time += gaps[index % gaps.length] ?? 0;
+          });
+
+          const replay = replaySession(programs, buildSessionLog(logged));
+          expect(replay.counters).toEqual(sessionCounters(live));
+          expect(replay.state.endedBy).toBe(live.endedBy);
+        },
+      ),
+      { numRuns: 500 },
+    );
+  });
 });

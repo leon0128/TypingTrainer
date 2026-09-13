@@ -1,0 +1,219 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f6f8fa;
+  --panel: #ffffff;
+  --border: #d0d7de;
+  --fg: #1f2328;
+  --muted: #59636e;
+  --typed: #1f2328;
+  --pending: #8c959f;
+  --auto-pending: #afb8c1;
+  --cursor-bg: #fff1a8;
+  --caret: #9a6700;
+  --error: #cf222e;
+  --banner-bg: #fff8c5;
+  --banner-border: #d4a72c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --fg: #e6edf3;
+    --muted: #9198a1;
+    --typed: #e6edf3;
+    --pending: #6e7681;
+    --auto-pending: #484f58;
+    --cursor-bg: #4d3800;
+    --caret: #d29922;
+    --error: #f85149;
+    --banner-bg: #272115;
+    --banner-border: #9e6a03;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+}
+
+.play {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.preview-banner {
+  margin: 0 0 16px;
+  padding: 8px 12px;
+  border: 1px solid var(--banner-border);
+  border-radius: 6px;
+  background: var(--banner-bg);
+  font-size: 14px;
+}
+
+.play-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+}
+
+.play-header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.block-name {
+  color: var(--muted);
+}
+
+.stopwatch {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.status {
+  margin: 8px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.hidden-input {
+  position: fixed;
+  top: 0;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.code-panel {
+  position: relative;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  cursor: text;
+  overflow-x: auto;
+}
+
+.code {
+  margin: 0;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 18px;
+  line-height: 1.6;
+  white-space: pre;
+  /* Ligatures would break the character-to-caret correspondence (§8.2). */
+  font-variant-ligatures: none;
+  font-feature-settings:
+    'liga' 0,
+    'calt' 0;
+}
+
+.code-line {
+  min-height: 1.6em;
+}
+
+.cell-typed,
+.cell-auto-filled {
+  color: var(--typed);
+}
+
+.cell-pending {
+  color: var(--pending);
+}
+
+/* Auto text the player will not type: dimmed, and underlined so it is not conveyed by color alone. */
+.cell-auto-pending {
+  color: var(--auto-pending);
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+}
+
+.cell-blank {
+  text-decoration: none;
+}
+
+.cell-cursor {
+  border-radius: 2px;
+  background: var(--cursor-bg);
+  box-shadow: inset 2px 0 0 var(--caret);
+  color: var(--typed);
+}
+
+.miss-flash {
+  animation: miss-flash 150ms ease-out;
+}
+
+@keyframes miss-flash {
+  from {
+    background: var(--error);
+    color: #ffffff;
+  }
+  to {
+    background: var(--cursor-bg);
+  }
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+  font-weight: 600;
+}
+
+.result-panel {
+  margin-top: 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.result-panel h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.not-official {
+  color: var(--error);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.result-panel dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 0;
+}
+
+.result-panel dt {
+  color: var(--muted);
+}
+
+.result-panel dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.result-panel small,
+.footnote {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.footnote {
+  margin: 12px 0;
+}

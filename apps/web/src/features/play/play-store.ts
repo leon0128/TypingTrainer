@@ -22,8 +22,9 @@ export interface PlaySnapshot {
 }
 
 export interface PlayStore {
-  getSnapshot(): PlaySnapshot;
-  subscribe(listener: () => void): () => void;
+  // Function properties rather than methods: both are passed unbound to useSyncExternalStore.
+  readonly getSnapshot: () => PlaySnapshot;
+  readonly subscribe: (listener: () => void) => () => void;
   /** Feeds one engine key. `now` is a performance.now() timestamp. */
   press(key: string, now: number): void;
   pause(now: number): void;

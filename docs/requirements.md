@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.8 |
+| Version | 1.9 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.7 — P0 scope as delivered, and a known gap in tree-sitter fragment validation (Appendix B) |
+| Supersedes | v1.8 — Q22 initial content target moved into P1 (Appendix B) |
 
 **Legend**
 
@@ -899,10 +899,10 @@ Ordered to retire the largest technical risk (the typing engine) first.
 | Phase | Contents | Exit criteria |
 | --- | --- | --- |
 | **P0 — Engine PoC** ✅ Complete (v1.8) | As agreed at kickoff: `typing-engine` and `block-compiler` with adapters for all four languages (TypeScript, Go, Java, Python), each verified by hand-checked fixtures and golden data from the language's reference implementation; `apps/web` plays a single TypeScript demo block with reference (non-official) KPM and accuracy; no database, no auth | Auto-closing, auto-indentation, space flexibility, and miss deduplication verified for all four languages by compiling every fixture and replaying it through the engine; Python validated. The play screen's layout, rendering, and input handling are language-neutral, so the no-perceptible-lag check is done on real hardware with the TypeScript demo block |
-| **P1 — MVP** | Auth, score persistence, three rankings, history with delete, Docker image, first deployment. Also moved from the original P0 scope (v1.8): the 120-second run with the official KPM and score formulas (F-04, §3.6); language selection and play for all four languages (F-03); the `tools/content-cli` pipeline including tree-sitter syntax checks (§5.2); and initial content of about 20 blocks per language, compiled through that pipeline | Usable daily by one person |
+| **P1 — MVP** | Auth, score persistence, three rankings, history with delete, Docker image, first deployment. Also moved from the original P0 scope (v1.8): the 120-second run with the official KPM and score formulas (F-04, §3.6); language selection and play for all four languages (F-03); the `tools/content-cli` pipeline including tree-sitter syntax checks (§5.2); and initial content of 50 blocks per language (the Q22 launch target), compiled through that pipeline | Usable daily by one person, with 50 blocks per language |
 | **P2 — Visibility and competition** | Dashboard, vs CPU with conquest records | G3 and G4 met |
 | **P3 — Polish** | Ghost, appearance settings, key sounds, en/ja localization, account deletion | Presentable to others |
-| **P4 — Content** | Grow from the P1 initial content to 150+ blocks per language; add languages | Pool targets met (Q22: 50 per language at launch, 150+ eventually) |
+| **P4 — Content** | Grow from the P1 initial content to 150+ blocks per language; add languages | Pool target of 150+ per language met (Q22) |
 
 If P0 shows the engine cannot be built to specification or does not feel right, §3 is narrowed — most likely the space flexibility and the scope of automatic insertion. Leaving that ambiguous past P0 would propagate rework into the score definition, the schema, and CPU balance simultaneously.
 
@@ -996,5 +996,6 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.6 | Allow-list between tokens | **Recurring-bug fix found while designing the Python adapter.** The compiler detected comments by searching for `/`, a deny-list that missed Python's `#` and `\` continuations. It now accepts only spaces and line breaks between tokens and classifies anything else as `comment`, `line-continuation`, or `unexpected-text` (§5.1). No existing fixture or demo block depended on the old behavior |
 | 1.7 | Python adapter lexing | A scanner for Python 3.12 pinned to CPython by golden data from `python:golden`; separator re-lexing completes f-string starts and ignores fragment bracket errors, and the golden data keeps both raw and corrected results (§9.1) |
 | 1.7 | Python-specific constraints | **Additional constraints found during P0 implementation of the Python adapter:** blocks are black output with one top-level definition (a class holds one method); f-string brace escapes are rejected with `fstring-brace-escape`; t-strings and a keyword directly after a number are syntax errors (§5.4.1) |
-| 1.8 | P0 scope as delivered | P0 is complete with the scope agreed at kickoff: all four adapters verified in the compiler and engine, and a single TypeScript demo block in the play screen. Language selection (F-03), the official 120-second result screen (F-04), the content CLI with tree-sitter, and about 20 blocks per language move to P1 (§2, §10) |
+| 1.8 | P0 scope as delivered | P0 is complete with the scope agreed at kickoff: all four adapters verified in the compiler and engine, and a single TypeScript demo block in the play screen. Language selection (F-03), the official 120-second result screen (F-04), the content CLI with tree-sitter, and initial content move to P1 (§2, §10) |
 | 1.8 | tree-sitter validation gap | `tree-sitter-python` 0.25.0 accepts `01`, `1_`, `1if`, t-strings, and a missing indented block, so the content CLI must add a compile check with each language's toolchain; other grammars are still to be measured (§5.2) |
+| 1.9 | Initial content in P1 | P1 completes only with the Q22 launch target of 50 blocks per language, since P1 is when the service starts being used: with 20 blocks per run issued from a pool of about 20, every run would replay nearly the same blocks (§5.3, R4). P4 keeps the 150+ target (§10) |

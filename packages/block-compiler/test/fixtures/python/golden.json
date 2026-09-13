@@ -1,0 +1,4329 @@
+{
+  "generatedBy": "CPython 3.12.13",
+  "black": "black, 26.5.1 (compiled: yes)",
+  "fixtures": [
+    {
+      "name": "decorator.py",
+      "sha256": "85189c13855b487313e9e64ed2978ef6ccda6d893b173f18ab6d676cd17b291c",
+      "tokens": [
+        {
+          "text": "@",
+          "start": 0,
+          "end": 1
+        },
+        {
+          "text": "functools",
+          "start": 1,
+          "end": 10
+        },
+        {
+          "text": ".",
+          "start": 10,
+          "end": 11
+        },
+        {
+          "text": "cache",
+          "start": 11,
+          "end": 16
+        },
+        {
+          "text": "def",
+          "start": 17,
+          "end": 20
+        },
+        {
+          "text": "fib",
+          "start": 21,
+          "end": 24
+        },
+        {
+          "text": "(",
+          "start": 24,
+          "end": 25
+        },
+        {
+          "text": "n",
+          "start": 25,
+          "end": 26
+        },
+        {
+          "text": ")",
+          "start": 26,
+          "end": 27
+        },
+        {
+          "text": ":",
+          "start": 27,
+          "end": 28
+        },
+        {
+          "text": "if",
+          "start": 33,
+          "end": 35
+        },
+        {
+          "text": "n",
+          "start": 36,
+          "end": 37
+        },
+        {
+          "text": "<",
+          "start": 38,
+          "end": 39
+        },
+        {
+          "text": "2",
+          "start": 40,
+          "end": 41
+        },
+        {
+          "text": ":",
+          "start": 41,
+          "end": 42
+        },
+        {
+          "text": "return",
+          "start": 51,
+          "end": 57
+        },
+        {
+          "text": "n",
+          "start": 58,
+          "end": 59
+        },
+        {
+          "text": "return",
+          "start": 64,
+          "end": 70
+        },
+        {
+          "text": "fib",
+          "start": 71,
+          "end": 74
+        },
+        {
+          "text": "(",
+          "start": 74,
+          "end": 75
+        },
+        {
+          "text": "n",
+          "start": 75,
+          "end": 76
+        },
+        {
+          "text": "-",
+          "start": 77,
+          "end": 78
+        },
+        {
+          "text": "1",
+          "start": 79,
+          "end": 80
+        },
+        {
+          "text": ")",
+          "start": 80,
+          "end": 81
+        },
+        {
+          "text": "+",
+          "start": 82,
+          "end": 83
+        },
+        {
+          "text": "fib",
+          "start": 84,
+          "end": 87
+        },
+        {
+          "text": "(",
+          "start": 87,
+          "end": 88
+        },
+        {
+          "text": "n",
+          "start": 88,
+          "end": 89
+        },
+        {
+          "text": "-",
+          "start": 90,
+          "end": 91
+        },
+        {
+          "text": "2",
+          "start": 92,
+          "end": 93
+        },
+        {
+          "text": ")",
+          "start": 93,
+          "end": 94
+        }
+      ]
+    },
+    {
+      "name": "fstrings.py",
+      "sha256": "3b8cf9eac51052a150a9b763d59217a6bdc981ca187fe1832e3b06cdb04bf701",
+      "tokens": [
+        {
+          "text": "def",
+          "start": 0,
+          "end": 3
+        },
+        {
+          "text": "describe",
+          "start": 4,
+          "end": 12
+        },
+        {
+          "text": "(",
+          "start": 12,
+          "end": 13
+        },
+        {
+          "text": "name",
+          "start": 13,
+          "end": 17
+        },
+        {
+          "text": ",",
+          "start": 17,
+          "end": 18
+        },
+        {
+          "text": "score",
+          "start": 19,
+          "end": 24
+        },
+        {
+          "text": ",",
+          "start": 24,
+          "end": 25
+        },
+        {
+          "text": "width",
+          "start": 26,
+          "end": 31
+        },
+        {
+          "text": ")",
+          "start": 31,
+          "end": 32
+        },
+        {
+          "text": ":",
+          "start": 32,
+          "end": 33
+        },
+        {
+          "text": "label",
+          "start": 38,
+          "end": 43
+        },
+        {
+          "text": "=",
+          "start": 44,
+          "end": 45
+        },
+        {
+          "text": "f\"",
+          "start": 46,
+          "end": 48
+        },
+        {
+          "text": "{",
+          "start": 48,
+          "end": 49
+        },
+        {
+          "text": "name",
+          "start": 49,
+          "end": 53
+        },
+        {
+          "text": "!",
+          "start": 53,
+          "end": 54
+        },
+        {
+          "text": "r",
+          "start": 54,
+          "end": 55
+        },
+        {
+          "text": ":",
+          "start": 55,
+          "end": 56
+        },
+        {
+          "text": ">",
+          "start": 56,
+          "end": 57
+        },
+        {
+          "text": "{",
+          "start": 57,
+          "end": 58
+        },
+        {
+          "text": "width",
+          "start": 58,
+          "end": 63
+        },
+        {
+          "text": "}",
+          "start": 63,
+          "end": 64
+        },
+        {
+          "text": "}",
+          "start": 64,
+          "end": 65
+        },
+        {
+          "text": "\"",
+          "start": 65,
+          "end": 66
+        },
+        {
+          "text": "return",
+          "start": 71,
+          "end": 77
+        },
+        {
+          "text": "rf\"",
+          "start": 78,
+          "end": 81
+        },
+        {
+          "text": "\\d+ ",
+          "start": 81,
+          "end": 85
+        },
+        {
+          "text": "{",
+          "start": 85,
+          "end": 86
+        },
+        {
+          "text": "label",
+          "start": 86,
+          "end": 91
+        },
+        {
+          "text": "}",
+          "start": 91,
+          "end": 92
+        },
+        {
+          "text": ": ",
+          "start": 92,
+          "end": 94
+        },
+        {
+          "text": "{",
+          "start": 94,
+          "end": 95
+        },
+        {
+          "text": "score",
+          "start": 95,
+          "end": 100
+        },
+        {
+          "text": ":",
+          "start": 100,
+          "end": 101
+        },
+        {
+          "text": ".2f",
+          "start": 101,
+          "end": 104
+        },
+        {
+          "text": "}",
+          "start": 104,
+          "end": 105
+        },
+        {
+          "text": " (",
+          "start": 105,
+          "end": 107
+        },
+        {
+          "text": "{",
+          "start": 107,
+          "end": 108
+        },
+        {
+          "text": "f'",
+          "start": 108,
+          "end": 110
+        },
+        {
+          "text": "{",
+          "start": 110,
+          "end": 111
+        },
+        {
+          "text": "score",
+          "start": 111,
+          "end": 116
+        },
+        {
+          "text": "*",
+          "start": 117,
+          "end": 118
+        },
+        {
+          "text": "100",
+          "start": 119,
+          "end": 122
+        },
+        {
+          "text": ":",
+          "start": 122,
+          "end": 123
+        },
+        {
+          "text": ".0f",
+          "start": 123,
+          "end": 126
+        },
+        {
+          "text": "}",
+          "start": 126,
+          "end": 127
+        },
+        {
+          "text": "'",
+          "start": 127,
+          "end": 128
+        },
+        {
+          "text": "}",
+          "start": 128,
+          "end": 129
+        },
+        {
+          "text": "%)",
+          "start": 129,
+          "end": 131
+        },
+        {
+          "text": "\"",
+          "start": 131,
+          "end": 132
+        }
+      ]
+    },
+    {
+      "name": "keywords.py",
+      "sha256": "25941d2910984cb3a27ad6698d36ac901eb54cfce47af654874ead4dce410013",
+      "tokens": [
+        {
+          "text": "def",
+          "start": 0,
+          "end": 3
+        },
+        {
+          "text": "pick",
+          "start": 4,
+          "end": 8
+        },
+        {
+          "text": "(",
+          "start": 8,
+          "end": 9
+        },
+        {
+          "text": "names",
+          "start": 9,
+          "end": 14
+        },
+        {
+          "text": ",",
+          "start": 14,
+          "end": 15
+        },
+        {
+          "text": "banned",
+          "start": 16,
+          "end": 22
+        },
+        {
+          "text": ")",
+          "start": 22,
+          "end": 23
+        },
+        {
+          "text": ":",
+          "start": 23,
+          "end": 24
+        },
+        {
+          "text": "kept",
+          "start": 29,
+          "end": 33
+        },
+        {
+          "text": "=",
+          "start": 34,
+          "end": 35
+        },
+        {
+          "text": "[",
+          "start": 36,
+          "end": 37
+        },
+        {
+          "text": "name",
+          "start": 37,
+          "end": 41
+        },
+        {
+          "text": "for",
+          "start": 42,
+          "end": 45
+        },
+        {
+          "text": "name",
+          "start": 46,
+          "end": 50
+        },
+        {
+          "text": "in",
+          "start": 51,
+          "end": 53
+        },
+        {
+          "text": "names",
+          "start": 54,
+          "end": 59
+        },
+        {
+          "text": "if",
+          "start": 60,
+          "end": 62
+        },
+        {
+          "text": "name",
+          "start": 63,
+          "end": 67
+        },
+        {
+          "text": "not",
+          "start": 68,
+          "end": 71
+        },
+        {
+          "text": "in",
+          "start": 72,
+          "end": 74
+        },
+        {
+          "text": "banned",
+          "start": 75,
+          "end": 81
+        },
+        {
+          "text": "and",
+          "start": 82,
+          "end": 85
+        },
+        {
+          "text": "name",
+          "start": 86,
+          "end": 90
+        },
+        {
+          "text": "is",
+          "start": 91,
+          "end": 93
+        },
+        {
+          "text": "not",
+          "start": 94,
+          "end": 97
+        },
+        {
+          "text": "None",
+          "start": 98,
+          "end": 102
+        },
+        {
+          "text": "]",
+          "start": 102,
+          "end": 103
+        },
+        {
+          "text": "key",
+          "start": 108,
+          "end": 111
+        },
+        {
+          "text": "=",
+          "start": 112,
+          "end": 113
+        },
+        {
+          "text": "lambda",
+          "start": 114,
+          "end": 120
+        },
+        {
+          "text": "name",
+          "start": 121,
+          "end": 125
+        },
+        {
+          "text": ":",
+          "start": 125,
+          "end": 126
+        },
+        {
+          "text": "(",
+          "start": 127,
+          "end": 128
+        },
+        {
+          "text": "len",
+          "start": 128,
+          "end": 131
+        },
+        {
+          "text": "(",
+          "start": 131,
+          "end": 132
+        },
+        {
+          "text": "name",
+          "start": 132,
+          "end": 136
+        },
+        {
+          "text": ")",
+          "start": 136,
+          "end": 137
+        },
+        {
+          "text": ",",
+          "start": 137,
+          "end": 138
+        },
+        {
+          "text": "name",
+          "start": 139,
+          "end": 143
+        },
+        {
+          "text": ")",
+          "start": 143,
+          "end": 144
+        },
+        {
+          "text": "if",
+          "start": 149,
+          "end": 151
+        },
+        {
+          "text": "(",
+          "start": 152,
+          "end": 153
+        },
+        {
+          "text": "count",
+          "start": 153,
+          "end": 158
+        },
+        {
+          "text": ":=",
+          "start": 159,
+          "end": 161
+        },
+        {
+          "text": "len",
+          "start": 162,
+          "end": 165
+        },
+        {
+          "text": "(",
+          "start": 165,
+          "end": 166
+        },
+        {
+          "text": "kept",
+          "start": 166,
+          "end": 170
+        },
+        {
+          "text": ")",
+          "start": 170,
+          "end": 171
+        },
+        {
+          "text": ")",
+          "start": 171,
+          "end": 172
+        },
+        {
+          "text": ">",
+          "start": 173,
+          "end": 174
+        },
+        {
+          "text": "0",
+          "start": 175,
+          "end": 176
+        },
+        {
+          "text": ":",
+          "start": 176,
+          "end": 177
+        },
+        {
+          "text": "return",
+          "start": 186,
+          "end": 192
+        },
+        {
+          "text": "sorted",
+          "start": 193,
+          "end": 199
+        },
+        {
+          "text": "(",
+          "start": 199,
+          "end": 200
+        },
+        {
+          "text": "kept",
+          "start": 200,
+          "end": 204
+        },
+        {
+          "text": ",",
+          "start": 204,
+          "end": 205
+        },
+        {
+          "text": "key",
+          "start": 206,
+          "end": 209
+        },
+        {
+          "text": "=",
+          "start": 209,
+          "end": 210
+        },
+        {
+          "text": "key",
+          "start": 210,
+          "end": 213
+        },
+        {
+          "text": ")",
+          "start": 213,
+          "end": 214
+        },
+        {
+          "text": "[",
+          "start": 214,
+          "end": 215
+        },
+        {
+          "text": ":",
+          "start": 215,
+          "end": 216
+        },
+        {
+          "text": "count",
+          "start": 216,
+          "end": 221
+        },
+        {
+          "text": "]",
+          "start": 221,
+          "end": 222
+        },
+        {
+          "text": "return",
+          "start": 227,
+          "end": 233
+        },
+        {
+          "text": "[",
+          "start": 234,
+          "end": 235
+        },
+        {
+          "text": "]",
+          "start": 235,
+          "end": 236
+        }
+      ]
+    },
+    {
+      "name": "klass.py",
+      "sha256": "164a5268b5a046133b96799949681f9c21b6e006dc32457455bb12af523cc846",
+      "tokens": [
+        {
+          "text": "class",
+          "start": 0,
+          "end": 5
+        },
+        {
+          "text": "Counter",
+          "start": 6,
+          "end": 13
+        },
+        {
+          "text": ":",
+          "start": 13,
+          "end": 14
+        },
+        {
+          "text": "def",
+          "start": 19,
+          "end": 22
+        },
+        {
+          "text": "__init__",
+          "start": 23,
+          "end": 31
+        },
+        {
+          "text": "(",
+          "start": 31,
+          "end": 32
+        },
+        {
+          "text": "self",
+          "start": 32,
+          "end": 36
+        },
+        {
+          "text": ",",
+          "start": 36,
+          "end": 37
+        },
+        {
+          "text": "start",
+          "start": 38,
+          "end": 43
+        },
+        {
+          "text": "=",
+          "start": 43,
+          "end": 44
+        },
+        {
+          "text": "0",
+          "start": 44,
+          "end": 45
+        },
+        {
+          "text": ")",
+          "start": 45,
+          "end": 46
+        },
+        {
+          "text": ":",
+          "start": 46,
+          "end": 47
+        },
+        {
+          "text": "self",
+          "start": 56,
+          "end": 60
+        },
+        {
+          "text": ".",
+          "start": 60,
+          "end": 61
+        },
+        {
+          "text": "value",
+          "start": 61,
+          "end": 66
+        },
+        {
+          "text": "=",
+          "start": 67,
+          "end": 68
+        },
+        {
+          "text": "start",
+          "start": 69,
+          "end": 74
+        },
+        {
+          "text": "self",
+          "start": 83,
+          "end": 87
+        },
+        {
+          "text": ".",
+          "start": 87,
+          "end": 88
+        },
+        {
+          "text": "history",
+          "start": 88,
+          "end": 95
+        },
+        {
+          "text": "=",
+          "start": 96,
+          "end": 97
+        },
+        {
+          "text": "[",
+          "start": 98,
+          "end": 99
+        },
+        {
+          "text": "]",
+          "start": 99,
+          "end": 100
+        }
+      ]
+    },
+    {
+      "name": "literals.py",
+      "sha256": "4a34826226511e7d8f6fc3f70ef832912337108ee374d11165c39bf464380190",
+      "tokens": [
+        {
+          "text": "def",
+          "start": 0,
+          "end": 3
+        },
+        {
+          "text": "literals",
+          "start": 4,
+          "end": 12
+        },
+        {
+          "text": "(",
+          "start": 12,
+          "end": 13
+        },
+        {
+          "text": ")",
+          "start": 13,
+          "end": 14
+        },
+        {
+          "text": ":",
+          "start": 14,
+          "end": 15
+        },
+        {
+          "text": "return",
+          "start": 20,
+          "end": 26
+        },
+        {
+          "text": "[",
+          "start": 27,
+          "end": 28
+        },
+        {
+          "text": "1_000",
+          "start": 28,
+          "end": 33
+        },
+        {
+          "text": ",",
+          "start": 33,
+          "end": 34
+        },
+        {
+          "text": "0x_FF",
+          "start": 35,
+          "end": 40
+        },
+        {
+          "text": ",",
+          "start": 40,
+          "end": 41
+        },
+        {
+          "text": "1e-3",
+          "start": 42,
+          "end": 46
+        },
+        {
+          "text": ",",
+          "start": 46,
+          "end": 47
+        },
+        {
+          "text": "2j",
+          "start": 48,
+          "end": 50
+        },
+        {
+          "text": ",",
+          "start": 50,
+          "end": 51
+        },
+        {
+          "text": "r\"\\d\"",
+          "start": 52,
+          "end": 57
+        },
+        {
+          "text": ",",
+          "start": 57,
+          "end": 58
+        },
+        {
+          "text": "b\"raw\"",
+          "start": 59,
+          "end": 65
+        },
+        {
+          "text": ",",
+          "start": 65,
+          "end": 66
+        },
+        {
+          "text": "\"a\"",
+          "start": 67,
+          "end": 70
+        },
+        {
+          "text": "\"b\"",
+          "start": 71,
+          "end": 74
+        },
+        {
+          "text": ",",
+          "start": 74,
+          "end": 75
+        },
+        {
+          "text": "2",
+          "start": 76,
+          "end": 77
+        },
+        {
+          "text": "**",
+          "start": 77,
+          "end": 79
+        },
+        {
+          "text": "10",
+          "start": 79,
+          "end": 81
+        },
+        {
+          "text": ",",
+          "start": 81,
+          "end": 82
+        },
+        {
+          "text": "7",
+          "start": 83,
+          "end": 84
+        },
+        {
+          "text": "//",
+          "start": 85,
+          "end": 87
+        },
+        {
+          "text": "2",
+          "start": 88,
+          "end": 89
+        },
+        {
+          "text": "]",
+          "start": 89,
+          "end": 90
+        }
+      ]
+    },
+    {
+      "name": "nesting.py",
+      "sha256": "5152b71725106d5619bba5c79176ad44245fdbc22834058abfd592b36c47ffa0",
+      "tokens": [
+        {
+          "text": "def",
+          "start": 0,
+          "end": 3
+        },
+        {
+          "text": "count_matches",
+          "start": 4,
+          "end": 17
+        },
+        {
+          "text": "(",
+          "start": 17,
+          "end": 18
+        },
+        {
+          "text": "grid",
+          "start": 18,
+          "end": 22
+        },
+        {
+          "text": ",",
+          "start": 22,
+          "end": 23
+        },
+        {
+          "text": "target",
+          "start": 24,
+          "end": 30
+        },
+        {
+          "text": ")",
+          "start": 30,
+          "end": 31
+        },
+        {
+          "text": ":",
+          "start": 31,
+          "end": 32
+        },
+        {
+          "text": "total",
+          "start": 37,
+          "end": 42
+        },
+        {
+          "text": "=",
+          "start": 43,
+          "end": 44
+        },
+        {
+          "text": "0",
+          "start": 45,
+          "end": 46
+        },
+        {
+          "text": "for",
+          "start": 51,
+          "end": 54
+        },
+        {
+          "text": "row",
+          "start": 55,
+          "end": 58
+        },
+        {
+          "text": "in",
+          "start": 59,
+          "end": 61
+        },
+        {
+          "text": "grid",
+          "start": 62,
+          "end": 66
+        },
+        {
+          "text": ":",
+          "start": 66,
+          "end": 67
+        },
+        {
+          "text": "for",
+          "start": 76,
+          "end": 79
+        },
+        {
+          "text": "cell",
+          "start": 80,
+          "end": 84
+        },
+        {
+          "text": "in",
+          "start": 85,
+          "end": 87
+        },
+        {
+          "text": "row",
+          "start": 88,
+          "end": 91
+        },
+        {
+          "text": ":",
+          "start": 91,
+          "end": 92
+        },
+        {
+          "text": "if",
+          "start": 105,
+          "end": 107
+        },
+        {
+          "text": "cell",
+          "start": 108,
+          "end": 112
+        },
+        {
+          "text": "==",
+          "start": 113,
+          "end": 115
+        },
+        {
+          "text": "target",
+          "start": 116,
+          "end": 122
+        },
+        {
+          "text": ":",
+          "start": 122,
+          "end": 123
+        },
+        {
+          "text": "total",
+          "start": 140,
+          "end": 145
+        },
+        {
+          "text": "+=",
+          "start": 146,
+          "end": 148
+        },
+        {
+          "text": "1",
+          "start": 149,
+          "end": 150
+        },
+        {
+          "text": "return",
+          "start": 155,
+          "end": 161
+        },
+        {
+          "text": "total",
+          "start": 162,
+          "end": 167
+        }
+      ]
+    },
+    {
+      "name": "resources.py",
+      "sha256": "cf63466dfd953cc21e50097c944abd8c823fb3f3d8fec8aceb6420768e4f32b1",
+      "tokens": [
+        {
+          "text": "def",
+          "start": 0,
+          "end": 3
+        },
+        {
+          "text": "read_first",
+          "start": 4,
+          "end": 14
+        },
+        {
+          "text": "(",
+          "start": 14,
+          "end": 15
+        },
+        {
+          "text": "path",
+          "start": 15,
+          "end": 19
+        },
+        {
+          "text": ")",
+          "start": 19,
+          "end": 20
+        },
+        {
+          "text": ":",
+          "start": 20,
+          "end": 21
+        },
+        {
+          "text": "try",
+          "start": 26,
+          "end": 29
+        },
+        {
+          "text": ":",
+          "start": 29,
+          "end": 30
+        },
+        {
+          "text": "with",
+          "start": 39,
+          "end": 43
+        },
+        {
+          "text": "open",
+          "start": 44,
+          "end": 48
+        },
+        {
+          "text": "(",
+          "start": 48,
+          "end": 49
+        },
+        {
+          "text": "path",
+          "start": 49,
+          "end": 53
+        },
+        {
+          "text": ",",
+          "start": 53,
+          "end": 54
+        },
+        {
+          "text": "encoding",
+          "start": 55,
+          "end": 63
+        },
+        {
+          "text": "=",
+          "start": 63,
+          "end": 64
+        },
+        {
+          "text": "\"utf-8\"",
+          "start": 64,
+          "end": 71
+        },
+        {
+          "text": ")",
+          "start": 71,
+          "end": 72
+        },
+        {
+          "text": "as",
+          "start": 73,
+          "end": 75
+        },
+        {
+          "text": "handle",
+          "start": 76,
+          "end": 82
+        },
+        {
+          "text": ":",
+          "start": 82,
+          "end": 83
+        },
+        {
+          "text": "return",
+          "start": 96,
+          "end": 102
+        },
+        {
+          "text": "handle",
+          "start": 103,
+          "end": 109
+        },
+        {
+          "text": ".",
+          "start": 109,
+          "end": 110
+        },
+        {
+          "text": "readline",
+          "start": 110,
+          "end": 118
+        },
+        {
+          "text": "(",
+          "start": 118,
+          "end": 119
+        },
+        {
+          "text": ")",
+          "start": 119,
+          "end": 120
+        },
+        {
+          "text": "except",
+          "start": 125,
+          "end": 131
+        },
+        {
+          "text": "(",
+          "start": 132,
+          "end": 133
+        },
+        {
+          "text": "OSError",
+          "start": 133,
+          "end": 140
+        },
+        {
+          "text": ",",
+          "start": 140,
+          "end": 141
+        },
+        {
+          "text": "ValueError",
+          "start": 142,
+          "end": 152
+        },
+        {
+          "text": ")",
+          "start": 152,
+          "end": 153
+        },
+        {
+          "text": "as",
+          "start": 154,
+          "end": 156
+        },
+        {
+          "text": "error",
+          "start": 157,
+          "end": 162
+        },
+        {
+          "text": ":",
+          "start": 162,
+          "end": 163
+        },
+        {
+          "text": "raise",
+          "start": 172,
+          "end": 177
+        },
+        {
+          "text": "RuntimeError",
+          "start": 178,
+          "end": 190
+        },
+        {
+          "text": "(",
+          "start": 190,
+          "end": 191
+        },
+        {
+          "text": "f\"",
+          "start": 191,
+          "end": 193
+        },
+        {
+          "text": "cannot read ",
+          "start": 193,
+          "end": 205
+        },
+        {
+          "text": "{",
+          "start": 205,
+          "end": 206
+        },
+        {
+          "text": "path",
+          "start": 206,
+          "end": 210
+        },
+        {
+          "text": "}",
+          "start": 210,
+          "end": 211
+        },
+        {
+          "text": "\"",
+          "start": 211,
+          "end": 212
+        },
+        {
+          "text": ")",
+          "start": 212,
+          "end": 213
+        },
+        {
+          "text": "from",
+          "start": 214,
+          "end": 218
+        },
+        {
+          "text": "error",
+          "start": 219,
+          "end": 224
+        },
+        {
+          "text": "finally",
+          "start": 229,
+          "end": 236
+        },
+        {
+          "text": ":",
+          "start": 236,
+          "end": 237
+        },
+        {
+          "text": "print",
+          "start": 246,
+          "end": 251
+        },
+        {
+          "text": "(",
+          "start": 251,
+          "end": 252
+        },
+        {
+          "text": "\"done\"",
+          "start": 252,
+          "end": 258
+        },
+        {
+          "text": ")",
+          "start": 258,
+          "end": 259
+        }
+      ]
+    }
+  ],
+  "pairs": [
+    {
+      "prev": "def",
+      "next": "fib",
+      "raw": {
+        "text": "deffib",
+        "tokens": [
+          "deffib"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "deffib",
+        "tokens": [
+          "deffib"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "if",
+      "next": "n",
+      "raw": {
+        "text": "ifn",
+        "tokens": [
+          "ifn"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "ifn",
+        "tokens": [
+          "ifn"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "n",
+      "next": "<",
+      "raw": {
+        "text": "n<",
+        "tokens": [
+          "n",
+          "<"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "n<",
+        "tokens": [
+          "n",
+          "<"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "<",
+      "next": "2",
+      "raw": {
+        "text": "<2",
+        "tokens": [
+          "<",
+          "2"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "<2",
+        "tokens": [
+          "<",
+          "2"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "return",
+      "next": "n",
+      "raw": {
+        "text": "returnn",
+        "tokens": [
+          "returnn"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "returnn",
+        "tokens": [
+          "returnn"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "return",
+      "next": "fib",
+      "raw": {
+        "text": "returnfib",
+        "tokens": [
+          "returnfib"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "returnfib",
+        "tokens": [
+          "returnfib"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "n",
+      "next": "-",
+      "raw": {
+        "text": "n-",
+        "tokens": [
+          "n",
+          "-"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "n-",
+        "tokens": [
+          "n",
+          "-"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "-",
+      "next": "1",
+      "raw": {
+        "text": "-1",
+        "tokens": [
+          "-",
+          "1"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "-1",
+        "tokens": [
+          "-",
+          "1"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": ")",
+      "next": "+",
+      "raw": {
+        "text": ")+",
+        "tokens": [
+          ")",
+          "+"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": [
+          "unmatched ')'"
+        ]
+      },
+      "corrected": {
+        "text": ")+",
+        "tokens": [
+          ")",
+          "+"
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "ignore-bracket-balance"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": "+",
+      "next": "fib",
+      "raw": {
+        "text": "+fib",
+        "tokens": [
+          "+",
+          "fib"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "+fib",
+        "tokens": [
+          "+",
+          "fib"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "-",
+      "next": "2",
+      "raw": {
+        "text": "-2",
+        "tokens": [
+          "-",
+          "2"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "-2",
+        "tokens": [
+          "-",
+          "2"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "def",
+      "next": "describe",
+      "raw": {
+        "text": "defdescribe",
+        "tokens": [
+          "defdescribe"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "defdescribe",
+        "tokens": [
+          "defdescribe"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": ",",
+      "next": "score",
+      "raw": {
+        "text": ",score",
+        "tokens": [
+          ",",
+          "score"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",score",
+        "tokens": [
+          ",",
+          "score"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": ",",
+      "next": "width",
+      "raw": {
+        "text": ",width",
+        "tokens": [
+          ",",
+          "width"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",width",
+        "tokens": [
+          ",",
+          "width"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "label",
+      "next": "=",
+      "raw": {
+        "text": "label=",
+        "tokens": [
+          "label",
+          "="
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "label=",
+        "tokens": [
+          "label",
+          "="
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "=",
+      "next": "f\"",
+      "raw": {
+        "text": "=f\"",
+        "tokens": [
+          "=",
+          "f\""
+        ],
+        "tokenizeError": "unterminated f-string literal (detected at line 1)",
+        "lexical": [
+          "unterminated f-string literal (detected at line 1)"
+        ],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "=f\"\"",
+        "tokens": [
+          "=",
+          "f\"",
+          "\""
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "complete-fstring-start"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": "return",
+      "next": "rf\"",
+      "raw": {
+        "text": "returnrf\"",
+        "tokens": [
+          "returnrf"
+        ],
+        "tokenizeError": "unterminated string literal (detected at line 1)",
+        "lexical": [
+          "unterminated string literal (detected at line 1)"
+        ],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "returnrf\"\"",
+        "tokens": [
+          "returnrf",
+          "\"\""
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "complete-fstring-start"
+      ],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "score",
+      "next": "*",
+      "raw": {
+        "text": "score*",
+        "tokens": [
+          "score",
+          "*"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "score*",
+        "tokens": [
+          "score",
+          "*"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "*",
+      "next": "100",
+      "raw": {
+        "text": "*100",
+        "tokens": [
+          "*",
+          "100"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "*100",
+        "tokens": [
+          "*",
+          "100"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "def",
+      "next": "pick",
+      "raw": {
+        "text": "defpick",
+        "tokens": [
+          "defpick"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "defpick",
+        "tokens": [
+          "defpick"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": ",",
+      "next": "banned",
+      "raw": {
+        "text": ",banned",
+        "tokens": [
+          ",",
+          "banned"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",banned",
+        "tokens": [
+          ",",
+          "banned"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "kept",
+      "next": "=",
+      "raw": {
+        "text": "kept=",
+        "tokens": [
+          "kept",
+          "="
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "kept=",
+        "tokens": [
+          "kept",
+          "="
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "=",
+      "next": "[",
+      "raw": {
+        "text": "=[",
+        "tokens": [
+          "=",
+          "["
+        ],
+        "tokenizeError": "unexpected EOF in multi-line statement",
+        "lexical": [],
+        "bracket": [
+          "unexpected EOF in multi-line statement"
+        ]
+      },
+      "corrected": {
+        "text": "=[",
+        "tokens": [
+          "=",
+          "["
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "ignore-bracket-balance"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": "name",
+      "next": "for",
+      "raw": {
+        "text": "namefor",
+        "tokens": [
+          "namefor"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "namefor",
+        "tokens": [
+          "namefor"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "for",
+      "next": "name",
+      "raw": {
+        "text": "forname",
+        "tokens": [
+          "forname"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "forname",
+        "tokens": [
+          "forname"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "name",
+      "next": "in",
+      "raw": {
+        "text": "namein",
+        "tokens": [
+          "namein"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "namein",
+        "tokens": [
+          "namein"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "in",
+      "next": "names",
+      "raw": {
+        "text": "innames",
+        "tokens": [
+          "innames"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "innames",
+        "tokens": [
+          "innames"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "names",
+      "next": "if",
+      "raw": {
+        "text": "namesif",
+        "tokens": [
+          "namesif"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "namesif",
+        "tokens": [
+          "namesif"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "if",
+      "next": "name",
+      "raw": {
+        "text": "ifname",
+        "tokens": [
+          "ifname"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "ifname",
+        "tokens": [
+          "ifname"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "name",
+      "next": "not",
+      "raw": {
+        "text": "namenot",
+        "tokens": [
+          "namenot"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "namenot",
+        "tokens": [
+          "namenot"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "not",
+      "next": "in",
+      "raw": {
+        "text": "notin",
+        "tokens": [
+          "notin"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "notin",
+        "tokens": [
+          "notin"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "in",
+      "next": "banned",
+      "raw": {
+        "text": "inbanned",
+        "tokens": [
+          "inbanned"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "inbanned",
+        "tokens": [
+          "inbanned"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "banned",
+      "next": "and",
+      "raw": {
+        "text": "bannedand",
+        "tokens": [
+          "bannedand"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "bannedand",
+        "tokens": [
+          "bannedand"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "and",
+      "next": "name",
+      "raw": {
+        "text": "andname",
+        "tokens": [
+          "andname"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "andname",
+        "tokens": [
+          "andname"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "name",
+      "next": "is",
+      "raw": {
+        "text": "nameis",
+        "tokens": [
+          "nameis"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "nameis",
+        "tokens": [
+          "nameis"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "is",
+      "next": "not",
+      "raw": {
+        "text": "isnot",
+        "tokens": [
+          "isnot"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "isnot",
+        "tokens": [
+          "isnot"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "not",
+      "next": "None",
+      "raw": {
+        "text": "notNone",
+        "tokens": [
+          "notNone"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "notNone",
+        "tokens": [
+          "notNone"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "key",
+      "next": "=",
+      "raw": {
+        "text": "key=",
+        "tokens": [
+          "key",
+          "="
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "key=",
+        "tokens": [
+          "key",
+          "="
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "=",
+      "next": "lambda",
+      "raw": {
+        "text": "=lambda",
+        "tokens": [
+          "=",
+          "lambda"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "=lambda",
+        "tokens": [
+          "=",
+          "lambda"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "lambda",
+      "next": "name",
+      "raw": {
+        "text": "lambdaname",
+        "tokens": [
+          "lambdaname"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "lambdaname",
+        "tokens": [
+          "lambdaname"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": ":",
+      "next": "(",
+      "raw": {
+        "text": ":(",
+        "tokens": [
+          ":",
+          "("
+        ],
+        "tokenizeError": "unexpected EOF in multi-line statement",
+        "lexical": [],
+        "bracket": [
+          "unexpected EOF in multi-line statement"
+        ]
+      },
+      "corrected": {
+        "text": ":(",
+        "tokens": [
+          ":",
+          "("
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "ignore-bracket-balance"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": ",",
+      "next": "name",
+      "raw": {
+        "text": ",name",
+        "tokens": [
+          ",",
+          "name"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",name",
+        "tokens": [
+          ",",
+          "name"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "if",
+      "next": "(",
+      "raw": {
+        "text": "if(",
+        "tokens": [
+          "if",
+          "("
+        ],
+        "tokenizeError": "unexpected EOF in multi-line statement",
+        "lexical": [],
+        "bracket": [
+          "unexpected EOF in multi-line statement"
+        ]
+      },
+      "corrected": {
+        "text": "if(",
+        "tokens": [
+          "if",
+          "("
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "ignore-bracket-balance"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": "count",
+      "next": ":=",
+      "raw": {
+        "text": "count:=",
+        "tokens": [
+          "count",
+          ":="
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "count:=",
+        "tokens": [
+          "count",
+          ":="
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": ":=",
+      "next": "len",
+      "raw": {
+        "text": ":=len",
+        "tokens": [
+          ":=",
+          "len"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ":=len",
+        "tokens": [
+          ":=",
+          "len"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": ")",
+      "next": ">",
+      "raw": {
+        "text": ")>",
+        "tokens": [
+          ")",
+          ">"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": [
+          "unmatched ')'"
+        ]
+      },
+      "corrected": {
+        "text": ")>",
+        "tokens": [
+          ")",
+          ">"
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "ignore-bracket-balance"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": ">",
+      "next": "0",
+      "raw": {
+        "text": ">0",
+        "tokens": [
+          ">",
+          "0"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ">0",
+        "tokens": [
+          ">",
+          "0"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "return",
+      "next": "sorted",
+      "raw": {
+        "text": "returnsorted",
+        "tokens": [
+          "returnsorted"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "returnsorted",
+        "tokens": [
+          "returnsorted"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": ",",
+      "next": "key",
+      "raw": {
+        "text": ",key",
+        "tokens": [
+          ",",
+          "key"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",key",
+        "tokens": [
+          ",",
+          "key"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "return",
+      "next": "[",
+      "raw": {
+        "text": "return[",
+        "tokens": [
+          "return",
+          "["
+        ],
+        "tokenizeError": "unexpected EOF in multi-line statement",
+        "lexical": [],
+        "bracket": [
+          "unexpected EOF in multi-line statement"
+        ]
+      },
+      "corrected": {
+        "text": "return[",
+        "tokens": [
+          "return",
+          "["
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "ignore-bracket-balance"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": "class",
+      "next": "Counter",
+      "raw": {
+        "text": "classCounter",
+        "tokens": [
+          "classCounter"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "classCounter",
+        "tokens": [
+          "classCounter"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "def",
+      "next": "__init__",
+      "raw": {
+        "text": "def__init__",
+        "tokens": [
+          "def__init__"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "def__init__",
+        "tokens": [
+          "def__init__"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": ",",
+      "next": "start",
+      "raw": {
+        "text": ",start",
+        "tokens": [
+          ",",
+          "start"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",start",
+        "tokens": [
+          ",",
+          "start"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "value",
+      "next": "=",
+      "raw": {
+        "text": "value=",
+        "tokens": [
+          "value",
+          "="
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "value=",
+        "tokens": [
+          "value",
+          "="
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "=",
+      "next": "start",
+      "raw": {
+        "text": "=start",
+        "tokens": [
+          "=",
+          "start"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "=start",
+        "tokens": [
+          "=",
+          "start"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "history",
+      "next": "=",
+      "raw": {
+        "text": "history=",
+        "tokens": [
+          "history",
+          "="
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "history=",
+        "tokens": [
+          "history",
+          "="
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "def",
+      "next": "literals",
+      "raw": {
+        "text": "defliterals",
+        "tokens": [
+          "defliterals"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "defliterals",
+        "tokens": [
+          "defliterals"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": ",",
+      "next": "0x_FF",
+      "raw": {
+        "text": ",0x_FF",
+        "tokens": [
+          ",",
+          "0x_FF"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",0x_FF",
+        "tokens": [
+          ",",
+          "0x_FF"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": ",",
+      "next": "1e-3",
+      "raw": {
+        "text": ",1e-3",
+        "tokens": [
+          ",",
+          "1e-3"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",1e-3",
+        "tokens": [
+          ",",
+          "1e-3"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": ",",
+      "next": "2j",
+      "raw": {
+        "text": ",2j",
+        "tokens": [
+          ",",
+          "2j"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",2j",
+        "tokens": [
+          ",",
+          "2j"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": ",",
+      "next": "r\"\\d\"",
+      "raw": {
+        "text": ",r\"\\d\"",
+        "tokens": [
+          ",",
+          "r\"\\d\""
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",r\"\\d\"",
+        "tokens": [
+          ",",
+          "r\"\\d\""
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": ",",
+      "next": "b\"raw\"",
+      "raw": {
+        "text": ",b\"raw\"",
+        "tokens": [
+          ",",
+          "b\"raw\""
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",b\"raw\"",
+        "tokens": [
+          ",",
+          "b\"raw\""
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": ",",
+      "next": "\"a\"",
+      "raw": {
+        "text": ",\"a\"",
+        "tokens": [
+          ",",
+          "\"a\""
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",\"a\"",
+        "tokens": [
+          ",",
+          "\"a\""
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "\"a\"",
+      "next": "\"b\"",
+      "raw": {
+        "text": "\"a\"\"b\"",
+        "tokens": [
+          "\"a\"",
+          "\"b\""
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "\"a\"\"b\"",
+        "tokens": [
+          "\"a\"",
+          "\"b\""
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": ",",
+      "next": "2",
+      "raw": {
+        "text": ",2",
+        "tokens": [
+          ",",
+          "2"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",2",
+        "tokens": [
+          ",",
+          "2"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": ",",
+      "next": "7",
+      "raw": {
+        "text": ",7",
+        "tokens": [
+          ",",
+          "7"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",7",
+        "tokens": [
+          ",",
+          "7"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "7",
+      "next": "//",
+      "raw": {
+        "text": "7//",
+        "tokens": [
+          "7",
+          "//"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "7//",
+        "tokens": [
+          "7",
+          "//"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "//",
+      "next": "2",
+      "raw": {
+        "text": "//2",
+        "tokens": [
+          "//",
+          "2"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "//2",
+        "tokens": [
+          "//",
+          "2"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "def",
+      "next": "count_matches",
+      "raw": {
+        "text": "defcount_matches",
+        "tokens": [
+          "defcount_matches"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "defcount_matches",
+        "tokens": [
+          "defcount_matches"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": ",",
+      "next": "target",
+      "raw": {
+        "text": ",target",
+        "tokens": [
+          ",",
+          "target"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",target",
+        "tokens": [
+          ",",
+          "target"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "total",
+      "next": "=",
+      "raw": {
+        "text": "total=",
+        "tokens": [
+          "total",
+          "="
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "total=",
+        "tokens": [
+          "total",
+          "="
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "=",
+      "next": "0",
+      "raw": {
+        "text": "=0",
+        "tokens": [
+          "=",
+          "0"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "=0",
+        "tokens": [
+          "=",
+          "0"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "for",
+      "next": "row",
+      "raw": {
+        "text": "forrow",
+        "tokens": [
+          "forrow"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "forrow",
+        "tokens": [
+          "forrow"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "row",
+      "next": "in",
+      "raw": {
+        "text": "rowin",
+        "tokens": [
+          "rowin"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "rowin",
+        "tokens": [
+          "rowin"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "in",
+      "next": "grid",
+      "raw": {
+        "text": "ingrid",
+        "tokens": [
+          "ingrid"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "ingrid",
+        "tokens": [
+          "ingrid"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "for",
+      "next": "cell",
+      "raw": {
+        "text": "forcell",
+        "tokens": [
+          "forcell"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "forcell",
+        "tokens": [
+          "forcell"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "cell",
+      "next": "in",
+      "raw": {
+        "text": "cellin",
+        "tokens": [
+          "cellin"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "cellin",
+        "tokens": [
+          "cellin"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "in",
+      "next": "row",
+      "raw": {
+        "text": "inrow",
+        "tokens": [
+          "inrow"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "inrow",
+        "tokens": [
+          "inrow"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "if",
+      "next": "cell",
+      "raw": {
+        "text": "ifcell",
+        "tokens": [
+          "ifcell"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "ifcell",
+        "tokens": [
+          "ifcell"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "cell",
+      "next": "==",
+      "raw": {
+        "text": "cell==",
+        "tokens": [
+          "cell",
+          "=="
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "cell==",
+        "tokens": [
+          "cell",
+          "=="
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "==",
+      "next": "target",
+      "raw": {
+        "text": "==target",
+        "tokens": [
+          "==",
+          "target"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "==target",
+        "tokens": [
+          "==",
+          "target"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "total",
+      "next": "+=",
+      "raw": {
+        "text": "total+=",
+        "tokens": [
+          "total",
+          "+="
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "total+=",
+        "tokens": [
+          "total",
+          "+="
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "+=",
+      "next": "1",
+      "raw": {
+        "text": "+=1",
+        "tokens": [
+          "+=",
+          "1"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "+=1",
+        "tokens": [
+          "+=",
+          "1"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "return",
+      "next": "total",
+      "raw": {
+        "text": "returntotal",
+        "tokens": [
+          "returntotal"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "returntotal",
+        "tokens": [
+          "returntotal"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "def",
+      "next": "read_first",
+      "raw": {
+        "text": "defread_first",
+        "tokens": [
+          "defread_first"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "defread_first",
+        "tokens": [
+          "defread_first"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "with",
+      "next": "open",
+      "raw": {
+        "text": "withopen",
+        "tokens": [
+          "withopen"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "withopen",
+        "tokens": [
+          "withopen"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": ",",
+      "next": "encoding",
+      "raw": {
+        "text": ",encoding",
+        "tokens": [
+          ",",
+          "encoding"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",encoding",
+        "tokens": [
+          ",",
+          "encoding"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": ")",
+      "next": "as",
+      "raw": {
+        "text": ")as",
+        "tokens": [
+          ")",
+          "as"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": [
+          "unmatched ')'"
+        ]
+      },
+      "corrected": {
+        "text": ")as",
+        "tokens": [
+          ")",
+          "as"
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "ignore-bracket-balance"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": "as",
+      "next": "handle",
+      "raw": {
+        "text": "ashandle",
+        "tokens": [
+          "ashandle"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "ashandle",
+        "tokens": [
+          "ashandle"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "return",
+      "next": "handle",
+      "raw": {
+        "text": "returnhandle",
+        "tokens": [
+          "returnhandle"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "returnhandle",
+        "tokens": [
+          "returnhandle"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "except",
+      "next": "(",
+      "raw": {
+        "text": "except(",
+        "tokens": [
+          "except",
+          "("
+        ],
+        "tokenizeError": "unexpected EOF in multi-line statement",
+        "lexical": [],
+        "bracket": [
+          "unexpected EOF in multi-line statement"
+        ]
+      },
+      "corrected": {
+        "text": "except(",
+        "tokens": [
+          "except",
+          "("
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "ignore-bracket-balance"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": ",",
+      "next": "ValueError",
+      "raw": {
+        "text": ",ValueError",
+        "tokens": [
+          ",",
+          "ValueError"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ",ValueError",
+        "tokens": [
+          ",",
+          "ValueError"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "as",
+      "next": "error",
+      "raw": {
+        "text": "aserror",
+        "tokens": [
+          "aserror"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "aserror",
+        "tokens": [
+          "aserror"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "raise",
+      "next": "RuntimeError",
+      "raw": {
+        "text": "raiseRuntimeError",
+        "tokens": [
+          "raiseRuntimeError"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "raiseRuntimeError",
+        "tokens": [
+          "raiseRuntimeError"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": ")",
+      "next": "from",
+      "raw": {
+        "text": ")from",
+        "tokens": [
+          ")",
+          "from"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": [
+          "unmatched ')'"
+        ]
+      },
+      "corrected": {
+        "text": ")from",
+        "tokens": [
+          ")",
+          "from"
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "ignore-bracket-balance"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": "from",
+      "next": "error",
+      "raw": {
+        "text": "fromerror",
+        "tokens": [
+          "fromerror"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "fromerror",
+        "tokens": [
+          "fromerror"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "1",
+      "next": "if",
+      "raw": {
+        "text": "1if",
+        "tokens": [
+          "1",
+          "if"
+        ],
+        "tokenizeError": null,
+        "lexical": [
+          "invalid decimal literal"
+        ],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "1if",
+        "tokens": [
+          "1",
+          "if"
+        ],
+        "lexical": [
+          "invalid decimal literal"
+        ]
+      },
+      "corrections": [],
+      "reason": "scanner-error"
+    },
+    {
+      "prev": "1",
+      "next": "or",
+      "raw": {
+        "text": "1or",
+        "tokens": [
+          "1",
+          "or"
+        ],
+        "tokenizeError": null,
+        "lexical": [
+          "invalid decimal literal"
+        ],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "1or",
+        "tokens": [
+          "1",
+          "or"
+        ],
+        "lexical": [
+          "invalid decimal literal"
+        ]
+      },
+      "corrections": [],
+      "reason": "scanner-error"
+    },
+    {
+      "prev": "0x1",
+      "next": "for",
+      "raw": {
+        "text": "0x1for",
+        "tokens": [
+          "0x1f",
+          "or"
+        ],
+        "tokenizeError": null,
+        "lexical": [
+          "invalid hexadecimal literal"
+        ],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "0x1for",
+        "tokens": [
+          "0x1f",
+          "or"
+        ],
+        "lexical": [
+          "invalid hexadecimal literal"
+        ]
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "1j",
+      "next": "if",
+      "raw": {
+        "text": "1jif",
+        "tokens": [
+          "1j",
+          "if"
+        ],
+        "tokenizeError": null,
+        "lexical": [
+          "invalid imaginary literal"
+        ],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "1jif",
+        "tokens": [
+          "1j",
+          "if"
+        ],
+        "lexical": [
+          "invalid imaginary literal"
+        ]
+      },
+      "corrections": [],
+      "reason": "scanner-error"
+    },
+    {
+      "prev": "1",
+      "next": ".",
+      "raw": {
+        "text": "1.",
+        "tokens": [
+          "1."
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "1.",
+        "tokens": [
+          "1."
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "0",
+      "next": "1",
+      "raw": {
+        "text": "01",
+        "tokens": [
+          "01"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "01",
+        "tokens": [
+          "01"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "1",
+      "next": "j",
+      "raw": {
+        "text": "1j",
+        "tokens": [
+          "1j"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "1j",
+        "tokens": [
+          "1j"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "r",
+      "next": "\"x\"",
+      "raw": {
+        "text": "r\"x\"",
+        "tokens": [
+          "r\"x\""
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "r\"x\"",
+        "tokens": [
+          "r\"x\""
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "f",
+      "next": "\"x\"",
+      "raw": {
+        "text": "f\"x\"",
+        "tokens": [
+          "f\"",
+          "x",
+          "\""
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "f\"x\"",
+        "tokens": [
+          "f\"",
+          "x",
+          "\""
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "*",
+      "next": "*",
+      "raw": {
+        "text": "**",
+        "tokens": [
+          "**"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "**",
+        "tokens": [
+          "**"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "/",
+      "next": "/",
+      "raw": {
+        "text": "//",
+        "tokens": [
+          "//"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "//",
+        "tokens": [
+          "//"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "-",
+      "next": ">",
+      "raw": {
+        "text": "->",
+        "tokens": [
+          "->"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "->",
+        "tokens": [
+          "->"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": ":",
+      "next": "=",
+      "raw": {
+        "text": ":=",
+        "tokens": [
+          ":="
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": ":=",
+        "tokens": [
+          ":="
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "@",
+      "next": "deco",
+      "raw": {
+        "text": "@deco",
+        "tokens": [
+          "@",
+          "deco"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "@deco",
+        "tokens": [
+          "@",
+          "deco"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "x",
+      "next": "!",
+      "raw": {
+        "text": "x!",
+        "tokens": [
+          "x",
+          "!"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "x!",
+        "tokens": [
+          "x",
+          "!"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "1",
+      "next": ":",
+      "raw": {
+        "text": "1:",
+        "tokens": [
+          "1",
+          ":"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "1:",
+        "tokens": [
+          "1",
+          ":"
+        ],
+        "lexical": []
+      },
+      "corrections": [],
+      "reason": "separable"
+    },
+    {
+      "prev": "{",
+      "next": "x",
+      "raw": {
+        "text": "{x",
+        "tokens": [
+          "{",
+          "x"
+        ],
+        "tokenizeError": "unexpected EOF in multi-line statement",
+        "lexical": [],
+        "bracket": [
+          "unexpected EOF in multi-line statement",
+          "'{' was never closed"
+        ]
+      },
+      "corrected": {
+        "text": "{x",
+        "tokens": [
+          "{",
+          "x"
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "ignore-bracket-balance"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": "x",
+      "next": "}",
+      "raw": {
+        "text": "x}",
+        "tokens": [
+          "x",
+          "}"
+        ],
+        "tokenizeError": null,
+        "lexical": [],
+        "bracket": [
+          "unmatched '}'"
+        ]
+      },
+      "corrected": {
+        "text": "x}",
+        "tokens": [
+          "x",
+          "}"
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "ignore-bracket-balance"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": "=",
+      "next": "f\"\"\"",
+      "raw": {
+        "text": "=f\"\"\"",
+        "tokens": [
+          "=",
+          "f\"\"\""
+        ],
+        "tokenizeError": "unterminated triple-quoted f-string literal (detected at line 1)",
+        "lexical": [
+          "unterminated triple-quoted f-string literal (detected at line 1)"
+        ],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "=f\"\"\"\"\"\"",
+        "tokens": [
+          "=",
+          "f\"\"\"",
+          "\"\"\""
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "complete-fstring-start"
+      ],
+      "reason": "separable"
+    },
+    {
+      "prev": "return",
+      "next": "f\"\"\"",
+      "raw": {
+        "text": "returnf\"\"\"",
+        "tokens": [
+          "returnf"
+        ],
+        "tokenizeError": "EOF in multi-line string",
+        "lexical": [
+          "EOF in multi-line string"
+        ],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "returnf\"\"\"\"\"\"",
+        "tokens": [
+          "returnf",
+          "\"\"\"\"\"\""
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "complete-fstring-start"
+      ],
+      "reason": "token-mismatch"
+    },
+    {
+      "prev": "(",
+      "next": "f'''",
+      "raw": {
+        "text": "(f'''",
+        "tokens": [
+          "(",
+          "f'''"
+        ],
+        "tokenizeError": "unterminated triple-quoted f-string literal (detected at line 1)",
+        "lexical": [
+          "unterminated triple-quoted f-string literal (detected at line 1)"
+        ],
+        "bracket": []
+      },
+      "corrected": {
+        "text": "(f''''''",
+        "tokens": [
+          "(",
+          "f'''",
+          "'''"
+        ],
+        "lexical": []
+      },
+      "corrections": [
+        "complete-fstring-start",
+        "ignore-bracket-balance"
+      ],
+      "reason": "separable"
+    }
+  ],
+  "fragments": [
+    {
+      "text": "1or)",
+      "tokens": [
+        "1",
+        "or",
+        ")"
+      ],
+      "tokenizeError": null,
+      "lexical": [
+        "invalid decimal literal"
+      ],
+      "bracket": [
+        "unmatched ')'"
+      ]
+    },
+    {
+      "text": "1if(",
+      "tokens": [
+        "1",
+        "if",
+        "("
+      ],
+      "tokenizeError": "unexpected EOF in multi-line statement",
+      "lexical": [
+        "invalid decimal literal"
+      ],
+      "bracket": [
+        "unexpected EOF in multi-line statement",
+        "'(' was never closed"
+      ]
+    },
+    {
+      "text": "0x1for[",
+      "tokens": [
+        "0x1f",
+        "or",
+        "["
+      ],
+      "tokenizeError": "unexpected EOF in multi-line statement",
+      "lexical": [
+        "invalid hexadecimal literal"
+      ],
+      "bracket": [
+        "unexpected EOF in multi-line statement",
+        "'[' was never closed"
+      ]
+    }
+  ]
+}

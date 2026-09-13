@@ -89,7 +89,9 @@ export function classifySeparator(
 type CompileErrorCodeSubset<T extends CompileErrorCode> = T;
 
 /** Stage 1 diagnostics an adapter may report; anything else is a stage 2 or 3 concern. */
-export type SyntaxIssueCode = CompileErrorCodeSubset<'syntax' | 'unicode-escape'>;
+export type SyntaxIssueCode = CompileErrorCodeSubset<
+  'syntax' | 'unicode-escape' | 'fstring-brace-escape'
+>;
 
 export interface SyntaxIssue {
   readonly start: number;

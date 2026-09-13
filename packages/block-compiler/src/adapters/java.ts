@@ -29,8 +29,9 @@ const PAIR_RULES: readonly PairRule[] = [
  *
  * The scanner-error branch of classifySeparator is not expected to occur for Java. Searching 532
  * pairs of error-free single tokens (number literals against identifiers, suffixes, dots, quotes,
- * and symbols) with javac 25 found no joined text that javac splits back into [A, B] while
- * reporting an error: a malformed join comes back as one broken token (`1` + `_` gives `1_` with
+ * and symbols), with javac 25 and again with javac 26.0.2.1, found no joined text that javac
+ * splits back into [A, B] while reporting an error: a malformed join comes back as one broken
+ * token (`1` + `_` gives `1_` with
  * "illegal underscore"), which is a token-mismatch. TypeScript's `1in` (TS1351) has no Java
  * counterpart: javac lexes `1in` as [1, in] without any error. The branch is kept so every
  * adapter shares the same decision procedure.

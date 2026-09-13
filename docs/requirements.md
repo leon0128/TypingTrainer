@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.2 |
+| Version | 1.3 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.1 — TypeScript adapter lexing and per-language token fusion (Appendix B) |
+| Supersedes | v1.2 — padding atom and tightened auto invariants (Appendix B) |
 
 **Legend**
 
@@ -120,6 +120,12 @@ export type Atom =
    */
   | { kind: 'auto'; text: string; filledBy: number }
   /**
+   * Alignment spaces a formatter inserts before an in-line separator (e.g. gofmt
+   * aligning struct fields). Never typed, never counted, always displayed as plain
+   * whitespace. 🟡 (v1.3)
+   */
+  | { kind: 'padding'; text: string }
+  /**
    * Inter-token whitespace.
    * canonical === '\n' -> only Enter is accepted, and it is always required.
    * canonical === ' '  -> only Space is accepted; `required` per §3.3.1.
@@ -176,6 +182,9 @@ Rationale for not letting Space stand in for a line break: because the display i
 | `'` `"` `` ` `` | String literal **tokens** are identified by the lexer before pairing, so the apostrophe in `"don't"` is never treated as an opening quote |
 | `<` `>` | **Not paired** 🔵 (Q7) — ambiguous with comparison operators |
 | Escapes (`\n`, `\"`) | Remain `literal`; both characters must be typed |
+| Alignment padding | Spaces a formatter adds beyond the single in-line separator to align code (e.g. gofmt) become a `padding` atom directly before that separator. It has no `filledBy`, is never typed, and displays as plain whitespace from the start 🟡 (v1.3) |
+
+Structural rules 🟡 (v1.3): an indentation `auto` atom is filled by the line-break separator immediately before it; a closing `auto` atom is filled by an earlier literal — the matching opener, which the block compiler guarantees because openers are language-specific; a `padding` atom directly follows a literal or a closing `auto` atom and directly precedes an in-line space separator. `TypingProgramSchema` enforces all three.
 
 #### 3.3.4 Typing a character that was auto-inserted 🔵 (Q6)
 
@@ -196,7 +205,7 @@ The engine is a set of pure functions: `handleKey` returns a new state and never
 ```ts
 interface EngineState {
   program: TypingProgram;
-  /** Current atom. Never an `auto` atom (see settle); equals atoms.length once complete. */
+  /** Current atom. Never an `auto` or `padding` atom (see settle); atoms.length once complete. */
   atomIndex: number;
   charIndex: number;
   /** Whether a space has been consumed at the current in-line separator. */
@@ -234,7 +243,7 @@ export function handleKey(prev: EngineState, key: string): { state: EngineState;
       return done(s, 'CORRECT');
     }
 
-    const next = nextTypedAtom(s); // the next atom that is not 'auto'
+    const next = nextTypedAtom(s); // the next atom that is not 'auto' or 'padding'
 
     if (s.separatorConsumed) {
       if (key === ' ' && !(next?.kind === 'separator' && next.canonical === ' ')) {
@@ -263,11 +272,11 @@ export function handleKey(prev: EngineState, key: string): { state: EngineState;
 Helpers:
 
 - `advanceChar` / `advanceAtom` move the cursor, reset `separatorConsumed`, and call `settle`.
-- `settle` skips **every** consecutive `auto` atom, so `foo(bar(baz(1)))` passes all three `)` in one step. If only `auto` atoms and passable separators (consumed, or optional) remain, it passes them all — crediting unconsumed separators — so the program completes on the last typed character without an extra keystroke (e.g. `export { a, b }`).
+- `settle` skips **every** consecutive `auto` and `padding` atom (v1.3), so `foo(bar(baz(1)))` passes all three `)` in one step. If only such atoms and passable separators (consumed, or optional) remain, it passes them all — crediting unconsumed separators — so the program completes on the last typed character without an extra keystroke (e.g. `export { a, b }`).
 - `markMiss` increments `miss` only if `missMarkedHere` is false, then sets it.
 - `missMarkedHere` is cleared whenever the cursor position `(atomIndex, charIndex)` actually advances — not merely when a verdict is `CORRECT`.
 
-**Separator transitions.** U-req = unconsumed and required; U-opt = unconsumed and optional; C = consumed (in-line spaces only, since a line break advances immediately). *Pass* = move on and judge the same key at the next typed atom, crediting +1 only when leaving U-opt. `nextTyped` = the next atom that is not `auto`.
+**Separator transitions.** U-req = unconsumed and required; U-opt = unconsumed and optional; C = consumed (in-line spaces only, since a line break advances immediately). *Pass* = move on and judge the same key at the next typed atom, crediting +1 only when leaving U-opt. `nextTyped` = the next atom that is not `auto` or `padding`.
 
 | `' '` separator | Space | Enter | Tab | Other character |
 | --- | --- | --- | --- | --- |
@@ -618,6 +627,7 @@ Taking the browser's time zone on every request would make past daily and weekly
 | Pending | Waiting color |
 | **Auto-filled** | Same "typed" color as characters the player typed 🔵 (Q6) — a `)` turns typed the moment `(` is pressed |
 | Auto, not yet filled | Dimmed, marking it as something the player will not type |
+| Alignment padding | Plain whitespace from the start, never dimmed, underlined, or highlighted; it is not typed and the caret never rests on it 🟡 (v1.3) |
 | Miss | Flash the cursor position in the error color for ~150 ms |
 
 ### 8.2 Appearance Settings 🔵
@@ -969,3 +979,4 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.2 | Token fusion is per language | The §3.3.1 table is illustrative; each adapter's lexer decides fusion (e.g. `-` `>` is optional in TypeScript, required in Java) |
 | 1.2 | Literal after a separator | A literal following a separator (ignoring auto atoms) must not start with a space. Template substitutions such as `${ user.id } (x)` can produce it, so block-compiler rejects it with a positioned error and TypingProgramSchema enforces it (§3.3) |
 | 1.2 | §9.4 package description | Aligned with the implementation: `block-compiler` lexers are chosen per adapter (the TypeScript adapter uses the `typescript` package), and tree-sitter is used only by `tools/content-cli` (§5.2, §9.1) |
+| 1.3 | Padding atom and auto invariants | **Invariant contradiction found during P0 implementation.** `TypingProgramSchema` documented an auto atom as filled by "a literal (an opening bracket or quote) or a line break", but only checked "an earlier literal or line break", and a language-neutral schema cannot know which characters open a pair. Found while adding gofmt alignment: alignment spaces are now a separate `padding` atom kind without `filledBy`, and the auto rule is tightened to what the schema can verify — indentation is filled by the line break immediately before it, closers by an earlier literal (§3.2, §3.3.3, §3.4, §8.1) |

@@ -142,6 +142,11 @@ body {
   text-decoration: none;
 }
 
+/* Alignment padding: plain whitespace from the start, never dimmed or underlined (§8.1). */
+.cell-padding {
+  color: inherit;
+}
+
 .cell-cursor {
   border-radius: 2px;
   background: var(--cursor-bg);

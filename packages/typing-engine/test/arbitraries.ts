@@ -22,7 +22,7 @@ type Step =
   | { readonly type: 'literal'; readonly text: string }
   | { readonly type: 'open'; readonly prefix: string; readonly bracket: 0 | 1 | 2 }
   | { readonly type: 'close' }
-  | { readonly type: 'space'; readonly required: boolean }
+  | { readonly type: 'space'; readonly required: boolean; readonly padding: number }
   | { readonly type: 'newline'; readonly indent: number }
   /** Close brackets, optionally after a space, then break the line or add a space. */
   | {
@@ -54,7 +54,12 @@ const stepArbitrary: fc.Arbitrary<Step> = fc.oneof(
   { weight: 1, arbitrary: fc.record({ type: fc.constant('close' as const) }) },
   {
     weight: 3,
-    arbitrary: fc.record({ type: fc.constant('space' as const), required: fc.boolean() }),
+    arbitrary: fc.record({
+      type: fc.constant('space' as const),
+      required: fc.boolean(),
+      // Alignment padding before the separator, as gofmt emits it.
+      padding: fc.constantFrom(0, 0, 1, 3),
+    }),
   },
   {
     weight: 2,
@@ -75,7 +80,7 @@ const stepArbitrary: fc.Arbitrary<Step> = fc.oneof(
 function lastTypedAtom(atoms: readonly Atom[]): Atom | undefined {
   for (let index = atoms.length - 1; index >= 0; index -= 1) {
     const atom = atoms[index];
-    if (atom?.kind !== 'auto') return atom;
+    if (atom?.kind !== 'auto' && atom?.kind !== 'padding') return atom;
   }
   return undefined;
 }
@@ -93,14 +98,18 @@ function atLineStart(atoms: readonly Atom[]): boolean {
 /**
  * Builds a program shaped like compiler output: brackets close with auto atoms, line breaks
  * are followed by auto indentation, whitespace never leads a line, trails a line, or doubles
- * up directly, and a required space never follows another separator (closing tokens never
- * fuse with the next token).
+ * up directly (alignment padding may precede an in-line space), and a required space never
+ * follows another separator (closing tokens never fuse with the next token).
  */
 export function buildProgram(first: string, steps: readonly Step[]): TypingProgram {
   const atoms: Atom[] = [{ kind: 'literal', text: first }];
   const openBrackets: { index: number; closer: string }[] = [];
 
   const whitespaceAllowed = () => atoms.at(-1)?.kind !== 'separator' && !atLineStart(atoms);
+  const followsToken = () => {
+    const last = atoms.at(-1);
+    return last?.kind === 'literal' || (last?.kind === 'auto' && !last.text.startsWith(' '));
+  };
   const pushSpace = (required: boolean) => {
     const afterSeparator = lastTypedAtom(atoms)?.kind === 'separator';
     atoms.push({ kind: 'separator', canonical: ' ', required: required && !afterSeparator });
@@ -132,7 +141,11 @@ export function buildProgram(first: string, steps: readonly Step[]): TypingProgr
         closeBracket();
         break;
       case 'space':
-        if (whitespaceAllowed()) pushSpace(step.required);
+        if (!whitespaceAllowed()) break;
+        if (step.padding > 0 && followsToken()) {
+          atoms.push({ kind: 'padding', text: ' '.repeat(step.padding) });
+        }
+        pushSpace(step.required);
         break;
       case 'newline':
         if (whitespaceAllowed()) pushLineBreak(step.indent);

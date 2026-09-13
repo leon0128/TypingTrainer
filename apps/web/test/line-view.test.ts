@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildLayout } from '../src/features/play/layout';
 import { caretOf, cellStates, lineViews } from '../src/features/play/line-view';
-import { IF_PROGRAM, typed } from './program-fixture';
+import { IF_PROGRAM, PADDED_PROGRAM, typed } from './program-fixture';
 
 const layout = buildLayout(IF_PROGRAM);
 const views = (script: string) => lineViews(layout, typed(IF_PROGRAM, script));
@@ -56,6 +56,22 @@ describe('lineViews', () => {
       { typedUntil: 4, cursorHere: false, filledAutoKey: '8' },
       { typedUntil: 1, cursorHere: false, filledAutoKey: '11' },
     ]);
+  });
+});
+
+describe('alignment padding', () => {
+  const padded = buildLayout(PADDED_PROGRAM);
+  const statesAfter = (script: string) => {
+    const [line] = padded.lines;
+    const [view] = lineViews(padded, typed(PADDED_PROGRAM, script));
+    if (!line || !view) throw new Error('layout');
+    return cellStates(line, view);
+  };
+
+  it('never changes state, and the caret skips it to the separator', () => {
+    expect(statesAfter('')).toEqual(['cursor', 'pending', 'padding', 'pending', 'pending']);
+    expect(statesAfter('a:')).toEqual(['typed', 'typed', 'padding', 'cursor', 'pending']);
+    expect(statesAfter('a: ')).toEqual(['typed', 'typed', 'padding', 'typed', 'cursor']);
   });
 });
 

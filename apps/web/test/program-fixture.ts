@@ -27,6 +27,19 @@ export const IF_PROGRAM: TypingProgram = {
   canonicalKeystrokes: 10,
 };
 
+/** `a:  1` with alignment padding before the space separator. */
+export const PADDED_PROGRAM: TypingProgram = {
+  blockId: 'padded-program',
+  atoms: [
+    { kind: 'literal', text: 'a' }, //                                   0
+    { kind: 'literal', text: ':' }, //                                   1
+    { kind: 'padding', text: ' ' }, //                                   2
+    { kind: 'separator', canonical: ' ', required: false }, //           3
+    { kind: 'literal', text: '1' }, //                                   4
+  ] satisfies Atom[],
+  canonicalKeystrokes: 4,
+};
+
 /** Plays a compact key script: `⏎` is Enter, anything else is itself. */
 export function typed(program: TypingProgram, script: string): EngineState {
   let state = createEngineState(program);

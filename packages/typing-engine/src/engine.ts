@@ -16,7 +16,7 @@ export interface KeystrokeCounters {
 
 export interface EngineState {
   readonly program: TypingProgram;
-  /** Index of the current atom. Never an auto atom; equals `atoms.length` once complete. */
+  /** Index of the current atom. Never an auto or padding atom; `atoms.length` once complete. */
   readonly atomIndex: number;
   /** Character offset inside the current literal atom. */
   readonly charIndex: number;
@@ -47,6 +47,11 @@ interface Draft {
   effective: number;
   miss: number;
   ignored: number;
+}
+
+/** Auto and padding atoms are never typed; the cursor skips them and they add no keystrokes. */
+export function isUntypedAtom(atom: Atom | undefined): boolean {
+  return atom?.kind === 'auto' || atom?.kind === 'padding';
 }
 
 export function createEngineState(program: TypingProgram): EngineState {
@@ -93,10 +98,10 @@ export function handleKey(state: EngineState, key: string): KeyResult {
 function dispatch(d: Draft, key: string): Verdict {
   for (;;) {
     const atom = d.atoms[d.atomIndex];
-    // settle() never leaves the cursor on an auto atom, and a pass-through never runs past
+    // settle() never leaves the cursor on an auto or padding atom, and a pass-through never runs past
     // the end: if everything after a passable separator were passable, settle() would
     // already have completed the program.
-    if (atom === undefined || atom.kind === 'auto') {
+    if (atom === undefined || atom.kind === 'auto' || atom.kind === 'padding') {
       throw new Error(`Engine invariant violated at atom ${String(d.atomIndex)}`);
     }
 
@@ -164,13 +169,13 @@ function advanceAtom(d: Draft): void {
 }
 
 /**
- * Normalizes the cursor: skips every auto atom, and if only auto atoms and passable
+ * Normalizes the cursor: skips every auto and padding atom, and if only such atoms and passable
  * separators remain, passes them all (crediting unconsumed ones) so the program completes
  * without an extra keystroke.
  */
 function settle(d: Draft): void {
   const start = d.atomIndex;
-  while (d.atoms[d.atomIndex]?.kind === 'auto') d.atomIndex += 1;
+  while (isUntypedAtom(d.atoms[d.atomIndex])) d.atomIndex += 1;
 
   if (d.atomIndex < d.atoms.length && hasPassableTail(d)) {
     for (let index = d.atomIndex; index < d.atoms.length; index += 1) {
@@ -188,7 +193,7 @@ function settle(d: Draft): void {
 function hasPassableTail(d: Draft): boolean {
   for (let index = d.atomIndex; index < d.atoms.length; index += 1) {
     const atom = d.atoms[index];
-    if (atom === undefined || atom.kind === 'auto') continue;
+    if (atom === undefined || atom.kind === 'auto' || atom.kind === 'padding') continue;
     if (atom.kind === 'literal') return false;
     const consumed = index === d.atomIndex && d.separatorConsumed;
     if (atom.required && !consumed) return false;
@@ -198,7 +203,7 @@ function hasPassableTail(d: Draft): boolean {
 
 function nextTypedAtom(d: Draft): Atom | undefined {
   let index = d.atomIndex + 1;
-  while (d.atoms[index]?.kind === 'auto') index += 1;
+  while (isUntypedAtom(d.atoms[index])) index += 1;
   return d.atoms[index];
 }
 

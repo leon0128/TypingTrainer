@@ -3,10 +3,11 @@ import type { TypingProgram } from '@typing-trainer/contracts';
 /**
  * One character position on screen. In-line space separators are one `space` cell; a line-break
  * separator is an empty `eol` cell at the end of its line, so the caret has a place to sit.
+ * Alignment padding is one `padding` cell per space and never changes state.
  */
 export type Cell =
   | {
-      readonly kind: 'literal' | 'space' | 'eol';
+      readonly kind: 'literal' | 'padding' | 'space' | 'eol';
       readonly text: string;
       readonly atomIndex: number;
       readonly charIndex: number;
@@ -27,7 +28,7 @@ export interface LineModel {
 
 export interface Layout {
   readonly lines: readonly LineModel[];
-  /** For each atom, the line and cell of its first character (auto atoms included). */
+  /** For each atom, the line and cell of its first character (untyped atoms included). */
   readonly atomStarts: readonly { readonly line: number; readonly cell: number }[];
 }
 
@@ -42,10 +43,13 @@ export function buildLayout(program: TypingProgram): Layout {
     atomStarts.push({ line: lines.length, cell: cells.length });
     switch (atom.kind) {
       case 'literal':
+      case 'padding': {
+        const kind = atom.kind;
         Array.from(atom.text).forEach((text, charIndex) => {
-          cells.push({ kind: 'literal', text, atomIndex, charIndex });
+          cells.push({ kind, text, atomIndex, charIndex });
         });
         break;
+      }
       case 'auto':
         autoAtoms.push(atomIndex);
         Array.from(atom.text).forEach((text, charIndex) => {

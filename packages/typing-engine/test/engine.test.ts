@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createEngineState, handleKey, isComplete } from '../src';
-import { A, L, NL, SP, play, program } from './helpers';
+import { A, L, NL, P, SP, play, program } from './helpers';
 
 /**
  * ```ts
@@ -296,6 +296,35 @@ describe('separator chains through auto atoms', () => {
     expect(isComplete(state)).toBe(true);
     expect(state.counters.miss).toBe(1);
     expect(state.counters.effective).toBe(SEPARATOR_CHAIN.canonicalKeystrokes);
+  });
+});
+
+/** `"width":  80,` with gofmt alignment padding before the space separator. */
+const ALIGNED_ENTRY = program([
+  L('"'), //       0
+  L('width'), //   1
+  A('"', 0), //    2
+  L(':'), //       3
+  P(' '), //       4
+  SP(false), //    5
+  L('80'), //      6
+  L(','), //       7
+]);
+
+describe('alignment padding', () => {
+  it('skips padding as soon as the literal before it is typed', () => {
+    const { state } = play(ALIGNED_ENTRY, '"width:');
+    expect(state.atomIndex).toBe(5);
+    expect(state.counters.effective).toBe('"width:'.length);
+  });
+
+  it('credits the separator once whether it is skipped, typed once, or typed repeatedly', () => {
+    for (const script of ['"width:80,', '"width: 80,', '"width:   80,']) {
+      const { state, verdicts } = play(ALIGNED_ENTRY, script);
+      expect(verdicts).not.toContain('MISS');
+      expect(isComplete(state)).toBe(true);
+      expect(state.counters.effective).toBe(ALIGNED_ENTRY.canonicalKeystrokes);
+    }
   });
 });
 

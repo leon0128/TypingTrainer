@@ -1,4 +1,4 @@
-import { isComplete, type EngineState } from '@typing-trainer/typing-engine';
+import { isComplete, isUntypedAtom, type EngineState } from '@typing-trainer/typing-engine';
 
 import type { Layout, LineModel } from './layout';
 
@@ -16,7 +16,8 @@ export interface LineView {
   readonly filledAutoKey: string;
 }
 
-export type CellState = 'typed' | 'cursor' | 'pending' | 'auto-filled' | 'auto-pending';
+/** §8.1 presentation states; `padding` never changes (alignment whitespace, v1.3). */
+export type CellState = 'typed' | 'cursor' | 'pending' | 'auto-filled' | 'auto-pending' | 'padding';
 
 /**
  * The caret position: the current atom and character, except that after a consumed space
@@ -28,7 +29,7 @@ export function caretOf(state: EngineState): { atomIndex: number; charIndex: num
   const { atoms } = state.program;
   if (!state.separatorConsumed) return { atomIndex: state.atomIndex, charIndex: state.charIndex };
   let next = state.atomIndex + 1;
-  while (atoms[next]?.kind === 'auto') next += 1;
+  while (isUntypedAtom(atoms[next])) next += 1;
   return { atomIndex: next, charIndex: 0 };
 }
 
@@ -64,6 +65,7 @@ export function cellStates(line: LineModel, view: LineView): CellState[] {
     view.filledAutoKey === '' ? [] : view.filledAutoKey.split(',').map(Number),
   );
   return line.cells.map((cell, index) => {
+    if (cell.kind === 'padding') return 'padding';
     if (cell.kind === 'auto') return filled.has(cell.atomIndex) ? 'auto-filled' : 'auto-pending';
     if (index < view.typedUntil) return 'typed';
     if (view.cursorHere && index === view.typedUntil) return 'cursor';

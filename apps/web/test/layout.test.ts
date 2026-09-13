@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildLayout } from '../src/features/play/layout';
-import { IF_PROGRAM } from './program-fixture';
+import { IF_PROGRAM, PADDED_PROGRAM } from './program-fixture';
 
 describe('buildLayout', () => {
   const layout = buildLayout(IF_PROGRAM);
@@ -41,5 +41,19 @@ describe('buildLayout', () => {
       { line: 1, cell: 3 },
       { line: 2, cell: 0 },
     ]);
+  });
+
+  it('gives alignment padding its own cells, outside the auto atoms', () => {
+    const padded = buildLayout(PADDED_PROGRAM);
+    const [line] = padded.lines;
+    expect(line?.cells.map((cell) => cell.text).join('')).toBe('a:  1');
+    expect(line?.cells.map((cell) => cell.kind)).toEqual([
+      'literal',
+      'literal',
+      'padding',
+      'space',
+      'literal',
+    ]);
+    expect(line?.autoAtoms).toEqual([]);
   });
 });

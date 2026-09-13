@@ -4,6 +4,7 @@ import { createEngineState, handleKey, type EngineState, type Verdict } from '..
 
 export const L = (text: string): Atom => ({ kind: 'literal', text });
 export const A = (text: string, filledBy: number): Atom => ({ kind: 'auto', text, filledBy });
+export const P = (text: string): Atom => ({ kind: 'padding', text });
 export const SP = (required: boolean): Atom => ({ kind: 'separator', canonical: ' ', required });
 export const NL: Atom = { kind: 'separator', canonical: '\n', required: true };
 

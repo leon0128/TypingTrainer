@@ -64,9 +64,11 @@ describe('scoring fairness (§3.5)', () => {
             const before = state;
             state = handleKey(state, key).state;
 
-            // Cursor never rests on an auto atom, counters never decrease, and a keystroke
+            // Cursor never rests on an auto or padding atom, counters never decrease, and a keystroke
             // adds at most one miss.
-            if (!isComplete(state)) expect(program.atoms[state.atomIndex]?.kind).not.toBe('auto');
+            if (!isComplete(state)) {
+              expect(['auto', 'padding']).not.toContain(program.atoms[state.atomIndex]?.kind);
+            }
             expect(state.counters.effective).toBeGreaterThanOrEqual(before.counters.effective);
             expect(state.counters.effective).toBeLessThanOrEqual(program.canonicalKeystrokes);
             expect(state.counters.miss - before.counters.miss).toBeGreaterThanOrEqual(0);
@@ -194,7 +196,7 @@ describe('program generator', () => {
   /** Atoms from `index + 1` up to the next typed atom, and that typed atom. */
   function autosThenNext(atoms: readonly Atom[], index: number) {
     let next = index + 1;
-    while (atoms[next]?.kind === 'auto') next += 1;
+    while (atoms[next]?.kind === 'auto' || atoms[next]?.kind === 'padding') next += 1;
     return { autos: atoms.slice(index + 1, next), next: atoms[next] };
   }
 
@@ -219,6 +221,8 @@ describe('program generator', () => {
         const { autos, next } = autosThenNext(atoms, i);
         return isSpace(atom) && autos.some(isCloser) && isSpace(next);
       }),
+    'padding before a space separator': (atoms) =>
+      atoms.some((atom, i) => atom.kind === 'padding' && isSpace(atoms[i + 1])),
     'ends in an optional space and autos': (atoms) => {
       let lastLiteral = atoms.length - 1;
       while (lastLiteral >= 0 && atoms[lastLiteral]?.kind !== 'literal') lastLiteral -= 1;

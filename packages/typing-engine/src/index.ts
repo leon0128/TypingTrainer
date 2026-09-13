@@ -10,4 +10,5 @@ export {
 export type { EngineState, KeyResult, KeystrokeCounters, Verdict } from './engine';
 export { classifyKey } from './key-classification';
 export type { KeyDisposition, KeyInput } from './key-classification';
-export { computeAccuracy } from './metrics';
+export { PLAY_DURATION_MS, computeAccuracy, computeMetrics } from './metrics';
+export type { OfficialMetrics } from './metrics';

@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.9 |
+| Version | 1.10 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.8 — Q22 initial content target moved into P1 (Appendix B) |
+| Supersedes | v1.9 — exact score rounding (Appendix B) |
 
 **Legend**
 
@@ -325,6 +325,8 @@ Play duration is **fixed at 120 seconds** (§4.1), so all per-minute figures div
 | Raw keystrokes | `raw` — diagnostics and anomaly detection only |
 
 Misses are penalized twice, by design: they do not advance the cursor, and they reduce the accuracy multiplier.
+
+**Exact rounding** 🟡 (v1.10). `KPM × accuracy` equals `effective² / (2 × (effective + miss))`, and the score is computed from that ratio of integers, rounding halves up. Multiplying the floating-point KPM by the floating-point accuracy can land just below an exact half — for 165 effective keystrokes and 60 misses it gives 60.49999999999999 instead of 60.5 — so the client and the server must both use the integer form, via `typing-engine`'s `computeMetrics`.
 
 ### 3.7 Input Handling Notes
 
@@ -999,3 +1001,4 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.8 | P0 scope as delivered | P0 is complete with the scope agreed at kickoff: all four adapters verified in the compiler and engine, and a single TypeScript demo block in the play screen. Language selection (F-03), the official 120-second result screen (F-04), the content CLI with tree-sitter, and initial content move to P1 (§2, §10) |
 | 1.8 | tree-sitter validation gap | `tree-sitter-python` 0.25.0 accepts `01`, `1_`, `1if`, t-strings, and a missing indented block, so the content CLI must add a compile check with each language's toolchain; other grammars are still to be measured (§5.2) |
 | 1.9 | Initial content in P1 | P1 completes only with the Q22 launch target of 50 blocks per language, since P1 is when the service starts being used: with 20 blocks per run issued from a pool of about 20, every run would replay nearly the same blocks (§5.3, R4). P4 keeps the 150+ target (§10) |
+| 1.10 | Exact score rounding | The score is computed as the integer ratio `effective² / (2 × (effective + miss))` rounded half up, because multiplying floating-point KPM and accuracy can fall just below an exact half (165 effective, 60 misses: 60.49999999999999) (§3.6) |

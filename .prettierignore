@@ -1,0 +1,5 @@
+pnpm-lock.yaml
+dist/
+coverage/
+# The specification is hand-formatted; keep Prettier from reflowing its tables.
+docs/

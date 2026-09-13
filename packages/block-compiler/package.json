@@ -1,0 +1,14 @@
+{
+  "name": "@typing-trainer/block-compiler",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@typing-trainer/contracts": "workspace:*",
+    "typescript": "~6.0.3"
+  }
+}

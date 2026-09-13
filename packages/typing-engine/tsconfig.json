@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist"
+    // `lib: ["ES2022"]` and `types: []` from the base config are intentional here:
+    // any DOM or Node API usage fails to typecheck, keeping the engine portable.
+  },
+  "include": ["src", "test"],
+  "references": [{ "path": "../contracts" }]
+}

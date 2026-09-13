@@ -1,0 +1,16 @@
+{
+  "name": "@typing-trainer/typing-engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@typing-trainer/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "fast-check": "^4.10.0"
+  }
+}

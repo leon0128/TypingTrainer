@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { compileBlock, type IndentRule, type LanguageAdapter, type Token } from '../src';
+import {
+  SourceSyntaxError,
+  compileBlock,
+  type IndentRule,
+  type LanguageAdapter,
+  type Token,
+} from '../src';
 import { diagnosticsOf } from './helpers';
 
 describe('TypeScript compile errors: one diagnostic each', () => {
@@ -147,6 +153,22 @@ describe('compiler core (stub adapter)', () => {
       const tokens = [plain('a', 0), plain('b', 4)];
       expect(diagnosticsOf('a \t b', stub(tokens))).toEqual([{ code: 'tab', at: '1:3' }]);
     });
+  });
+
+  it('reports stage 1 issues with the code the adapter gives, defaulting to syntax', () => {
+    const adapter: LanguageAdapter = {
+      ...stub([]),
+      tokenize: () => {
+        throw new SourceSyntaxError([
+          { start: 0, end: 6, message: 'unicode escape', code: 'unicode-escape' },
+          { start: 7, end: 8, message: 'unterminated string' },
+        ]);
+      },
+    };
+    expect(diagnosticsOf('\\u0041 "', adapter)).toEqual([
+      { code: 'unicode-escape', at: '1:1' },
+      { code: 'syntax', at: '1:8' },
+    ]);
   });
 
   it('fails safe with invalid-program when the output violates TypingProgramSchema', () => {

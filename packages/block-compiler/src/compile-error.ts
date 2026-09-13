@@ -1,6 +1,7 @@
 export type CompileErrorCode =
-  // Stage 1: parsing.
+  // Stage 1: parsing. Reported by adapters through SyntaxIssue.code.
   | 'syntax'
+  | 'unicode-escape'
   // Stage 2: characters and whitespace between tokens (§5.1).
   | 'non-ascii'
   | 'tab'

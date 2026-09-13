@@ -41,7 +41,9 @@ export function compileBlock(
     tokens = adapter.tokenize(source);
   } catch (error) {
     if (!(error instanceof SourceSyntaxError)) throw error;
-    for (const issue of error.issues) report('syntax', issue.message, issue.start, issue.end);
+    for (const issue of error.issues) {
+      report(issue.code ?? 'syntax', issue.message, issue.start, issue.end);
+    }
     throw fail();
   }
 

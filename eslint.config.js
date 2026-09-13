@@ -29,6 +29,12 @@ export default defineConfig(
     },
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
+      // A switch over a union without a default must list every member, so adding a member
+      // (e.g. a new CompileErrorCode) cannot silently fall through.
+      '@typescript-eslint/switch-exhaustiveness-check': [
+        'error',
+        { considerDefaultExhaustiveForUnions: true, requireDefaultForNonUnion: false },
+      ],
     },
   },
 

@@ -1,3 +1,5 @@
+import type { CompileErrorCode } from './compile-error';
+
 /** One part of a lexer token: typed as-is, or one side of an automatically closed pair. */
 export type TokenPiece =
   | { readonly role: 'plain'; readonly text: string }
@@ -83,10 +85,18 @@ export function classifySeparator(
   return { required: false, reason: 'separable', tokens, scannerErrors };
 }
 
+/** Fails to typecheck if `T` names a code that CompileErrorCode does not define. */
+type CompileErrorCodeSubset<T extends CompileErrorCode> = T;
+
+/** Stage 1 diagnostics an adapter may report; anything else is a stage 2 or 3 concern. */
+export type SyntaxIssueCode = CompileErrorCodeSubset<'syntax' | 'unicode-escape'>;
+
 export interface SyntaxIssue {
   readonly start: number;
   readonly end: number;
   readonly message: string;
+  /** Defaults to 'syntax'. */
+  readonly code?: SyntaxIssueCode;
 }
 
 export class SourceSyntaxError extends Error {

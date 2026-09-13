@@ -9,6 +9,7 @@ export type {
   SeparatorAnalysis,
   SeparatorRule,
   SyntaxIssue,
+  SyntaxIssueCode,
   Token,
   TokenPiece,
 } from './language-adapter';

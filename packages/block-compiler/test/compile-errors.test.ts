@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { LanguageAdapter, Token } from '../src';
+import { compileBlock, type IndentRule, type LanguageAdapter, type Token } from '../src';
 import { diagnosticsOf } from './helpers';
 
 describe('TypeScript compile errors: one diagnostic each', () => {
@@ -15,6 +15,8 @@ describe('TypeScript compile errors: one diagnostic each', () => {
     ['trailing-whitespace', 'const a = 1;  \nconst b = 2;', '1:13'],
     ['indentation-width', 'function f() {\n   return 1;\n}', '2:1'],
     ['indentation-width', 'function f() {\n return 1;\n}', '2:1'],
+    // TypeScript does not align with spaces (IndentRule.alignment === 'none').
+    ['multiple-spaces', 'const a  = 1;', '1:8'],
     // Invariant 6 (§3.3): the literal ` (x` would follow a separator across the auto `}`.
     ['space-literal-after-separator', 'const s = `${ user.id } (x)`;', '1:24'],
   ])('%s: %j', (code, source, at) => {
@@ -54,7 +56,7 @@ describe('TypeScript compile errors: collection and staging', () => {
   });
 });
 
-describe('compiler core pairing checks (stub adapter)', () => {
+describe('compiler core (stub adapter)', () => {
   const piece = (role: 'open' | 'close', pair: string, text: string) => ({ role, pair, text });
   const plain = (text: string, start: number): Token => ({
     kind: 0,
@@ -70,7 +72,11 @@ describe('compiler core pairing checks (stub adapter)', () => {
     end: start + text.length,
     pieces: [piece(role, pair, text)],
   });
-  const stub = (tokens: Token[], required = false): LanguageAdapter => ({
+  const stub = (
+    tokens: Token[],
+    required = false,
+    alignment: IndentRule['alignment'] = 'none',
+  ): LanguageAdapter => ({
     slug: 'stub',
     tokenize: () => tokens,
     separatorRule: () => ({ required }),
@@ -78,22 +84,69 @@ describe('compiler core pairing checks (stub adapter)', () => {
       { pair: 'paren', open: '(', close: ')' },
       { pair: 'bracket', open: '[', close: ']' },
     ],
-    indentRule: () => ({ width: 2 }),
+    indentRule: () => ({ width: 2, alignment }),
   });
 
-  it('reports a close with no open', () => {
-    const adapter = stub([plain('a', 0), paired('close', 'paren', ')', 1)]);
-    expect(diagnosticsOf('a)', adapter)).toEqual([{ code: 'unmatched-close', at: '1:2' }]);
+  describe('pairing', () => {
+    it('reports a close with no open', () => {
+      const adapter = stub([plain('a', 0), paired('close', 'paren', ')', 1)]);
+      expect(diagnosticsOf('a)', adapter)).toEqual([{ code: 'unmatched-close', at: '1:2' }]);
+    });
+
+    it('reports a close of the wrong kind', () => {
+      const adapter = stub([paired('open', 'paren', '(', 0), paired('close', 'bracket', ']', 1)]);
+      expect(diagnosticsOf('(]', adapter)).toEqual([{ code: 'mismatched-close', at: '1:2' }]);
+    });
+
+    it('reports an open that is never closed', () => {
+      const adapter = stub([paired('open', 'paren', '(', 0), plain('a', 1)]);
+      expect(diagnosticsOf('(a', adapter)).toEqual([{ code: 'unclosed-open', at: '1:1' }]);
+    });
   });
 
-  it('reports a close of the wrong kind', () => {
-    const adapter = stub([paired('open', 'paren', '(', 0), paired('close', 'bracket', ']', 1)]);
-    expect(diagnosticsOf('(]', adapter)).toEqual([{ code: 'mismatched-close', at: '1:2' }]);
-  });
+  describe('runs of spaces between tokens', () => {
+    const colonOne = [plain('a', 0), plain(':', 1), plain('1', 4)];
 
-  it('reports an open that is never closed', () => {
-    const adapter = stub([paired('open', 'paren', '(', 0), plain('a', 1)]);
-    expect(diagnosticsOf('(a', adapter)).toEqual([{ code: 'unclosed-open', at: '1:1' }]);
+    it('turns extra spaces into padding before the separator when the adapter aligns', () => {
+      const program = compileBlock('a:  1', stub(colonOne, false, 'spaces'), 'aligned');
+      expect(program.atoms).toEqual([
+        { kind: 'literal', text: 'a' },
+        { kind: 'literal', text: ':' },
+        { kind: 'padding', text: ' ' },
+        { kind: 'separator', canonical: ' ', required: false },
+        { kind: 'literal', text: '1' },
+      ]);
+      expect(program.canonicalKeystrokes).toBe(4);
+    });
+
+    it('places padding after an auto closer too', () => {
+      const tokens = [
+        paired('open', 'paren', '(', 0),
+        plain('a', 1),
+        paired('close', 'paren', ')', 2),
+        plain('b', 6),
+      ];
+      const program = compileBlock('(a)   b', stub(tokens, false, 'spaces'), 'aligned');
+      expect(program.atoms).toEqual([
+        { kind: 'literal', text: '(' },
+        { kind: 'literal', text: 'a' },
+        { kind: 'auto', text: ')', filledBy: 0 },
+        { kind: 'padding', text: '  ' },
+        { kind: 'separator', canonical: ' ', required: false },
+        { kind: 'literal', text: 'b' },
+      ]);
+    });
+
+    it('reports multiple spaces when the adapter does not align', () => {
+      expect(diagnosticsOf('a:  1', stub(colonOne))).toEqual([
+        { code: 'multiple-spaces', at: '1:3' },
+      ]);
+    });
+
+    it('does not report multiple spaces again for a gap already reported as containing a tab', () => {
+      const tokens = [plain('a', 0), plain('b', 4)];
+      expect(diagnosticsOf('a \t b', stub(tokens))).toEqual([{ code: 'tab', at: '1:3' }]);
+    });
   });
 
   it('fails safe with invalid-program when the output violates TypingProgramSchema', () => {

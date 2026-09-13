@@ -2,8 +2,10 @@ import ts from 'typescript';
 
 import {
   SourceSyntaxError,
+  classifySeparator,
   type LanguageAdapter,
   type PairRule,
+  type SeparatorAnalysis,
   type SyntaxIssue,
   type Token,
   type TokenPiece,
@@ -33,7 +35,8 @@ export const typescriptAdapter: LanguageAdapter = {
   tokenize,
   separatorRule: (prev, next) => ({ required: analyzeSeparator(prev, next).required }),
   pairRules: () => [...PAIR_RULES],
-  indentRule: () => ({ width: 2 }),
+  // Prettier never aligns with extra spaces, so a run of spaces is a compile error.
+  indentRule: () => ({ width: 2, alignment: 'none' }),
 };
 
 function tokenize(source: string): Token[] {
@@ -115,20 +118,6 @@ function splitPieces(kind: ts.SyntaxKind, text: string): TokenPiece[] {
   }
 }
 
-export interface SeparatorAnalysis {
-  readonly required: boolean;
-  /**
-   * - 'token-mismatch': re-lexing `A + B` did not yield exactly [A, B] -> required
-   * - 'scanner-error' : it did, but the scanner reported an error -> required
-   * - 'separable'     : exactly [A, B] with no scanner error -> optional
-   */
-  readonly reason: 'token-mismatch' | 'scanner-error' | 'separable';
-  /** Token texts produced by re-lexing `A + B`. */
-  readonly tokens: readonly string[];
-  /** Diagnostic codes reported by the scanner while re-lexing. */
-  readonly scannerErrors: readonly number[];
-}
-
 /** §3.3.1: a separator is optional only if re-lexing `A.text + B.text` yields exactly [A, B]. */
 export function analyzeSeparator(
   prev: Pick<Token, 'kind' | 'text'>,
@@ -170,12 +159,7 @@ export function analyzeSeparator(
     tokens.push(scanner.getTokenText());
   }
 
-  const separable = tokens.length === 2 && tokens[0] === prev.text && tokens[1] === next.text;
-  if (!separable) return { required: true, reason: 'token-mismatch', tokens, scannerErrors };
-  if (scannerErrors.length > 0) {
-    return { required: true, reason: 'scanner-error', tokens, scannerErrors };
-  }
-  return { required: false, reason: 'separable', tokens, scannerErrors };
+  return classifySeparator(prev.text, next.text, tokens, scannerErrors);
 }
 
 // Token kinds are plain numbers in the adapter-neutral Token type; for this adapter they are

@@ -104,7 +104,7 @@ function buildAtoms(
   };
 
   const pairs = new Map(adapter.pairRules().map((rule) => [rule.pair, rule]));
-  const indentWidth = adapter.indentRule().width;
+  const { width: indentWidth, alignment } = adapter.indentRule();
   const openPairs: { pair: string; atomIndex: number; offset: number }[] = [];
 
   let cursor = 0;
@@ -189,8 +189,21 @@ function buildAtoms(
 
     const firstBreak = gap.indexOf('\n');
     if (firstBreak === -1) {
+      // Gaps with tabs or other characters have already been reported by checkCharacters.
+      const extraSpaces = /^ +$/.test(gap) ? gap.length - 1 : 0;
+      if (extraSpaces > 0 && alignment === 'spaces') {
+        // Formatter alignment (§3.3.3): everything but the last space is padding.
+        push({ kind: 'padding', text: ' '.repeat(extraSpaces) }, gapStart);
+      } else if (extraSpaces > 0) {
+        report(
+          'multiple-spaces',
+          `${String(gap.length)} consecutive spaces between tokens; use exactly one`,
+          gapStart,
+          next.start,
+        );
+      }
       const { required } = adapter.separatorRule(prev, next);
-      push({ kind: 'separator', canonical: ' ', required }, gapStart);
+      push({ kind: 'separator', canonical: ' ', required }, gapStart + extraSpaces);
       return;
     }
 
@@ -285,7 +298,7 @@ function checkLiteralsAfterSeparators(
 ): void {
   let previousTyped: Atom | undefined;
   atoms.forEach((atom, index) => {
-    if (atom.kind === 'auto') return;
+    if (atom.kind === 'auto' || atom.kind === 'padding') return;
     if (
       atom.kind === 'literal' &&
       previousTyped?.kind === 'separator' &&

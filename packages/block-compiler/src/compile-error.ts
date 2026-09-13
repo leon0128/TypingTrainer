@@ -9,6 +9,7 @@ export type CompileErrorCode =
   | 'leading-indentation'
   | 'blank-line'
   | 'trailing-whitespace'
+  | 'multiple-spaces'
   | 'indentation-width'
   // Stage 2: pairing.
   | 'unmatched-close'

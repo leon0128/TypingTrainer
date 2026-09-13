@@ -29,6 +29,12 @@ export interface PairRule {
 export interface IndentRule {
   /** Spaces per indentation level. Indentation that is not a multiple is a compile error. */
   readonly width: number;
+  /**
+   * How runs of spaces between tokens on one line are treated.
+   * - 'none'  : the formatter never aligns; more than one space is a compile error.
+   * - 'spaces': the formatter aligns with spaces (gofmt); extra spaces become a `padding` atom.
+   */
+  readonly alignment: 'none' | 'spaces';
 }
 
 /** A language adapter (§5.4). The compiler core knows nothing about any specific language. */
@@ -45,6 +51,36 @@ export interface LanguageAdapter {
   pairRules(): PairRule[];
   /** Indentation width and style. */
   indentRule(): IndentRule;
+}
+
+/** Why a separator is or is not required, shared by every adapter's re-lexing rule (§3.3.1). */
+export interface SeparatorAnalysis {
+  readonly required: boolean;
+  /**
+   * - 'token-mismatch': re-lexing `A + B` did not yield exactly [A, B] -> required
+   * - 'scanner-error' : it did, but the scanner reported an error -> required
+   * - 'separable'     : exactly [A, B] with no scanner error -> optional
+   */
+  readonly reason: 'token-mismatch' | 'scanner-error' | 'separable';
+  /** Token texts produced by re-lexing `A + B`. */
+  readonly tokens: readonly string[];
+  /** Adapter-specific identifiers of scanner errors (TypeScript: numeric diagnostic codes). */
+  readonly scannerErrors: readonly (number | string)[];
+}
+
+/** Turns the result of re-lexing `prev + next` into a separator decision (§3.3.1). */
+export function classifySeparator(
+  prev: string,
+  next: string,
+  tokens: readonly string[],
+  scannerErrors: readonly (number | string)[],
+): SeparatorAnalysis {
+  const separable = tokens.length === 2 && tokens[0] === prev && tokens[1] === next;
+  if (!separable) return { required: true, reason: 'token-mismatch', tokens, scannerErrors };
+  if (scannerErrors.length > 0) {
+    return { required: true, reason: 'scanner-error', tokens, scannerErrors };
+  }
+  return { required: false, reason: 'separable', tokens, scannerErrors };
 }
 
 export interface SyntaxIssue {

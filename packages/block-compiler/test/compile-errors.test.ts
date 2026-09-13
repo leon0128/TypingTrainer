@@ -155,6 +155,21 @@ describe('compiler core (stub adapter)', () => {
     });
   });
 
+  describe('text between tokens (allow-list)', () => {
+    // The stub knows no comment syntax at all: anything but spaces and line breaks is rejected.
+    it.each([
+      ['unexpected-text', 'a % b', [plain('a', 0), plain('b', 4)], '1:3'],
+      ['unexpected-text', 'a ;; b', [plain('a', 0), plain('b', 5)], '1:3'],
+      ['comment', 'a # note\nb', [plain('a', 0), plain('b', 9)], '1:3'],
+      ['comment', 'a // note\nb', [plain('a', 0), plain('b', 10)], '1:3'],
+      ['line-continuation', 'a \\\nb', [plain('a', 0), plain('b', 4)], '1:3'],
+      ['unexpected-text', '% a', [plain('a', 2)], '1:1'],
+      ['unexpected-text', 'a ;;', [plain('a', 0)], '1:3'],
+    ] as const)('%s: %j', (code, source, tokens, at) => {
+      expect(diagnosticsOf(source, stub([...tokens]))).toEqual([{ code, at }]);
+    });
+  });
+
   it('reports stage 1 issues with the code the adapter gives, defaulting to syntax', () => {
     const adapter: LanguageAdapter = {
       ...stub([]),

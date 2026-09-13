@@ -7,6 +7,8 @@ export type CompileErrorCode =
   | 'tab'
   | 'carriage-return'
   | 'comment'
+  | 'line-continuation'
+  | 'unexpected-text'
   | 'leading-indentation'
   | 'blank-line'
   | 'trailing-whitespace'

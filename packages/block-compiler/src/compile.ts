@@ -191,11 +191,7 @@ function buildAtoms(
 
   function addWhitespace(gap: string, gapStart: number, prev: Token, next: Token): void {
     if (gap === '') return;
-    const comment = gap.indexOf('/');
-    if (comment !== -1) {
-      report('comment', 'comments are not allowed in blocks', gapStart + comment, next.start);
-      return;
-    }
+    if (!checkGapText(gap, gapStart, report)) return;
 
     const firstBreak = gap.indexOf('\n');
     if (firstBreak === -1) {
@@ -258,10 +254,8 @@ function buildAtoms(
 
 function checkLeadingGap(gap: string, report: Report): void {
   if (gap === '') return;
-  const comment = gap.indexOf('/');
-  if (comment !== -1) {
-    report('comment', 'comments are not allowed in blocks', comment, gap.length);
-  } else if (gap.includes('\n')) {
+  if (!checkGapText(gap, 0, report)) return;
+  if (gap.includes('\n')) {
     report('blank-line', 'a block must not start with a blank line', 0, gap.length);
   } else {
     report('leading-indentation', 'the first line of a block must not be indented', 0, gap.length);
@@ -270,16 +264,7 @@ function checkLeadingGap(gap: string, report: Report): void {
 
 /** A block may end with at most one line break. */
 function checkTrailingGap(gap: string, gapStart: number, report: Report): void {
-  const comment = gap.indexOf('/');
-  if (comment !== -1) {
-    report(
-      'comment',
-      'comments are not allowed in blocks',
-      gapStart + comment,
-      gapStart + gap.length,
-    );
-    return;
-  }
+  if (!checkGapText(gap, gapStart, report)) return;
   const space = gap.indexOf(' ');
   if (space !== -1) {
     report(
@@ -298,6 +283,37 @@ function checkTrailingGap(gap: string, gapStart: number, report: Report): void {
       gapStart + gap.length,
     );
   }
+}
+
+/**
+ * Allow-list check for the text between tokens (§5.1): only spaces and line breaks may appear.
+ * Tabs, carriage returns, and non-ASCII characters are skipped here because checkCharacters
+ * already reports them. Any other character is an error whatever the language, so an adapter
+ * for a language with new comment or continuation syntax needs no change here; the character
+ * found only selects the code and message. Returns false when an error was reported.
+ */
+function checkGapText(gap: string, gapStart: number, report: Report): boolean {
+  const index = Array.from(gap).findIndex(
+    (ch) => ch !== ' ' && ch !== '\n' && ch !== '\t' && ch !== '\r' && ch >= ' ' && ch <= '~',
+  );
+  if (index === -1) return true;
+
+  const rest = gap.slice(index);
+  const start = gapStart + index;
+  const end = gapStart + gap.length;
+  if (rest.startsWith('#') || rest.startsWith('//') || rest.startsWith('/*')) {
+    report('comment', 'comments are not allowed in blocks', start, end);
+  } else if (/^\\ *\n/.test(rest)) {
+    report('line-continuation', 'explicit line continuation is not allowed', start, start + 1);
+  } else {
+    report(
+      'unexpected-text',
+      `unexpected ${JSON.stringify(rest.charAt(0))}: only spaces and line breaks may appear between tokens`,
+      start,
+      end,
+    );
+  }
+  return false;
 }
 
 /** Invariant 6 of TypingProgramSchema, reported with a source position (§3.3). */

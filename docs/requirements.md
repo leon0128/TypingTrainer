@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.5 |
+| Version | 1.6 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.4 — Java adapter lexing and Java-specific constraints (Appendix B) |
+| Supersedes | v1.5 — allow-list check of text between tokens (Appendix B) |
 
 **Legend**
 
@@ -465,7 +465,7 @@ which makes the Ghost's final score exactly equal to the record, so "beat the Gh
 | Dependencies | Core syntax and the standard library only. No third-party packages or frameworks |
 | Characters | **Printable ASCII only** (Q10) |
 | **Comments** | **Not allowed.** Comments are not typing targets, so blocks are generated without them and the validator rejects any comment token (Q10) |
-| Forbidden | Tab characters (indentation is normalized to spaces), trailing whitespace, CRLF, blank lines inside a block; runs of spaces between tokens, except alignment spaces a language's formatter inserts (§3.3.3); tokens spanning lines, such as Go raw strings, Java text blocks, or Python triple-quoted strings. Both are checked by the language-neutral block compiler for every adapter (`multiple-spaces`, `multiline-token`), so an adapter needs no check of its own 🟡 (v1.4) |
+| Forbidden | Tab characters (indentation is normalized to spaces), trailing whitespace, CRLF, blank lines inside a block; runs of spaces between tokens, except alignment spaces a language's formatter inserts (§3.3.3); tokens spanning lines, such as Go raw strings, Java text blocks, or Python triple-quoted strings. Both are checked by the language-neutral block compiler for every adapter (`multiple-spaces`, `multiline-token`), so an adapter needs no check of its own 🟡 (v1.4). Between tokens only spaces and line breaks may appear: the block compiler checks this as an allow-list, so comments (`comment`), explicit line continuations (`line-continuation`), and any other text (`unexpected-text`) are rejected in every language without adapter-specific rules 🟡 (v1.6) |
 
 Prohibiting comments also removes a special case from the engine: there is no longer any "a line comment can only end with a newline" rule to handle.
 
@@ -989,3 +989,4 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.4 | Whitespace and token constraints | A run of spaces between tokens is a compile error unless the language's formatter aligns code (gofmt → `padding`); a token spanning lines is a compile error. Both are enforced by the language-neutral compiler core, so they apply to every adapter without adapter-specific code (§5.1) |
 | 1.5 | Java adapter lexing | A scanner written from JLS §3, pinned to javac's tokenizer by golden data committed from `java:golden`, which also checks that fixtures survive a google-java-format wrap/format/unwrap round trip idempotently; CI runs without Java (§9.1) |
 | 1.5 | Java-specific constraints | **Additional constraints found during P0 implementation of the Java adapter:** Unicode escapes are rejected with `unicode-escape` before lexing (javac translates them first, so display and tokens would diverge); text blocks are excluded in P0; a block holds exactly one member (§5.4.1) |
+| 1.6 | Allow-list between tokens | **Recurring-bug fix found while designing the Python adapter.** The compiler detected comments by searching for `/`, a deny-list that missed Python's `#` and `\` continuations. It now accepts only spaces and line breaks between tokens and classifies anything else as `comment`, `line-continuation`, or `unexpected-text` (§5.1). No existing fixture or demo block depended on the old behavior |

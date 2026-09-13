@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.7 |
+| Version | 1.8 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.6 — Python adapter lexing and Python-specific constraints (Appendix B) |
+| Supersedes | v1.7 — P0 scope as delivered, and a known gap in tree-sitter fragment validation (Appendix B) |
 
 **Legend**
 
@@ -70,8 +70,8 @@ This is worth training separately: a developer's code typing speed typically lan
 | --- | --- | --- | --- |
 | F-01 | Typing engine (matching, auto-insertion, measurement) | Must | P0 |
 | F-02 | Single play | Must | P0 |
-| F-03 | Language selection | Must | P0 |
-| F-04 | Result screen (KPM, accuracy, miss rate, score) | Must | P0 |
+| F-03 | Language selection | Must | P1 |
+| F-04 | Result screen (KPM, accuracy, miss rate, score) | Must | P1 |
 | F-05 | Username + password authentication | Must | P1 |
 | F-06 | Score persistence | Must | P1 |
 | F-07 | Rankings — daily / weekly / all-time, top 10 each, own data only | Must | P1 |
@@ -489,6 +489,8 @@ Blocks are **authored offline and committed to the repository**. There is no LLM
 
 Because fragments such as "just a variable declaration" are legal blocks, the checker uses an error-recovering parser (tree-sitter) and, per language, wraps fragments before parsing (for example, wrapping an expression in `function __wrap() { ... }`) so that incompleteness alone does not fail validation.
 
+**Known gap in fragment validation** 🟡 (v1.8). tree-sitter grammars are tolerant of errors that only a language's compiler reports. Measured with `tree-sitter-python` 0.25.0: it accepts `01`, `1_`, `1if y else 2`, a t-string, and a `def` whose body is not indented, while it does flag `0b12`, `0o8`, `1__0`, `0x`, and `1e`. The Python adapter's scanner already rejects `1_`, `1if`, t-strings, and the missing indentation, but not `01` or `0b12`. The content CLI therefore needs a compile check with each language's own toolchain in addition to tree-sitter — for Python, CPython 3.12 `compile()` with warnings treated as errors (as `python:golden` already does for fixtures). The other languages' grammars have not been measured yet and must be checked the same way when the content CLI is built.
+
 Review happens through pull requests: a block reaches production only when the bundle is rebuilt and merged. No draft/approval state machine is needed in the database.
 
 ### 5.3 Block Selection 🔵
@@ -896,11 +898,11 @@ Ordered to retire the largest technical risk (the typing engine) first.
 
 | Phase | Contents | Exit criteria |
 | --- | --- | --- |
-| **P0 — Engine PoC** | `typing-engine` and `block-compiler` for all four languages; single play screen; ~20 hand-written blocks; no database, no auth | Auto-closing, auto-indentation, space flexibility, and miss deduplication all behave as specified on real hardware, with no perceptible lag. Python validated |
-| **P1 — MVP** | Auth, score persistence, three rankings, history with delete, Docker image, first deployment | Usable daily by one person |
+| **P0 — Engine PoC** ✅ Complete (v1.8) | As agreed at kickoff: `typing-engine` and `block-compiler` with adapters for all four languages (TypeScript, Go, Java, Python), each verified by hand-checked fixtures and golden data from the language's reference implementation; `apps/web` plays a single TypeScript demo block with reference (non-official) KPM and accuracy; no database, no auth | Auto-closing, auto-indentation, space flexibility, and miss deduplication verified for all four languages by compiling every fixture and replaying it through the engine; Python validated. The play screen's layout, rendering, and input handling are language-neutral, so the no-perceptible-lag check is done on real hardware with the TypeScript demo block |
+| **P1 — MVP** | Auth, score persistence, three rankings, history with delete, Docker image, first deployment. Also moved from the original P0 scope (v1.8): the 120-second run with the official KPM and score formulas (F-04, §3.6); language selection and play for all four languages (F-03); the `tools/content-cli` pipeline including tree-sitter syntax checks (§5.2); and initial content of about 20 blocks per language, compiled through that pipeline | Usable daily by one person |
 | **P2 — Visibility and competition** | Dashboard, vs CPU with conquest records | G3 and G4 met |
 | **P3 — Polish** | Ghost, appearance settings, key sounds, en/ja localization, account deletion | Presentable to others |
-| **P4 — Content** | Grow to 150+ blocks per language; add languages | Pool targets met (Q22: 50 per language at launch, 150+ eventually) |
+| **P4 — Content** | Grow from the P1 initial content to 150+ blocks per language; add languages | Pool targets met (Q22: 50 per language at launch, 150+ eventually) |
 
 If P0 shows the engine cannot be built to specification or does not feel right, §3 is narrowed — most likely the space flexibility and the scope of automatic insertion. Leaving that ambiguous past P0 would propagate rework into the score definition, the schema, and CPU balance simultaneously.
 
@@ -994,3 +996,5 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.6 | Allow-list between tokens | **Recurring-bug fix found while designing the Python adapter.** The compiler detected comments by searching for `/`, a deny-list that missed Python's `#` and `\` continuations. It now accepts only spaces and line breaks between tokens and classifies anything else as `comment`, `line-continuation`, or `unexpected-text` (§5.1). No existing fixture or demo block depended on the old behavior |
 | 1.7 | Python adapter lexing | A scanner for Python 3.12 pinned to CPython by golden data from `python:golden`; separator re-lexing completes f-string starts and ignores fragment bracket errors, and the golden data keeps both raw and corrected results (§9.1) |
 | 1.7 | Python-specific constraints | **Additional constraints found during P0 implementation of the Python adapter:** blocks are black output with one top-level definition (a class holds one method); f-string brace escapes are rejected with `fstring-brace-escape`; t-strings and a keyword directly after a number are syntax errors (§5.4.1) |
+| 1.8 | P0 scope as delivered | P0 is complete with the scope agreed at kickoff: all four adapters verified in the compiler and engine, and a single TypeScript demo block in the play screen. Language selection (F-03), the official 120-second result screen (F-04), the content CLI with tree-sitter, and about 20 blocks per language move to P1 (§2, §10) |
+| 1.8 | tree-sitter validation gap | `tree-sitter-python` 0.25.0 accepts `01`, `1_`, `1if`, t-strings, and a missing indented block, so the content CLI must add a compile check with each language's toolchain; other grammars are still to be measured (§5.2) |

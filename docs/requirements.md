@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.0 |
+| Version | 1.1 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v0.3 — all remaining questions resolved |
+| Supersedes | v1.0 — typing engine transition rules corrected during P0 (Appendix B) |
 
 **Legend**
 
@@ -154,12 +154,14 @@ The original draft said "mandatory when identifier tokens would run together." T
 | `<` `<` | `<<` | `[<<]` | `true` |
 | `not` `in` (Python) | `notin` | `[notin]` | `true` |
 
-#### 3.3.2 Accepted keys at separators 🔵 (Q8)
+#### 3.3.2 Accepted keys at separators 🔵 (Q8, revised in v1.1)
 
 | Canonical form | Accepted key | `required` | Behavior |
 | --- | --- | --- | --- |
-| Line break | **Enter only** | Always `true` | Consuming it triggers automatic insertion of the next line's indentation |
-| In-line space | **Space only** (Tab is rejected) | Per §3.3.1 | Repeated spaces are accepted but counted once (§3.5). If `required = false`, the player may skip straight to the next character |
+| Line break | **Enter only** | Always `true` | Consuming it **advances immediately** and triggers automatic insertion of the next line's indentation. Another Enter is judged at the next position: correct only if a line break is due there too (e.g. leaving a line that holds only an auto-inserted `}`), otherwise a miss |
+| In-line space | **Space only** (Tab is rejected) | Per §3.3.1 | Repeated spaces are accepted but counted once (§3.5). If `required = false`, the player may skip straight to the next character, or press Enter when the next typed atom is a line break (e.g. `return { ok: true }` at the end of a line) |
+
+Separators can follow one another with only `auto` atoms between them: `return { ok: true }` at the end of a line compiles to `' '`, auto `}`, `'\n'`. The transition rules in §3.4 let the player pass through such chains; the v1.0 algorithm could not (Appendix B, v1.1).
 
 Rationale for not letting Space stand in for a line break: because the display is fixed to the canonical form, allowing it would not corrupt the code — but it would let a player finish an entire run **without ever pressing Enter**, and automatic indentation (a real IDE keystroke) would drop out of the exercise entirely. In-line spacing keeps the flexibility from the original spec: `{1, 2, 3}`, `{1,2,3}`, and `{1,   2,    3}` are all accepted.
 
@@ -179,84 +181,110 @@ Once an `auto` atom is filled, its characters are **already typed**. Pressing th
 
 - Typing `(` immediately renders the matching `)` in the "typed" color.
 - Pressing `)` at that point is a miss, because the character is already on screen.
-- The same applies to auto-inserted indentation: pressing Space at the start of an auto-indented line is a miss 🔵 (Q30). This needs no special handling — once `skipAutoAtoms` has passed the indentation, a space simply fails to match the expected literal character and falls through to `markMiss`.
+- The same applies to auto-inserted indentation: pressing Space at the start of an auto-indented line is a miss 🔵 (Q30). This needs no special handling — once `settle` has passed the indentation, a space simply fails to match the expected literal character and falls through to `markMiss`.
 
 This mirrors an IDE, where the extra keystroke would insert a duplicate character, and it keeps the maximum effective keystrokes per block fixed.
 
-### 3.4 Runtime Matching Algorithm
+### 3.4 Runtime Matching Algorithm 🟡 (revised in v1.1)
+
+The engine is a set of pure functions: `handleKey` returns a new state and never mutates its input. Whether a keystroke was correct (`Verdict`) and whether the program is finished (`isComplete`) are separate questions with separate answers.
 
 ```ts
 interface EngineState {
   program: TypingProgram;
+  /** Current atom. Never an `auto` atom (see settle); equals atoms.length once complete. */
   atomIndex: number;
   charIndex: number;
-  /** Whether at least one space has been consumed at the current separator. */
+  /** Whether a space has been consumed at the current in-line separator. */
   separatorConsumed: boolean;
-  /** Whether a miss has already been recorded at the current position. */
+  /** Whether a miss has already been recorded at the current cursor position. */
   missMarkedHere: boolean;
   counters: { raw: number; effective: number; miss: number; ignored: number };
 }
 
-type Verdict = 'CORRECT' | 'MISS' | 'IGNORED' | 'FINISHED';
+type Verdict = 'CORRECT' | 'MISS' | 'IGNORED';
 
-export function handleKey(state: EngineState, key: string): Verdict {
-  state.counters.raw += 1;
-  skipAutoAtoms(state); // auto atoms are never typed
+export function isComplete(state: EngineState): boolean {
+  return state.atomIndex >= state.program.atoms.length;
+}
 
-  const atom = currentAtom(state);
-  if (!atom) return 'FINISHED';
+export function handleKey(prev: EngineState, key: string): { state: EngineState; verdict: Verdict } {
+  if (isComplete(prev)) return { state: prev, verdict: 'IGNORED' }; // no-op, counters untouched
+  const s = copy(prev);
+  s.counters.raw += 1;
 
-  if (atom.kind === 'separator') {
-    const expectedKey = atom.canonical === '\n' ? 'Enter' : ' ';
+  for (;;) {
+    const atom = s.program.atoms[s.atomIndex];
 
-    if (key === expectedKey) {
-      if (state.separatorConsumed) {
-        // Consecutive whitespace: accepted, but counted only once.
-        state.counters.ignored += 1;
-        return 'IGNORED';
-      }
-      state.separatorConsumed = true;
-      state.missMarkedHere = false;
-      state.counters.effective += 1;
-      return 'CORRECT';
+    if (atom.kind === 'literal') {
+      if (key !== atom.text[s.charIndex]) return done(s, markMiss(s));
+      s.counters.effective += 1;
+      advanceChar(s);
+      return done(s, 'CORRECT');
     }
 
-    if (isWhitespaceKey(key)) return markMiss(state); // e.g. Tab, or Space where Enter is due
-    if (atom.required && !state.separatorConsumed) return markMiss(state);
+    if (atom.canonical === '\n') {
+      if (key !== 'Enter') return done(s, markMiss(s));
+      s.counters.effective += 1;
+      advanceAtom(s); // a line break advances as soon as it is consumed
+      return done(s, 'CORRECT');
+    }
 
-    // Optional separator skipped: still credited, see §3.5.
-    if (!state.separatorConsumed) state.counters.effective += 1;
-    advanceAtom(state);
-    return matchLiteral(state, key);
+    const next = nextTypedAtom(s); // the next atom that is not 'auto'
+
+    if (s.separatorConsumed) {
+      if (key === ' ' && !(next?.kind === 'separator' && next.canonical === ' ')) {
+        s.counters.ignored += 1; // consecutive whitespace: accepted, counted once
+        return done(s, 'IGNORED');
+      }
+      advanceAtom(s); // pass through; already credited when consumed
+      continue;
+    }
+
+    if (key === ' ') {
+      s.counters.effective += 1;
+      s.separatorConsumed = true;
+      settle(s);
+      return done(s, 'CORRECT');
+    }
+    if (atom.required || key === 'Tab') return done(s, markMiss(s));
+    if (key === 'Enter' && next?.kind !== 'separator') return done(s, markMiss(s));
+
+    s.counters.effective += 1; // optional separator skipped: still credited, see §3.5
+    advanceAtom(s); // pass through and judge the same key at the next typed atom
   }
-
-  return matchLiteral(state, key);
-}
-
-function matchLiteral(state: EngineState, key: string): Verdict {
-  skipAutoAtoms(state);
-  const atom = currentAtom(state);
-  if (!atom || atom.kind !== 'literal') return 'FINISHED';
-
-  if (key === atom.text[state.charIndex]) {
-    state.counters.effective += 1;
-    state.missMarkedHere = false;
-    advanceChar(state);
-    return 'CORRECT';
-  }
-  return markMiss(state);
-}
-
-function markMiss(state: EngineState): Verdict {
-  if (!state.missMarkedHere) {
-    state.counters.miss += 1; // repeated misses at the same position count once
-    state.missMarkedHere = true;
-  }
-  return 'MISS';
 }
 ```
 
-**Check against the original spec's example.** Typing `for` but skipping `f`: pressing `o` records a miss and sets `missMarkedHere`; pressing `r` is at the same position, so nothing further is recorded. Total: **one miss**. Matches the requirement.
+Helpers:
+
+- `advanceChar` / `advanceAtom` move the cursor, reset `separatorConsumed`, and call `settle`.
+- `settle` skips **every** consecutive `auto` atom, so `foo(bar(baz(1)))` passes all three `)` in one step. If only `auto` atoms and passable separators (consumed, or optional) remain, it passes them all — crediting unconsumed separators — so the program completes on the last typed character without an extra keystroke (e.g. `export { a, b }`).
+- `markMiss` increments `miss` only if `missMarkedHere` is false, then sets it.
+- `missMarkedHere` is cleared whenever the cursor position `(atomIndex, charIndex)` actually advances — not merely when a verdict is `CORRECT`.
+
+**Separator transitions.** U-req = unconsumed and required; U-opt = unconsumed and optional; C = consumed (in-line spaces only, since a line break advances immediately). *Pass* = move on and judge the same key at the next typed atom, crediting +1 only when leaving U-opt. `nextTyped` = the next atom that is not `auto`.
+
+| `' '` separator | Space | Enter | Tab | Other character |
+| --- | --- | --- | --- | --- |
+| U-req | Consume → C, `CORRECT` | `MISS`, stay | `MISS`, stay | `MISS`, stay |
+| U-opt | Consume → C, `CORRECT` | Pass if `nextTyped` is a separator; otherwise `MISS`, stay | `MISS`, stay | Pass |
+| C | Pass if `nextTyped` is a `' '` separator; otherwise `IGNORED` | Pass | Pass | Pass |
+
+| `'\n'` separator (always U-req) | Enter | Anything else |
+| --- | --- | --- |
+| | Consume and advance, `CORRECT` | `MISS`, stay |
+
+At C the caret is already drawn past the space, so everything except a repeated Space passes through. As a result a miss is never recorded at C and then again at the following atom.
+
+Each separator is credited exactly once — when consumed, or when passed from U-opt — so a completed block always totals `canonicalKeystrokes` effective keystrokes (§3.5).
+
+**Worked examples.**
+
+- **Skipping `f` in `for`:** `o` records a miss; `r` is at the same position, so nothing further is recorded. **One miss.**
+- **`foo(bar(baz(1)))` + line break:** typing `1` settles past all three auto `)` onto the line break. Enter is `CORRECT`; `)` is a `MISS` (Q6).
+- **`return { ok: true }` + line break** (`' '`, auto `}`, `'\n'`): `true⏎`, `true ⏎`, and `true  ⏎` are all accepted with identical effective keystrokes. The second space is `IGNORED` because the next typed atom is a line break, not a space.
+- **A line holding only an auto `}`:** one Enter enters the line and one Enter leaves it. An extra Enter where a character is due is a miss, and further Enters at that position are not counted again.
 
 ### 3.5 Scoring Fairness Rule 🟡
 
@@ -278,7 +306,7 @@ Play duration is **fixed at 120 seconds** (§4.1), so all per-minute figures div
 | --- | --- |
 | Effective keystrokes | `effective` |
 | KPM | `effective / 2` |
-| Accuracy | `effective / (effective + miss)` |
+| Accuracy | `effective / (effective + miss)`; `0` when both are `0` |
 | Miss rate | `1 − accuracy` |
 | **Score** | `round(KPM × accuracy)` (Q1, Q3) |
 | Raw keystrokes | `raw` — diagnostics and anomaly detection only |
@@ -925,3 +953,9 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.0 | Q30 auto-indent overtyping | Counted as a miss, consistent with Q6 |
 | 1.0 | Q31 registration | Open sign-up, protected only by rate limiting |
 | 1.0 | Q32 Ghost pacing | Paced by the recorded score, so beating the Ghost equals beating the record |
+| 1.1 | Engine: line-break separators | **Spec bug found during P0 implementation.** In v1.0 §3.4 a consumed line break stayed current, so on a line holding only an auto-inserted `}` the second Enter was `IGNORED` and the next character returned `FINISHED` mid-block. A line-break separator now advances as soon as Enter is consumed (§3.3.2, §3.4) |
+| 1.1 | Engine: separator chains | **Spec bug found during P0 implementation.** v1.0 deadlocked on `' '`, auto `}`, `'\n'` (e.g. `return { ok: true }` at the end of a line): Enter was always a miss at the space separator, and any other key returned `FINISHED`. Passable separators now hand the key on to the next typed atom per the §3.4 transition table |
+| 1.1 | Engine: completion | `FINISHED` removed from `Verdict`, which now only judges the keystroke. Completion is the separate pure function `isComplete(state)`, reached eagerly: trailing auto atoms and passable separators are settled on the last typed character. `handleKey` on a complete state is a no-op returning `IGNORED` |
+| 1.1 | Engine: miss deduplication | `missMarkedHere` is cleared when the cursor position `(atomIndex, charIndex)` actually advances, rather than when a verdict is `CORRECT` |
+| 1.1 | Engine: purity | `handleKey(state, key)` returns a new state instead of mutating its input |
+| 1.1 | Accuracy with no input | `effective + miss = 0` yields accuracy `0` |

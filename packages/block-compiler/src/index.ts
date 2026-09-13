@@ -16,4 +16,5 @@ export type {
 export { normalizeIndentation } from './normalize';
 export type { NormalizeIndentationOptions } from './normalize';
 export { goAdapter } from './adapters/go';
+export { javaAdapter } from './adapters/java';
 export { typescriptAdapter } from './adapters/typescript';

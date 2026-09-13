@@ -8,7 +8,8 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "go:golden": "cd scripts/go-reference && go run . ../../test/fixtures/go ../../test/fixtures/go/golden.json"
+    "go:golden": "cd scripts/go-reference && go run . ../../test/fixtures/go ../../test/fixtures/go/golden.json",
+    "java:golden": "java --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED scripts/java-reference/JavaReference.java test/fixtures/java test/fixtures/java/golden.json"
   },
   "dependencies": {
     "@typing-trainer/contracts": "workspace:*",

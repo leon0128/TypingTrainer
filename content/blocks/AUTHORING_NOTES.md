@@ -21,6 +21,13 @@ docs/requirements.md §5.2; this file only collects lessons learned while writin
   deep indentation. That is acceptable, but prefer a local variable or a loop when the lambda
   would otherwise dominate the block.
 
+- black inserts a blank line after a nested `def` when more statements follow it, so Python
+  blocks cannot define inner functions such as decorator wrappers or closures. Use a generator
+  with `contextlib.contextmanager`, a lambda, or a top-level helper instead.
+- A Python class block must hold exactly one method, and black separates class attributes from
+  a following method with a blank line. Dataclasses, enums, and NamedTuples therefore cannot be
+  blocks; write classes whose only member is a method such as `__init__`.
+
 ## Formatting
 
 - TypeScript blocks are Prettier default output (double quotes, width 80), not the repository's

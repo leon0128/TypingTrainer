@@ -7,3 +7,10 @@ export { LANGUAGES } from './languages';
 export type { LanguageConfig } from './languages';
 export { bundleDiagnostics, runPipeline, writeBundles } from './pipeline';
 export type { BuiltBundle, PipelineOptions, PipelineResult } from './pipeline';
+export {
+  ToolchainUnavailableError,
+  pythonStdlibDiagnostics,
+  toolchainDiagnostics,
+  toolchainVersions,
+} from './toolchains';
+export type { ToolchainBlock } from './toolchains';

@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist/types",
+    "types": ["node"],
+    // NestJS and TypeORM decorators are legacy decorators. Decorator metadata is deliberately not
+    // emitted: vitest and esbuild cannot produce it, so injections and column types are explicit.
+    "experimentalDecorators": true
+  },
+  "include": ["src", "test", "scripts"],
+  "references": [{ "path": "../../packages/contracts" }]
+}

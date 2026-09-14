@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "pnpm --filter @typing-trainer/web dev",
+    "api:dev": "pnpm --filter @typing-trainer/api dev",
     "typecheck": "tsc -b",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",

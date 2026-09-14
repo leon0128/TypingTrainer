@@ -76,6 +76,15 @@ export default defineConfig(
   },
 
   {
+    files: ['apps/api/**/*.ts'],
+    languageOptions: { globals: globals.node },
+    rules: {
+      // Nest modules are empty classes that exist to carry a decorator.
+      '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }],
+    },
+  },
+
+  {
     files: ['apps/web/src/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
     languageOptions: { globals: globals.browser },

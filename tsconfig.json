@@ -5,6 +5,7 @@
     { "path": "packages/typing-engine" },
     { "path": "packages/block-compiler" },
     { "path": "tools/content-cli" },
+    { "path": "apps/api" },
     { "path": "apps/web" }
   ]
 }

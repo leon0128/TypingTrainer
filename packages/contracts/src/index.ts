@@ -16,3 +16,5 @@ export {
 } from './content-bundle';
 export type { ContentBundle, ContentLanguage } from './content-bundle';
 export type { SessionLog } from './session-log';
+export { HealthCheckSchema, HealthResponseSchema } from './health';
+export type { HealthCheck, HealthResponse } from './health';

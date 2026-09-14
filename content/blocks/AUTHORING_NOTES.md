@@ -12,9 +12,27 @@ docs/requirements.md §5.2; this file only collects lessons learned while writin
   between them (methods, top-level definitions). This is the same reason blocks are limited to
   one Go declaration, one Java member, and one Python top-level definition.
 
+- google-java-format also inserts blank lines between members of a nested class, enum, or
+  record body (fields, constructors, methods). A Java block that declares a type can therefore
+  hold only one member inside it, such as a record with a single compact constructor or method.
+  Anonymous class bodies are affected too, so avoid anonymous classes with several members.
+
 ## Formatting
 
 - TypeScript blocks are Prettier default output (double quotes, width 80), not the repository's
   own Prettier settings. Format with `prettier --no-config`.
+
+## Line width
+
+- Aim for at most 80 columns and never exceed 88 (tabs count as 4 columns). The play screen
+  shows code in an 18px monospace font inside a 1040px column, which fits roughly 88 characters
+  after padding. This is an authoring guideline, not a pipeline check.
+- Formatter limits are wider for some languages (gofmt has none, google-java-format allows 100),
+  so keep long lines short by rewriting them: extract a local variable or split the condition.
+  google-java-format joins manual line breaks back up to 100 columns, so breaking a line by hand
+  does not help in Java.
+- Written before this guideline and wider than 88 columns, to be checked on the real play
+  screen in U7: go/poll-until-canceled.go (94), go/grid-shortest-path.go (94),
+  go/table-driven-test.go (90).
 
 Add new findings of this kind here.

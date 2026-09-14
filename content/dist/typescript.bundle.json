@@ -1,0 +1,3518 @@
+{
+  "schemaVersion": 1,
+  "language": "typescript",
+  "revision": "809e28855903b64e4460a164c486b66c657c41f590b5d0f6b54bd6b3103ed68e",
+  "blocks": [
+    {
+      "blockId": "typescript/binary-search",
+      "canonicalKeystrokes": 327,
+      "atoms": [
+        {
+          "kind": "literal",
+          "text": "function"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "binarySearch"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "sorted"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "readonly"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "number"
+        },
+        {
+          "kind": "literal",
+          "text": "["
+        },
+        {
+          "kind": "auto",
+          "text": "]",
+          "filledBy": 10
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "target"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "number"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 3
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "number"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 24
+        },
+        {
+          "kind": "literal",
+          "text": "let"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "low"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "0"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 34
+        },
+        {
+          "kind": "literal",
+          "text": "let"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "high"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "sorted"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "length"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "-"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "1"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 50
+        },
+        {
+          "kind": "literal",
+          "text": "while"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "low"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "<="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "high"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 54
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 63
+        },
+        {
+          "kind": "literal",
+          "text": "const"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "middle"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "Math"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "floor"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "low"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "+"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "high"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 75
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "/"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "2"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 74
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 88
+        },
+        {
+          "kind": "literal",
+          "text": "const"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "value"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "sorted"
+        },
+        {
+          "kind": "literal",
+          "text": "["
+        },
+        {
+          "kind": "literal",
+          "text": "middle"
+        },
+        {
+          "kind": "auto",
+          "text": "]",
+          "filledBy": 97
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 101
+        },
+        {
+          "kind": "literal",
+          "text": "if"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "value"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "==="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "target"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 105
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "      ",
+          "filledBy": 114
+        },
+        {
+          "kind": "literal",
+          "text": "return"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "middle"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 120
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 113
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 123
+        },
+        {
+          "kind": "literal",
+          "text": "if"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "value"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "<"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "target"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 127
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "      ",
+          "filledBy": 136
+        },
+        {
+          "kind": "literal",
+          "text": "low"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "middle"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "+"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "1"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 148
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 135
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "else"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "      ",
+          "filledBy": 155
+        },
+        {
+          "kind": "literal",
+          "text": "high"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "middle"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "-"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "1"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 167
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 154
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 170
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 62
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 173
+        },
+        {
+          "kind": "literal",
+          "text": "return"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "-"
+        },
+        {
+          "kind": "literal",
+          "text": "1"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 23
+        }
+      ]
+    },
+    {
+      "blockId": "typescript/chunk-array",
+      "canonicalKeystrokes": 262,
+      "atoms": [
+        {
+          "kind": "literal",
+          "text": "function"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "chunk"
+        },
+        {
+          "kind": "literal",
+          "text": "<"
+        },
+        {
+          "kind": "literal",
+          "text": "T"
+        },
+        {
+          "kind": "literal",
+          "text": ">"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "items"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "readonly"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "T"
+        },
+        {
+          "kind": "literal",
+          "text": "["
+        },
+        {
+          "kind": "auto",
+          "text": "]",
+          "filledBy": 13
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "size"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "number"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 6
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "T"
+        },
+        {
+          "kind": "literal",
+          "text": "["
+        },
+        {
+          "kind": "auto",
+          "text": "]",
+          "filledBy": 25
+        },
+        {
+          "kind": "literal",
+          "text": "["
+        },
+        {
+          "kind": "auto",
+          "text": "]",
+          "filledBy": 27
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 31
+        },
+        {
+          "kind": "literal",
+          "text": "if"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "size"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "<="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "0"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 35
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 44
+        },
+        {
+          "kind": "literal",
+          "text": "throw"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "new"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "RangeError"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "\""
+        },
+        {
+          "kind": "literal",
+          "text": "size must be positive"
+        },
+        {
+          "kind": "auto",
+          "text": "\"",
+          "filledBy": 52
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 51
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 57
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 43
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 60
+        },
+        {
+          "kind": "literal",
+          "text": "const"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "chunks"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "T"
+        },
+        {
+          "kind": "literal",
+          "text": "["
+        },
+        {
+          "kind": "auto",
+          "text": "]",
+          "filledBy": 68
+        },
+        {
+          "kind": "literal",
+          "text": "["
+        },
+        {
+          "kind": "auto",
+          "text": "]",
+          "filledBy": 70
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "["
+        },
+        {
+          "kind": "auto",
+          "text": "]",
+          "filledBy": 75
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 78
+        },
+        {
+          "kind": "literal",
+          "text": "for"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "let"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "start"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "0"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "start"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "<"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "items"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "length"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "start"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "+="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "size"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 82
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 109
+        },
+        {
+          "kind": "literal",
+          "text": "chunks"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "push"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "items"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "slice"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "start"
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "start"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "+"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "size"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 118
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 114
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 130
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 108
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 133
+        },
+        {
+          "kind": "literal",
+          "text": "return"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "chunks"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 30
+        }
+      ]
+    },
+    {
+      "blockId": "typescript/count-words",
+      "canonicalKeystrokes": 236,
+      "atoms": [
+        {
+          "kind": "literal",
+          "text": "function"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "countWords"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "text"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "string"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 3
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "Map"
+        },
+        {
+          "kind": "literal",
+          "text": "<"
+        },
+        {
+          "kind": "literal",
+          "text": "string"
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "number"
+        },
+        {
+          "kind": "literal",
+          "text": ">"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 20
+        },
+        {
+          "kind": "literal",
+          "text": "const"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "counts"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "new"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "Map"
+        },
+        {
+          "kind": "literal",
+          "text": "<"
+        },
+        {
+          "kind": "literal",
+          "text": "string"
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "number"
+        },
+        {
+          "kind": "literal",
+          "text": ">"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 37
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 40
+        },
+        {
+          "kind": "literal",
+          "text": "for"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "const"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "word"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "of"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "text"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "toLowerCase"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 54
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "split"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "/\\s+/"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 58
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 44
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 64
+        },
+        {
+          "kind": "literal",
+          "text": "if"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "word"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "==="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "\""
+        },
+        {
+          "kind": "auto",
+          "text": "\"",
+          "filledBy": 73
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 68
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "      ",
+          "filledBy": 78
+        },
+        {
+          "kind": "literal",
+          "text": "continue"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 82
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 77
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 85
+        },
+        {
+          "kind": "literal",
+          "text": "counts"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "set"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "word"
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "counts"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "get"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "word"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 98
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "??"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "0"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 94
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "+"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "1"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 90
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 112
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 63
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 115
+        },
+        {
+          "kind": "literal",
+          "text": "return"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "counts"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 19
+        }
+      ]
+    },
+    {
+      "blockId": "typescript/parse-port",
+      "canonicalKeystrokes": 385,
+      "atoms": [
+        {
+          "kind": "literal",
+          "text": "type"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "Result"
+        },
+        {
+          "kind": "literal",
+          "text": "<"
+        },
+        {
+          "kind": "literal",
+          "text": "T"
+        },
+        {
+          "kind": "literal",
+          "text": ">"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "ok"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "true"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "value"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "T"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 9
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "|"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "ok"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "false"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "error"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "string"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 26
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "function"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "parsePort"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "input"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "string"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 45
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "Result"
+        },
+        {
+          "kind": "literal",
+          "text": "<"
+        },
+        {
+          "kind": "literal",
+          "text": "number"
+        },
+        {
+          "kind": "literal",
+          "text": ">"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 59
+        },
+        {
+          "kind": "literal",
+          "text": "const"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "port"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "Number"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "parseInt"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "input"
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "10"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 70
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 77
+        },
+        {
+          "kind": "literal",
+          "text": "if"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "Number"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "isNaN"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "port"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 85
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "||"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "String"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "port"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 92
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "!=="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "input"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "trim"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 101
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 81
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 106
+        },
+        {
+          "kind": "literal",
+          "text": "return"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "ok"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "false"
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "error"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "`"
+        },
+        {
+          "kind": "literal",
+          "text": "not a number: "
+        },
+        {
+          "kind": "literal",
+          "text": "${"
+        },
+        {
+          "kind": "literal",
+          "text": "input"
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 123
+        },
+        {
+          "kind": "auto",
+          "text": "`",
+          "filledBy": 121
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 110
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 130
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 105
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 133
+        },
+        {
+          "kind": "literal",
+          "text": "if"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "port"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "<"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "1"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "||"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "port"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": ">"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "65535"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 137
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 154
+        },
+        {
+          "kind": "literal",
+          "text": "return"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "ok"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "false"
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "error"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "`"
+        },
+        {
+          "kind": "literal",
+          "text": "out of range: "
+        },
+        {
+          "kind": "literal",
+          "text": "${"
+        },
+        {
+          "kind": "literal",
+          "text": "port"
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 171
+        },
+        {
+          "kind": "auto",
+          "text": "`",
+          "filledBy": 169
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 158
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 178
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 153
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 181
+        },
+        {
+          "kind": "literal",
+          "text": "return"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "ok"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "true"
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "value"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "port"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 185
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 58
+        }
+      ]
+    },
+    {
+      "blockId": "typescript/shape-area",
+      "canonicalKeystrokes": 263,
+      "atoms": [
+        {
+          "kind": "literal",
+          "text": "type"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "Shape"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "="
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 5
+        },
+        {
+          "kind": "literal",
+          "text": "|"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "kind"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "\""
+        },
+        {
+          "kind": "literal",
+          "text": "circle"
+        },
+        {
+          "kind": "auto",
+          "text": "\"",
+          "filledBy": 14
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "radius"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "number"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 9
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 25
+        },
+        {
+          "kind": "literal",
+          "text": "|"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "kind"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "\""
+        },
+        {
+          "kind": "literal",
+          "text": "rectangle"
+        },
+        {
+          "kind": "auto",
+          "text": "\"",
+          "filledBy": 34
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "width"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "number"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "height"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "number"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 29
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "function"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "area"
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "shape"
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "Shape"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 56
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "number"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 67
+        },
+        {
+          "kind": "literal",
+          "text": "switch"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "("
+        },
+        {
+          "kind": "literal",
+          "text": "shape"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "kind"
+        },
+        {
+          "kind": "auto",
+          "text": ")",
+          "filledBy": 71
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "{"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 78
+        },
+        {
+          "kind": "literal",
+          "text": "case"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "\""
+        },
+        {
+          "kind": "literal",
+          "text": "circle"
+        },
+        {
+          "kind": "auto",
+          "text": "\"",
+          "filledBy": 82
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "      ",
+          "filledBy": 86
+        },
+        {
+          "kind": "literal",
+          "text": "return"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "Math"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "PI"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "*"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "shape"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "radius"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "**"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "2"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 104
+        },
+        {
+          "kind": "literal",
+          "text": "case"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "\""
+        },
+        {
+          "kind": "literal",
+          "text": "rectangle"
+        },
+        {
+          "kind": "auto",
+          "text": "\"",
+          "filledBy": 108
+        },
+        {
+          "kind": "literal",
+          "text": ":"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "      ",
+          "filledBy": 112
+        },
+        {
+          "kind": "literal",
+          "text": "return"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": true
+        },
+        {
+          "kind": "literal",
+          "text": "shape"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "width"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "*"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "shape"
+        },
+        {
+          "kind": "literal",
+          "text": "."
+        },
+        {
+          "kind": "literal",
+          "text": "height"
+        },
+        {
+          "kind": "literal",
+          "text": ";"
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "  ",
+          "filledBy": 126
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 77
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "}",
+          "filledBy": 66
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 node_modules/
 dist/
+# Content bundles are committed build output (§5.2).
+!content/dist/
 *.tsbuildinfo
 coverage/
 .DS_Store

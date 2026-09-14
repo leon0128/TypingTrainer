@@ -1,0 +1,7 @@
+{
+  "black": "black, 26.5.1 (compiled: yes)",
+  "googleJavaFormat": "google-java-format: Version 1.36.1",
+  "java": "openjdk version \"26.0.2.1\" 2026-08-18",
+  "python": "Python 3.12.13",
+  "go": "go version go1.26.3 darwin/arm64"
+}

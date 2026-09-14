@@ -17,6 +17,10 @@ docs/requirements.md §5.2; this file only collects lessons learned while writin
   hold only one member inside it, such as a record with a single compact constructor or method.
   Anonymous class bodies are affected too, so avoid anonymous classes with several members.
 
+- google-java-format moves a block-bodied lambda passed as an argument onto its own lines with
+  deep indentation. That is acceptable, but prefer a local variable or a loop when the lambda
+  would otherwise dominate the block.
+
 ## Formatting
 
 - TypeScript blocks are Prettier default output (double quotes, width 80), not the repository's

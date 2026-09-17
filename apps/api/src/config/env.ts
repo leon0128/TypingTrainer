@@ -6,6 +6,8 @@ export const EnvSchema = z.object({
   HOST: z.string().min(1).default('127.0.0.1'),
   PORT: z.coerce.number().int().min(0).max(65535).default(3000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+  /** postgres://user:password@host:port/database */
+  DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

@@ -24,7 +24,12 @@ class ImplicitConsumer {
   constructor(readonly env: Env) {}
 }
 
-const env = parseEnv({ NODE_ENV: 'test', LOG_LEVEL: 'silent' });
+// Nothing here connects: the application graph below is only built in preview mode.
+const env = parseEnv({
+  NODE_ENV: 'test',
+  LOG_LEVEL: 'silent',
+  DATABASE_URL: 'postgres://unused@127.0.0.1:1/unused',
+});
 
 @Module({ imports: [ConfigModule.forRoot(env)], providers: [ExplicitConsumer] })
 class ExplicitModule {}
@@ -53,9 +58,24 @@ describe('dependency injection without decorator metadata', () => {
     }
   });
 
+  it('still finds a missing @Inject when the graph is only previewed', async () => {
+    const context = await NestFactory.createApplicationContext(ImplicitModule, {
+      logger: false,
+      preview: true,
+    });
+    try {
+      expect(missingInjections(context)).toEqual(['ImplicitModule/ImplicitConsumer']);
+    } finally {
+      await context.close();
+    }
+  });
+
   it('finds no missing @Inject in the application', async () => {
+    // Preview mode resolves the module graph without instantiating providers, so the database
+    // module never connects and this runs without TEST_DATABASE_URL.
     const context = await NestFactory.createApplicationContext(AppModule.forRoot(env), {
       logger: false,
+      preview: true,
     });
     try {
       expect(missingInjections(context)).toEqual([]);

@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.11 |
+| Version | 1.12 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.10 — content CLI pipeline, toolchain checks, and bundle format (Appendix B) |
+| Supersedes | v1.11 — API and database foundation: sessions, languages, constraints, migrations (Appendix B) |
 
 **Legend**
 
@@ -613,7 +613,7 @@ Taking the browser's time zone on every request would make past daily and weekly
 | --- | --- |
 | Method | **Username and password only** |
 | Password storage | **Argon2id** (OWASP recommendation), with a pepper supplied via environment variable |
-| Session | Server-side session plus an `httpOnly`, `Secure`, `SameSite=Lax` cookie. No browser-stored JWTs, which cannot be revoked |
+| Session | Server-side session plus an `httpOnly`, `Secure`, `SameSite=Lax` cookie. No browser-stored JWTs, which cannot be revoked 🟡 (v1.12): the cookie holds a 256-bit random token and `auth_sessions` stores only its SHA-256, so a leaked table cannot be replayed. A session ends **7 days after its last use** or **30 days after sign-in**, whichever comes first. Both limits are judged in the SQL that looks the session up, against the database clock (`expires_at > now() AND last_seen_at > now() - interval '7 days'`), never recomputed in application code; `last_seen_at` is refreshed at most once an hour, so a session can end up to an hour early but never late |
 | CSRF | `SameSite=Lax` plus Origin validation on state-changing requests |
 | Rate limiting | Per-IP and per-account limits on login and registration, with exponential backoff |
 | Registration policy | **Open sign-up** 🔵 (Q31). Rate limiting on the registration endpoint is the only guard; because rankings are strictly per-user, an unwanted account can see nothing but its own empty data. Tightening to an invite code later requires no schema change |
@@ -715,11 +715,15 @@ Taking the browser's time zone on every request would make past daily and weekly
 
 ### 9.2 Working with TypeORM
 
-TypeORM is the selected ORM. Its integration with NestJS (`@nestjs/typeorm`) is the officially documented path, and decorator-based entities fit the module structure well. Three cautions apply:
+TypeORM is the selected ORM. Its integration with NestJS (`@nestjs/typeorm`) is the officially documented path, and decorator-based entities fit the module structure well. These cautions apply:
 
 | Caution | Practice |
 | --- | --- |
-| `synchronize` | **Always `false`** outside local development. Schema changes go through generated migrations (`typeorm migration:generate`), which are committed and reviewed |
+| `synchronize` | **Always `false`, in every environment including local development** 🟡 (v1.12). A schema created by synchronization drifts from the migrations that production runs. `migrationsRun` is also `false`: migrations are applied explicitly (`pnpm --filter @typing-trainer/api migration:run`) |
+| Migrations | Generated with `migration:generate`, reviewed, and committed. A generated file must be edited before commit: its `import { MigrationInterface, QueryRunner }` becomes `import type` (the API runs as ESM, where the value import fails), extensions such as `citext` are created by hand because `installExtensions` is `false`, and seed rows are added by hand. Entities and migrations are listed explicitly (`ENTITIES`, `MIGRATIONS`), because the production bundle has no files for a glob to find |
+| Schema drift | CI applies every migration to an empty database and runs `migration:check` (`migration:generate --check`), which fails on any difference in tables, columns, indexes, or foreign keys. **`migration:check` compares CHECK constraints by name only**, so an integration test also builds a throwaway reference database from the entities and compares PostgreSQL's normalized catalog (`information_schema.columns`, `pg_get_constraintdef`, `pg_indexes`) against the migrated database. That reference database is the only place `synchronize()` is called |
+| Driver options | `installExtensions: false`, so TypeORM never runs `CREATE EXTENSION` on connect; `uuidExtension: 'pgcrypto'`, because TypeORM otherwise reads a `gen_random_uuid()` default as `uuid_generate_v4()` and reports a permanent difference. `gen_random_uuid()` is built into PostgreSQL 13+, so no extension is installed |
+| Decorator metadata | Not emitted: vitest and esbuild cannot produce it. Every column states its `type`, and every constructor injection names its token with `@Inject` (or `@InjectRepository` / `@InjectDataSource`). Nest injects `undefined` for a parameter without a token instead of failing at startup, so a test compares each application class's constructor parameter count with its declared injections |
 | Relation loading | Prefer explicit `relations` or `QueryBuilder` joins. Lazy relations produce N+1 queries that are easy to miss |
 | Ranking and dashboard queries | Write them with `QueryBuilder` (or raw SQL in a repository method) rather than the find API. They need `DISTINCT ON` / window functions for per-day maxima, which the find API cannot express |
 | Date columns | Map `local_date` and `local_week_start` to `date` (not `timestamp`) so equality comparisons hit the indexes |
@@ -729,16 +733,29 @@ TypeORM is the selected ORM. Its integration with NestJS (`@nestjs/typeorm`) is 
 ```mermaid
 erDiagram
     users ||--|| user_preferences : has
+    users ||--o{ auth_sessions : signs_in
     users ||--o{ play_sessions : plays
     programming_languages ||--o{ play_sessions : used_in
 ```
 
-Only three substantive tables are needed. Two things that were separate in earlier drafts are now derived:
+🟡 (v1.12) `user_preferences` (appearance, sounds) is created with the P3 features that use it; time zone and locale already live on `users` because aggregation needs them. The server-side record of issued runs that result validation checks against (§9.8) is defined with the play session API.
+
+Only three substantive tables hold user data (`users`, `play_sessions`, and later `user_preferences`), plus the `programming_languages` lookup and the `auth_sessions` store. Two things that were separate in earlier drafts are now derived:
 
 - **Conquest records** are computed from `play_sessions`, because deleting a run must also delete the conquest it produced (Q15). A separate durable table would contradict that.
 - **Code blocks** live in the repository and ship inside the image as a compiled bundle (§5.2) 🔵 (Q29), so no `code_blocks` table exists. Roughly 600 KB in memory for 600 blocks, with no seeding step and no coupling between content updates and database migrations.
 
 ```sql
+CREATE EXTENSION citext;                        -- created by the initial migration
+
+CREATE TABLE programming_languages (
+  id           int      PRIMARY KEY,            -- fixed ids seeded by migrations: 1 typescript, 2 go, 3 java, 4 python
+  slug         text     NOT NULL UNIQUE CHECK (slug ~ '^[a-z][a-z0-9-]*$'),  -- equals ContentLanguage
+  display_name text     NOT NULL,
+  sort_order   smallint NOT NULL,
+  enabled      boolean  NOT NULL DEFAULT true
+);
+
 CREATE TABLE users (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   username      citext UNIQUE NOT NULL,
@@ -747,6 +764,17 @@ CREATE TABLE users (
   locale        text NOT NULL DEFAULT 'en',
   created_at    timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE TABLE auth_sessions (
+  id           text        PRIMARY KEY,          -- hex SHA-256 of the cookie token (§7)
+  user_id      uuid        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  last_seen_at timestamptz NOT NULL DEFAULT now(),
+  expires_at   timestamptz NOT NULL,             -- 30 days after sign-in
+  CHECK (expires_at > created_at)
+);
+CREATE INDEX idx_auth_sessions_user    ON auth_sessions (user_id);
+CREATE INDEX idx_auth_sessions_expires ON auth_sessions (expires_at);
 
 CREATE TABLE play_sessions (
   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -770,15 +798,32 @@ CREATE TABLE play_sessions (
   result             text,                     -- 'win' | 'lose'  (ties stored as 'win', Q16)
   rng_seed           bigint NOT NULL,
   content_revision   text NOT NULL,            -- content bundle hash; lets a run be reproduced
-  app_version        text NOT NULL
+  app_version        text NOT NULL,
+  CHECK (mode IN ('single', 'cpu', 'ghost')),
+  -- Every comparison on a nullable column is paired with IS NOT NULL: `NULL BETWEEN 1 AND 100`
+  -- is NULL, not false, and a CHECK constraint only rejects false.
+  CHECK ((mode = 'single' AND cpu_level IS NULL AND ghost_period IS NULL
+           AND opponent_score IS NULL AND result IS NULL)
+      OR (mode = 'cpu' AND cpu_level IS NOT NULL AND cpu_level BETWEEN 1 AND 100
+           AND ghost_period IS NULL AND opponent_score IS NOT NULL
+           AND result IS NOT NULL AND result IN ('win', 'lose'))
+      OR (mode = 'ghost' AND cpu_level IS NULL AND ghost_period IS NOT NULL
+           AND ghost_period IN ('daily', 'weekly', 'total') AND opponent_score IS NOT NULL
+           AND result IS NOT NULL AND result IN ('win', 'lose'))),
+  CHECK (duration_sec > 0 AND raw_keystrokes >= 0 AND effective_keystrokes >= 0
+         AND miss_count >= 0 AND kpm >= 0 AND accuracy BETWEEN 0 AND 1 AND score >= 0
+         AND (opponent_score IS NULL OR opponent_score >= 0)),
+  CHECK (EXTRACT(DOW FROM local_week_start) = 0)   -- weeks start on Sunday (§6.1)
 );
 
+-- score is ascending: under equality on the leading columns a B-tree is scanned backwards for
+-- ORDER BY score DESC, and TypeORM index definitions cannot express a descending key (v1.12).
 CREATE INDEX idx_sessions_daily
-  ON play_sessions (user_id, language_id, local_date, score DESC);
+  ON play_sessions (user_id, language_id, local_date, score);
 CREATE INDEX idx_sessions_weekly
-  ON play_sessions (user_id, language_id, local_week_start, score DESC);
+  ON play_sessions (user_id, language_id, local_week_start, score);
 CREATE INDEX idx_sessions_alltime
-  ON play_sessions (user_id, language_id, score DESC);
+  ON play_sessions (user_id, language_id, score);
 CREATE INDEX idx_sessions_conquest
   ON play_sessions (user_id, language_id, cpu_level)
   WHERE mode = 'cpu' AND result = 'win';
@@ -1034,3 +1079,11 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.10 | Result validation | Results come with a keystroke log that the server replays with `typing-engine`; only aggregates are stored and the log is discarded, consistent with §1.3. A submission delayed past the grace period is rejected even for a legitimate run, with replay as the only remedy (§9.8) |
 | 1.11 | Content CLI pipeline | Stages: discover, formatter equality, toolchain syntax check, tree-sitter, constraints, compile, dedupe; `content:check` runs the toolchain-free stages in regular CI and a dedicated job runs `content:build` with toolchains. The toolchain is the authoritative syntax check because every measured tree-sitter grammar misses errors (and tree-sitter-java rejects the valid `1__0`) (§5.2) |
 | 1.11 | Content bundle format | `ContentBundleSchema` in contracts: schema version, language, blocks sorted by blockId, and a revision that hashes the canonical blocks JSON; toolchain versions live in `content/dist/toolchains.json` so the toolchain-free check can compare bundles byte for byte (§5.2) |
+| 1.12 | Missing table definitions | §9.3 referenced `programming_languages` without defining it and §7 required server-side sessions without a table. `programming_languages` has fixed ids seeded by migrations, and `auth_sessions` stores only the SHA-256 of the cookie token (§7, §9.3) |
+| 1.12 | Session lifetime | A session ends 7 days after its last use or 30 days after sign-in; both limits are conditions of the lookup query, evaluated against the database clock (§7) |
+| 1.12 | Deferred tables | `user_preferences` is created in P3 with the features that use it; the record of issued runs is defined with the play session API (§9.3) |
+| 1.12 | Constraints | `play_sessions` gains CHECK constraints on mode, per-mode opponent columns, non-negative counters, and Sunday week starts. **Found while testing the implementation:** a nullable comparison such as `cpu_level BETWEEN 1 AND 100` evaluates to NULL and passes a CHECK, so every such comparison is paired with `IS NOT NULL` (§9.3) |
+| 1.12 | Ranking index key order | `score` is ascending in the ranking indexes: backward index scans serve `ORDER BY score DESC`, and TypeORM cannot declare a descending key (§9.3) |
+| 1.12 | `synchronize` everywhere | Always `false`, including local development; migrations are applied explicitly (§9.2) |
+| 1.12 | Schema drift detection | `migration:check` runs in CI, but TypeORM compares CHECK constraints by name only (**found during implementation** by editing an entity's CHECK expression); an integration test compares PostgreSQL's normalized catalog of the migrated database with a reference database built from the entities (§9.2) |
+| 1.12 | No decorator metadata | Column types and injection tokens are always explicit. **Found during implementation:** Nest injects `undefined` for a parameter without `@Inject` instead of failing at startup, so a test checks every application class (§9.2) |

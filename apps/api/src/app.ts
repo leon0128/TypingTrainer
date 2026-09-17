@@ -6,6 +6,7 @@ import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fa
 
 import { AppModule } from './app.module';
 import { ApiExceptionFilter } from './common/api-exception.filter';
+import { createSchemaValidationPipe } from './common/schema-validation.pipe';
 import type { Env } from './config/env';
 
 const NEST_LOG_LEVELS = {
@@ -22,6 +23,7 @@ const NEST_LOG_LEVELS = {
 export function configureApp(app: NestFastifyApplication): NestFastifyApplication {
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new ApiExceptionFilter());
+  app.useGlobalPipes(createSchemaValidationPipe());
   app.enableShutdownHooks();
   return app;
 }

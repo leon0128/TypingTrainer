@@ -1,7 +1,8 @@
-import { CONTENT_LANGUAGES } from '@typing-trainer/contracts';
+import { CONTENT_LANGUAGES, UsernameSchema } from '@typing-trainer/contracts';
 import { QueryFailedError } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { MIGRATIONS } from '../src/migrations';
 import { TEST_DATABASE_URL, createTestDatabase, type TestDatabase } from './support/test-database';
 
 const CHECK_VIOLATION = '23514';
@@ -130,6 +131,31 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('initial schema (TEST_DATABASE_U
     expect(rows.map((row) => row.id)).toEqual([1, 2, 3, 4]);
   });
 
+  it.each([
+    'abc',
+    'Alice_2',
+    'a-b',
+    '9lives',
+    'x'.repeat(24),
+    'ab',
+    'x'.repeat(25),
+    '_alice',
+    '-alice',
+    'a b',
+    'alice!',
+    'ユーザー名です',
+  ])('agrees with UsernameSchema about %s', async (username) => {
+    const state = await sqlState(() =>
+      query(
+        `INSERT INTO users (username, password_hash) VALUES ($1, 'hash')
+         ON CONFLICT (username) DO NOTHING`,
+        [username],
+      ),
+    );
+    expect(state === undefined).toBe(UsernameSchema.safeParse(username).success);
+    if (state !== undefined) expect(state).toBe(CHECK_VIOLATION);
+  });
+
   it('treats usernames case-insensitively', async () => {
     expect(
       await sqlState(() =>
@@ -225,9 +251,11 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('migration reversal (TEST_DATABA
     await database.drop();
   });
 
-  it('reverts to an empty schema without citext and applies again', async () => {
+  it('reverts every migration to an empty schema without citext and applies them again', async () => {
     const { dataSource } = database;
-    await dataSource.undoLastMigration();
+    for (let remaining = MIGRATIONS.length; remaining > 0; remaining -= 1) {
+      await dataSource.undoLastMigration();
+    }
     const tables = await dataSource.query<{ tablename: string }[]>(
       `SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`,
     );
@@ -237,7 +265,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('migration reversal (TEST_DATABA
     );
     expect(extensions).toEqual([]);
 
-    expect((await dataSource.runMigrations()).length).toBe(1);
+    expect((await dataSource.runMigrations()).length).toBe(MIGRATIONS.length);
     expect(await dataSource.showMigrations()).toBe(false);
   });
 });

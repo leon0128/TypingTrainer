@@ -20,5 +20,21 @@ export { HealthCheckSchema, HealthResponseSchema } from './health';
 export type { HealthCheck, HealthResponse } from './health';
 export { ApiErrorSchema } from './api-error';
 export type { ApiError } from './api-error';
+export {
+  AuthResponseSchema,
+  LoginRequestSchema,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PasswordSchema,
+  RegisterRequestSchema,
+  TimezoneSchema,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  USERNAME_PATTERN,
+  UserSchema,
+  UsernameSchema,
+  normalizePassword,
+} from './auth';
+export type { AuthResponse, LoginRequest, RegisterRequest, User } from './auth';
 export { LanguageSchema, LanguagesResponseSchema } from './languages';
 export type { Language, LanguagesResponse } from './languages';

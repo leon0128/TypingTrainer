@@ -1,7 +1,14 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Check, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-/** An account (§7, §9.3). Username rules are enforced when registration is added (U5). */
+/**
+ * An account (§7, §9.3). The username check mirrors UsernameSchema in contracts; a test keeps the
+ * two in agreement. On citext, `~` matches case-insensitively, which this character class allows.
+ */
 @Entity({ name: 'users' })
+@Check(
+  'chk_users_username',
+  `char_length("username") BETWEEN 3 AND 24 AND "username" ~ '^[A-Za-z0-9][A-Za-z0-9_-]*$'`,
+)
 export class User {
   /** DEFAULT gen_random_uuid(), given uuidExtension 'pgcrypto' in the data source options. */
   @PrimaryGeneratedColumn('uuid', { name: 'id' })

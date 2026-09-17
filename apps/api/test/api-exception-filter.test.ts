@@ -2,11 +2,12 @@ import 'reflect-metadata';
 
 import { BadRequestException, Controller, Get, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
+import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { ApiErrorSchema } from '@typing-trainer/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { configureApp } from '../src/app';
+import { configureApp, createFastifyAdapter } from '../src/app';
+import { testEnv } from './support/env';
 
 @Controller('probe')
 class ProbeController {
@@ -29,9 +30,14 @@ describe('ApiExceptionFilter', () => {
 
   beforeAll(async () => {
     app = configureApp(
-      await NestFactory.create<NestFastifyApplication>(ProbeModule, new FastifyAdapter(), {
-        logger: false,
-      }),
+      await NestFactory.create<NestFastifyApplication>(
+        ProbeModule,
+        createFastifyAdapter(testEnv()),
+        {
+          logger: false,
+        },
+      ),
+      testEnv(),
     );
     await app.init();
     await app.getHttpAdapter().getInstance().ready();

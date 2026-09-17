@@ -5,7 +5,8 @@ import { parseDatabaseUrl, parseEnv } from '../src/config/env';
 const DATABASE_URL = 'postgres://user:secret@127.0.0.1:5432/typing_trainer';
 const PEPPER_BYTES = Buffer.alloc(32, 7);
 const PASSWORD_PEPPER = PEPPER_BYTES.toString('base64');
-const REQUIRED = { DATABASE_URL, PASSWORD_PEPPER };
+const APP_ORIGIN = 'http://localhost:5173';
+const REQUIRED = { DATABASE_URL, PASSWORD_PEPPER, APP_ORIGIN };
 
 describe('parseEnv', () => {
   it('applies defaults for a development machine and decodes the pepper', () => {
@@ -16,6 +17,8 @@ describe('parseEnv', () => {
       LOG_LEVEL: 'info',
       DATABASE_URL,
       PASSWORD_PEPPER: PEPPER_BYTES,
+      APP_ORIGIN,
+      TRUST_PROXY: false,
     });
   });
 
@@ -26,7 +29,7 @@ describe('parseEnv', () => {
   });
 
   it('requires a PostgreSQL DATABASE_URL', () => {
-    expect(() => parseEnv({ PASSWORD_PEPPER })).toThrow(/DATABASE_URL/);
+    expect(() => parseEnv({ PASSWORD_PEPPER, APP_ORIGIN })).toThrow(/DATABASE_URL/);
     expect(() => parseEnv({ ...REQUIRED, DATABASE_URL: 'mysql://user@localhost/db' })).toThrow(
       /DATABASE_URL/,
     );
@@ -37,7 +40,7 @@ describe('parseEnv', () => {
 
   it('requires a base64 pepper of at least 32 bytes and never echoes it', () => {
     const short = Buffer.alloc(31, 7).toString('base64');
-    expect(() => parseEnv({ DATABASE_URL })).toThrow(/PASSWORD_PEPPER/);
+    expect(() => parseEnv({ DATABASE_URL, APP_ORIGIN })).toThrow(/PASSWORD_PEPPER/);
     expect(() => parseEnv({ ...REQUIRED, PASSWORD_PEPPER: 'not base64!' })).toThrow(
       /PASSWORD_PEPPER/,
     );
@@ -46,6 +49,35 @@ describe('parseEnv', () => {
       parseEnv({ ...REQUIRED, PASSWORD_PEPPER: short });
     } catch (error) {
       expect(String(error)).not.toContain(short);
+    }
+  });
+
+  it('requires APP_ORIGIN to be a bare origin, and https in production', () => {
+    expect(() => parseEnv({ DATABASE_URL, PASSWORD_PEPPER })).toThrow(/APP_ORIGIN/);
+    for (const origin of [
+      'https://typing.example.com/',
+      'https://typing.example.com/app',
+      'ftp://x.example',
+    ]) {
+      expect(() => parseEnv({ ...REQUIRED, APP_ORIGIN: origin })).toThrow(/APP_ORIGIN/);
+    }
+    expect(
+      parseEnv({ ...REQUIRED, APP_ORIGIN: 'https://typing.example.com:8443' }).APP_ORIGIN,
+    ).toBe('https://typing.example.com:8443');
+    expect(() => parseEnv({ ...REQUIRED, NODE_ENV: 'production' })).toThrow(/must use https/);
+    expect(
+      parseEnv({ ...REQUIRED, NODE_ENV: 'production', APP_ORIGIN: 'https://typing.example.com' })
+        .NODE_ENV,
+    ).toBe('production');
+  });
+
+  it('reads TRUST_PROXY as nothing or addresses and CIDR ranges, never true or a hop count', () => {
+    expect(parseEnv(REQUIRED).TRUST_PROXY).toBe(false);
+    expect(
+      parseEnv({ ...REQUIRED, TRUST_PROXY: '127.0.0.1, 172.16.0.0/12, ::1' }).TRUST_PROXY,
+    ).toEqual(['127.0.0.1', '172.16.0.0/12', '::1']);
+    for (const value of ['true', '1', '10.0.0.0/33', 'localhost', '10.0.0.1/8/9']) {
+      expect(() => parseEnv({ ...REQUIRED, TRUST_PROXY: value })).toThrow(/TRUST_PROXY/);
     }
   });
 });

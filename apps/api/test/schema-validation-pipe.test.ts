@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 import { Body, Controller, Module, Post } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
+import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import {
   ApiErrorSchema,
   RegisterRequestSchema,
@@ -10,7 +10,8 @@ import {
 } from '@typing-trainer/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { configureApp } from '../src/app';
+import { configureApp, createFastifyAdapter } from '../src/app';
+import { TEST_APP_ORIGIN, testEnv } from './support/env';
 
 @Controller('probe')
 class ProbeController {
@@ -32,13 +33,23 @@ describe('schema validation pipe', () => {
   let app: NestFastifyApplication;
 
   const post = (url: string, payload: unknown) =>
-    app.inject({ method: 'POST', url: `/api/probe/${url}`, payload: payload as object });
+    app.inject({
+      method: 'POST',
+      url: `/api/probe/${url}`,
+      headers: { origin: TEST_APP_ORIGIN },
+      payload: payload as object,
+    });
 
   beforeAll(async () => {
     app = configureApp(
-      await NestFactory.create<NestFastifyApplication>(ProbeModule, new FastifyAdapter(), {
-        logger: false,
-      }),
+      await NestFactory.create<NestFastifyApplication>(
+        ProbeModule,
+        createFastifyAdapter(testEnv()),
+        {
+          logger: false,
+        },
+      ),
+      testEnv(),
     );
     await app.init();
     await app.getHttpAdapter().getInstance().ready();

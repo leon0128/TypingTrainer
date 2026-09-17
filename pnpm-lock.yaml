@@ -217,6 +217,9 @@ importers:
       '@typing-trainer/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      fastify:
+        specifier: 5.12.1
+        version: 5.12.1
       pg:
         specifier: 8.23.0
         version: 8.23.0

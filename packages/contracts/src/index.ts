@@ -18,3 +18,7 @@ export type { ContentBundle, ContentLanguage } from './content-bundle';
 export type { SessionLog } from './session-log';
 export { HealthCheckSchema, HealthResponseSchema } from './health';
 export type { HealthCheck, HealthResponse } from './health';
+export { ApiErrorSchema } from './api-error';
+export type { ApiError } from './api-error';
+export { LanguageSchema, LanguagesResponseSchema } from './languages';
+export type { Language, LanguagesResponse } from './languages';

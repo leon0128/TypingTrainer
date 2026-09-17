@@ -8,10 +8,13 @@ export {
   isUntypedAtom,
 } from './engine';
 export type { EngineState, KeyResult, KeystrokeCounters, Verdict } from './engine';
+export { RUN_BLOCK_COUNT, drawBlockIds } from './draw';
 export { classifyKey } from './key-classification';
 export type { KeyDisposition, KeyInput } from './key-classification';
 export { PLAY_DURATION_MS, computeAccuracy, computeMetrics } from './metrics';
 export type { OfficialMetrics } from './metrics';
+export { MAX_SEED, createSeededRandom } from './random';
+export type { SeededRandom } from './random';
 export {
   IDLE_LIMIT_MS,
   buildSessionLog,

@@ -69,6 +69,8 @@ export const EnvSchema = z
     /** The one origin allowed to send state-changing requests (§7, CSRF). */
     APP_ORIGIN: OriginSchema,
     TRUST_PROXY: TrustProxySchema,
+    /** Accounts that may be created in any 24 hours across all clients (§7, Q31). */
+    REGISTRATION_DAILY_LIMIT: z.coerce.number().int().min(1).default(20),
   })
   .superRefine((env, context) => {
     if (env.NODE_ENV === 'production' && !env.APP_ORIGIN.startsWith('https://')) {

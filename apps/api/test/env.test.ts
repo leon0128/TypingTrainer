@@ -19,6 +19,7 @@ describe('parseEnv', () => {
       PASSWORD_PEPPER: PEPPER_BYTES,
       APP_ORIGIN,
       TRUST_PROXY: false,
+      REGISTRATION_DAILY_LIMIT: 20,
     });
   });
 

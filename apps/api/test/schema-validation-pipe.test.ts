@@ -41,7 +41,7 @@ describe('schema validation pipe', () => {
     });
 
   beforeAll(async () => {
-    app = configureApp(
+    app = await configureApp(
       await NestFactory.create<NestFastifyApplication>(
         ProbeModule,
         createFastifyAdapter(testEnv()),

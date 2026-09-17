@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
   FailureBackoff,
+  RateLimitedException,
   SlidingWindowLimiter,
+  enforce,
   retryAfterSeconds,
   type LimitDecision,
 } from '../src/common/rate-limit';
@@ -43,6 +45,16 @@ describe('SlidingWindowLimiter', () => {
     for (let attempt = 0; attempt < 100; attempt += 1) limiter.hit('ip-a');
     clock.advance(MINUTE);
     expect(limiter.hit('ip-a').allowed).toBe(true);
+  });
+
+  it('checks without recording, so only recorded attempts count', () => {
+    const limiter = new SlidingWindowLimiter({ limit: 2, windowMs: MINUTE }, fakeClock().now);
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      expect(limiter.check('all').allowed).toBe(true);
+    }
+    limiter.record('all');
+    limiter.record('all');
+    expect(limiter.check('all').allowed).toBe(false);
   });
 
   it('counts keys independently', () => {
@@ -128,5 +140,21 @@ describe('retryAfterSeconds', () => {
     expect(retryAfterSeconds({ allowed: false, retryAfterMs: 1 })).toBe(1);
     expect(retryAfterSeconds({ allowed: false, retryAfterMs: 1001 })).toBe(2);
     expect(retryAfterSeconds({ allowed: false, retryAfterMs: 0 })).toBe(1);
+  });
+});
+
+describe('enforce', () => {
+  it('passes an allowed decision and throws 429 with the retry delay for a refusal', () => {
+    expect(() => {
+      enforce({ allowed: true, retryAfterMs: 0 });
+    }).not.toThrow();
+    try {
+      enforce({ allowed: false, retryAfterMs: 2500 });
+      expect.unreachable();
+    } catch (error) {
+      expect(error).toBeInstanceOf(RateLimitedException);
+      expect((error as RateLimitedException).getStatus()).toBe(429);
+      expect((error as RateLimitedException).retryAfterSeconds).toBe(3);
+    }
   });
 });

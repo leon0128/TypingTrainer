@@ -1,3 +1,5 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
+
 /**
  * In-memory rate limiting (§7). The API runs as a single process (§9.7), so counters live in memory
  * and reset when the process restarts; that is an accepted limitation. Every store keeps at most
@@ -74,18 +76,39 @@ export class SlidingWindowLimiter {
 
   /** Records an attempt for the key if it is within the limit. */
   hit(key: string): LimitDecision {
+    const decision = this.check(key);
+    if (decision.allowed) {
+      this.record(key);
+    } else {
+      // A refused key stays the most recently updated, so a client hammering one key cannot get
+      // its entry evicted by spraying others.
+      this.attempts.set(key, this.recent(key, this.now()));
+    }
+    return decision;
+  }
+
+  /**
+   * Whether the key is within the limit, without recording anything; for limits that count only
+   * attempts that succeed, followed by record().
+   */
+  check(key: string): LimitDecision {
     const time = this.now();
-    const recent = (this.attempts.get(key) ?? []).filter(
+    const recent = this.recent(key, time);
+    const oldest = recent[0];
+    return recent.length >= this.options.limit && oldest !== undefined
+      ? { allowed: false, retryAfterMs: oldest + this.options.windowMs - time }
+      : ALLOWED;
+  }
+
+  record(key: string): void {
+    const time = this.now();
+    this.attempts.set(key, [...this.recent(key, time), time]);
+  }
+
+  private recent(key: string, time: number): number[] {
+    return (this.attempts.get(key) ?? []).filter(
       (attempt) => attempt > time - this.options.windowMs,
     );
-    const oldest = recent[0];
-    if (recent.length >= this.options.limit && oldest !== undefined) {
-      this.attempts.set(key, recent);
-      return { allowed: false, retryAfterMs: oldest + this.options.windowMs - time };
-    }
-    recent.push(time);
-    this.attempts.set(key, recent);
-    return ALLOWED;
   }
 }
 
@@ -152,4 +175,19 @@ export class FailureBackoff {
     }
     return state;
   }
+}
+
+/** 429 with a Retry-After header, which ApiExceptionFilter adds. */
+export class RateLimitedException extends HttpException {
+  readonly retryAfterSeconds: number;
+
+  constructor(decision: LimitDecision) {
+    super('too many attempts; try again later', HttpStatus.TOO_MANY_REQUESTS);
+    this.retryAfterSeconds = retryAfterSeconds(decision);
+  }
+}
+
+/** Throws RateLimitedException for a refused decision. */
+export function enforce(decision: LimitDecision): void {
+  if (!decision.allowed) throw new RateLimitedException(decision);
 }

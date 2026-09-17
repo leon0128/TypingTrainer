@@ -7,6 +7,7 @@ import { ApiErrorSchema } from '@typing-trainer/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { configureApp, createFastifyAdapter } from '../src/app';
+import { RateLimitedException } from '../src/common/rate-limit';
 import { testEnv } from './support/env';
 
 @Controller('probe')
@@ -14,6 +15,11 @@ class ProbeController {
   @Get('bad-request')
   badRequest(): never {
     throw new BadRequestException('page must be positive');
+  }
+
+  @Get('limited')
+  limited(): never {
+    throw new RateLimitedException({ allowed: false, retryAfterMs: 1500 });
   }
 
   @Get('crash')
@@ -29,7 +35,7 @@ describe('ApiExceptionFilter', () => {
   let app: NestFastifyApplication;
 
   beforeAll(async () => {
-    app = configureApp(
+    app = await configureApp(
       await NestFactory.create<NestFastifyApplication>(
         ProbeModule,
         createFastifyAdapter(testEnv()),
@@ -55,6 +61,13 @@ describe('ApiExceptionFilter', () => {
       error: 'Bad Request',
       message: 'page must be positive',
     });
+  });
+
+  it('adds Retry-After to a rate-limited response', async () => {
+    const response = await app.inject({ method: 'GET', url: '/api/probe/limited' });
+    expect(response.statusCode).toBe(429);
+    expect(response.headers['retry-after']).toBe('2');
+    expect(ApiErrorSchema.parse(response.json()).error).toBe('Too Many Requests');
   });
 
   it('answers an unknown route with the same shape', async () => {

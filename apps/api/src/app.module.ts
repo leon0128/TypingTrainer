@@ -3,6 +3,7 @@ import { Module, type DynamicModule } from '@nestjs/common';
 import { ConfigModule } from './config/config.module';
 import type { Env } from './config/env';
 import { DatabaseModule } from './database/database.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { LanguagesModule } from './modules/languages/languages.module';
 
@@ -14,6 +15,7 @@ export class AppModule {
       imports: [
         ConfigModule.forRoot(env),
         DatabaseModule.forRoot(env),
+        AuthModule,
         HealthModule,
         LanguagesModule,
       ],

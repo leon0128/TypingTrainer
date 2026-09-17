@@ -88,7 +88,7 @@ class ProbeModule {}
 
 async function startProbe(overrides: Record<string, string> = {}): Promise<NestFastifyApplication> {
   const env = testEnv(overrides);
-  const app = configureApp(
+  const app = await configureApp(
     await NestFactory.create<NestFastifyApplication>(ProbeModule, createFastifyAdapter(env), {
       logger: false,
     }),

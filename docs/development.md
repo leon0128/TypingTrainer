@@ -23,6 +23,12 @@ pnpm api:dev    # http://127.0.0.1:3000/api/health/ready
 `apps/api/.env` is git-ignored and loaded by `api:dev` and the `migration:*` scripts; variables set
 in the shell take precedence.
 
+`APP_ORIGIN` is the web app's origin (the Vite dev server in development): state-changing requests
+from any other origin are refused. `TRUST_PROXY` (unset in development) lists the proxy addresses or
+CIDR ranges allowed to set `X-Forwarded-For`, and `REGISTRATION_DAILY_LIMIT` caps accounts created per
+24 hours (default 20). Sign-in and registration limits are kept in memory, so restarting the API
+resets them.
+
 `PASSWORD_PEPPER` in the example is a development-only value. A deployment needs its own secret of
 at least 32 random bytes (for example `openssl rand -base64 32`), kept outside the database and its
 backups: it is mixed into every password hash, so losing it invalidates every password. The

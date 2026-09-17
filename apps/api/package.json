@@ -15,6 +15,7 @@
     "migration:check": "tsx --env-file-if-exists=.env ./node_modules/typeorm/cli.js migration:generate src/migrations/Unexpected --check -d src/database/data-source.ts"
   },
   "dependencies": {
+    "@fastify/cookie": "11.1.2",
     "@nestjs/common": "12.0.1",
     "@nestjs/core": "12.0.1",
     "@nestjs/platform-fastify": "12.0.1",

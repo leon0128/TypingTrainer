@@ -1,7 +1,7 @@
 import { argon2Sync } from 'node:crypto';
 
 import { hash, hashRawSync, hashSync, type Algorithm } from '@node-rs/argon2';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { PASSWORD_HASH_OPTIONS, PasswordHasher } from '../src/modules/auth/password-hasher';
 
@@ -191,9 +191,21 @@ describe('PasswordHasher', () => {
     expect(await hasher.verify('$argon2id$v=19$m=19456,t=2,p=1$AAAA$', PASSWORD)).toBe(false);
   });
 
-  it('spends a verification on unknown users and always answers false', async () => {
-    expect(await hasher.verifyUnknownUser(PASSWORD)).toBe(false);
-    expect(await hasher.verifyUnknownUser('an unused password for timing only')).toBe(false);
+  it('refuses to answer for unknown users before prepare() has made the dummy hash', async () => {
+    await expect(new PasswordHasher(PEPPER).verifyUnknownUser(PASSWORD)).rejects.toThrow(
+      /prepare\(\) must complete/,
+    );
+  });
+
+  it('after prepare(), answers false for unknown users with one verification and no hashing', async () => {
+    const prepared = new PasswordHasher(PEPPER);
+    await prepared.prepare();
+    const hash = vi.spyOn(prepared, 'hash');
+    const verify = vi.spyOn(prepared, 'verify');
+    expect(await prepared.verifyUnknownUser(PASSWORD)).toBe(false);
+    expect(await prepared.verifyUnknownUser('an unused password for timing only')).toBe(false);
+    expect(hash).not.toHaveBeenCalled();
+    expect(verify).toHaveBeenCalledTimes(2);
   });
 
   it('asks for a rehash when the parameters differ from the current ones', async () => {

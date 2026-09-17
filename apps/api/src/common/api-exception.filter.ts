@@ -11,6 +11,8 @@ import {
 import type { ApiError } from '@typing-trainer/contracts';
 import type { FastifyReply } from 'fastify';
 
+import { RateLimitedException } from './rate-limit';
+
 /**
  * Turns every exception into an ApiError body. Client errors keep their message; server errors
  * send only the status text and log the cause, so stack traces and connection details never
@@ -34,6 +36,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
       error,
       message: status < 500 && exception instanceof HttpException ? exception.message : error,
     };
-    void host.switchToHttp().getResponse<FastifyReply>().status(status).send(body);
+    const reply = host.switchToHttp().getResponse<FastifyReply>();
+    if (exception instanceof RateLimitedException) {
+      void reply.header('Retry-After', String(exception.retryAfterSeconds));
+    }
+    void reply.status(status).send(body);
   }
 }

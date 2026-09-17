@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 
+import fastifyCookie from '@fastify/cookie';
 import { ConsoleLogger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -9,6 +10,7 @@ import { ApiExceptionFilter } from './common/api-exception.filter';
 import { registerRequestChecks } from './common/request-checks';
 import { createSchemaValidationPipe } from './common/schema-validation.pipe';
 import type { Env } from './config/env';
+import { AUTH_BODY_LIMIT_BYTES } from './modules/auth/auth.constants';
 
 const NEST_LOG_LEVELS = {
   fatal: ['fatal'],
@@ -29,8 +31,17 @@ export function createFastifyAdapter(env: Env): FastifyAdapter {
 }
 
 /** Application-wide HTTP behavior, shared by the real application and tests of it. */
-export function configureApp(app: NestFastifyApplication, env: Env): NestFastifyApplication {
-  registerRequestChecks(app.getHttpAdapter().getInstance(), env.APP_ORIGIN);
+export async function configureApp(
+  app: NestFastifyApplication,
+  env: Env,
+): Promise<NestFastifyApplication> {
+  const instance = app.getHttpAdapter().getInstance();
+  await app.register(fastifyCookie);
+  registerRequestChecks(instance, env.APP_ORIGIN);
+  // Auth bodies are a username and a password; anything larger is refused with 413 before parsing.
+  instance.addHook('onRoute', (route) => {
+    if (route.url.startsWith('/api/auth/')) route.bodyLimit = AUTH_BODY_LIMIT_BYTES;
+  });
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new ApiExceptionFilter());
   app.useGlobalPipes(createSchemaValidationPipe());

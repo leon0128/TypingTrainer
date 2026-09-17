@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.12 |
+| Version | 1.13 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.11 — API and database foundation: sessions, languages, constraints, migrations (Appendix B) |
+| Supersedes | v1.12 — authentication: password hashing, sessions, CSRF, and rate limits (Appendix B) |
 
 **Legend**
 
@@ -612,10 +612,12 @@ Taking the browser's time zone on every request would make past daily and weekly
 | Item | Approach |
 | --- | --- |
 | Method | **Username and password only** |
-| Password storage | **Argon2id** (OWASP recommendation), with a pepper supplied via environment variable |
-| Session | Server-side session plus an `httpOnly`, `Secure`, `SameSite=Lax` cookie. No browser-stored JWTs, which cannot be revoked 🟡 (v1.12): the cookie holds a 256-bit random token and `auth_sessions` stores only its SHA-256, so a leaked table cannot be replayed. A session ends **7 days after its last use** or **30 days after sign-in**, whichever comes first. Both limits are judged in the SQL that looks the session up, against the database clock (`expires_at > now() AND last_seen_at > now() - interval '7 days'`), never recomputed in application code; `last_seen_at` is refreshed at most once an hour, so a session can end up to an hour early but never late |
-| CSRF | `SameSite=Lax` plus Origin validation on state-changing requests |
-| Rate limiting | Per-IP and per-account limits on login and registration, with exponential backoff |
+| Password storage | **Argon2id** (OWASP recommendation), with a pepper supplied via environment variable 🟡 (v1.13): the OWASP minimum of 19 MiB, 2 passes, 1 lane, a 32-byte hash, and a random 16-byte salt, stored as a PHC string so a stored hash records its parameters and is upgraded on sign-in when they change. Passwords are NFKC-normalized before hashing. The pepper (`PASSWORD_PEPPER`, at least 32 bytes) is Argon2's `secret` and is never stored; it must be kept apart from the database and its backups, because losing it invalidates every password. The implementation is `@node-rs/argon2`, which ships prebuilt musl bindings for arm64 and amd64. Node's built-in `crypto.argon2` (added in v24.7.0) was rejected while it is Stability 1.2 (release candidate); **when it reaches Stability 2 (stable), migrating to it is to be reconsidered**. Because `@node-rs/argon2` accepts no associated data, RFC 9106 §5.3 cannot run through it: tests check it against the reference implementation's Argon2id vectors (`src/test.c`), check `node:crypto` against RFC 9106 §5.3, and require the stored hash to equal `node:crypto`'s output for the same salt, pepper, and parameters |
+| Usernames and passwords | 🟡 (v1.13) Usernames: 3–24 characters, letters, digits, `_` and `-`, starting with a letter or digit; unique regardless of letter case (citext), stored as typed. The same rule is the `chk_users_username` constraint, and a test keeps it and the contracts schema in agreement. Passwords: **15–128 characters** (NIST SP 800-63B-4 for single-factor authentication), counted in code points after NFKC normalization; no composition rules; not equal to the username. Error messages never include the submitted value. Sign-in only bounds lengths, so a later policy change cannot lock out an existing account |
+| Session | Server-side session plus an `httpOnly`, `Secure`, `SameSite=Lax` cookie. No browser-stored JWTs, which cannot be revoked 🟡 (v1.12): the cookie holds a 256-bit random token and `auth_sessions` stores only its SHA-256, so a leaked table cannot be replayed. A session ends **7 days after its last use** or **30 days after sign-in**, whichever comes first. Both limits are judged in the SQL that looks the session up, against the database clock (`expires_at > now() AND last_seen_at > now() - interval '7 days'`), never recomputed in application code; `last_seen_at` is refreshed at most once an hour, so a session can end up to an hour early but never late. 🟡 (v1.13) The cookie is `__Host-tt_session` with `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, no `Domain`, and `Max-Age` of 30 days; the `__Host-` prefix stops a subdomain from setting or shadowing it. Development serves the web app over `http://localhost`, so there the cookie is `tt_session` without `Secure`. Every sign-in issues a new session and deletes the one presented, so a token planted before sign-in is never promoted. A user keeps at most the 10 newest sessions, and expired or idle sessions are deleted hourly. Every route requires a session unless it is marked public (health, languages, register, login, logout) |
+| CSRF | `SameSite=Lax` plus Origin validation on state-changing requests 🟡 (v1.13): before any body is parsed, every POST, PUT, PATCH, and DELETE must carry an `Origin` equal to `APP_ORIGIN` (scheme, host, and port), or, when a browser omits `Origin`, a `Referer` with that origin; otherwise 403. A request with a body must be `application/json`, otherwise 415, since HTML forms cannot send JSON and the Fastify adapter would otherwise parse form bodies. Sign-in and registration are covered too, which prevents login CSRF. CORS is not enabled; the web app is served from the same origin |
+| Rate limiting | Per-IP and per-account limits on login and registration, with exponential backoff 🟡 (v1.13): sign-in allows 20 attempts per client address per 15 minutes; per account (lower-cased username, existing or not), the fifth consecutive failure blocks for 1 s, doubling to a 15-minute cap, and a success clears it. Registration allows 5 attempts per address per hour and `REGISTRATION_DAILY_LIMIT` (default 20) accounts created in any 24 hours across all clients. Refusals are 429 with `Retry-After`. Client addresses come from `X-Forwarded-For` only for proxies listed in `TRUST_PROXY` (addresses or CIDR ranges; no hop counts). **Known limitation:** counters are kept in the single API process (§9.7), bounded to 10,000 keys each, and **reset when the process restarts** |
+| Account enumeration | 🟡 (v1.13) An unknown username and a wrong password get the same 401 body after the same Argon2 verification: the dummy hash verified for unknown usernames is created when the application starts, not on first use, so the first attempt is not slower. The per-account backoff applies to unknown usernames as well. Registration answers 409 for a taken username, which open sign-up cannot hide; the per-address limit bounds probing |
 | Registration policy | **Open sign-up** 🔵 (Q31). Rate limiting on the registration endpoint is the only guard; because rankings are strictly per-user, an unwanted account can see nothing but its own empty data. Tightening to an invite code later requires no schema change |
 
 ---
@@ -893,7 +895,7 @@ Design points:
 | POST | `/api/auth/login` | Sign in (issues the session cookie) |
 | POST | `/api/auth/logout` | Sign out |
 | GET | `/api/auth/me` | Current user |
-| DELETE | `/api/auth/me` | Delete the account and all data |
+| DELETE | `/api/auth/me` | Delete the account and all data (P3, with account deletion; §10) |
 | GET | `/api/languages` | Available languages |
 | POST | `/api/play/sessions` | **Start a run.** Returns 20 compiled blocks, the RNG seed, and CPU or Ghost parameters |
 | POST | `/api/play/sessions/:id/result` | Submit a result; validated server-side |
@@ -903,6 +905,8 @@ Design points:
 | DELETE | `/api/history/:id` | Delete one run |
 | GET | `/api/cpu-conquests` | Conquest state per language |
 | GET / PUT | `/api/preferences` | Appearance, sound, locale, time zone |
+
+🟡 (v1.13) Every route requires a signed-in session unless it is explicitly public; the public routes are the health checks, `GET /api/languages`, and register, login, and logout. Errors use one body shape, `{ statusCode, error, message }`, and server errors never include their cause.
 
 Starting a run on the server matters for three reasons: the block sequence and seed are authoritative, so opponents provably receive identical content; the result submission can be checked against what was actually issued; and validation reuses `typing-engine` rather than a second implementation.
 
@@ -1088,4 +1092,11 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.12 | `synchronize` everywhere | Always `false`, including local development; migrations are applied explicitly (§9.2) |
 | 1.12 | Schema drift detection | `migration:check` runs in CI, but TypeORM compares CHECK constraints by name only (**found during implementation** by editing an entity's CHECK expression); an integration test compares PostgreSQL's normalized catalog of the migrated database with a reference database built from the entities (§9.2) |
 | 1.12 | Local development database | `infra/compose.dev.yaml` runs only PostgreSQL for development, bound to localhost with dev placeholder credentials; the API and web app run on the host. CI starts the same image as a GitHub Actions service, so no container orchestration is needed in either place (§9.4, docs/development.md) |
+| 1.13 | Argon2 implementation | `@node-rs/argon2` rather than Node's `crypto.argon2`, which is a release candidate; migration is to be reconsidered when the built-in reaches Stability 2. RFC 9106 §5.3 needs associated data that `@node-rs/argon2` does not accept, so it is verified through the reference implementation's vectors and a comparison with `node:crypto`, which is itself checked against RFC 9106 (§7) |
+| 1.13 | Password length | 15–128 characters after NFKC normalization, following NIST SP 800-63B-4 for single-factor authentication (§7) |
+| 1.13 | Unknown-user timing | **Found during review:** a dummy hash created on first use made the first unknown-username sign-in pay for an extra hash, revealing that the username does not exist. The dummy hash is created at startup and verification before it exists is an error (§7) |
+| 1.13 | Session cookie and rotation | `__Host-tt_session` in production (`tt_session` without `Secure` in development); a new session on every sign-in replacing the presented one; at most 10 sessions per user; hourly cleanup (§7) |
+| 1.13 | CSRF checks | Origin, or Referer when Origin is absent, must equal `APP_ORIGIN` for state-changing methods, and bodies must be JSON, checked before parsing (§7) |
+| 1.13 | Rate limits | The §7 numbers, in memory with a 10,000-key bound; counters reset when the process restarts, an accepted limitation of the single-process deployment. `TRUST_PROXY` lists trusted proxies; hop counts are not accepted because Fastify 5's types have none and an explicit list is harder to misconfigure (§7) |
+| 1.13 | Private by default | A global guard requires a session for every route not marked public (§9.5) |
 | 1.12 | No decorator metadata | Column types and injection tokens are always explicit. **Found during implementation:** Nest injects `undefined` for a parameter without `@Inject` instead of failing at startup, so a test checks every application class (§9.2) |

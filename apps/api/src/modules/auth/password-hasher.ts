@@ -33,7 +33,7 @@ export const PASSWORD_HASH_OPTIONS = {
  * the length rule in contracts; the pepper is passed as Argon2's secret and never stored.
  */
 export class PasswordHasher {
-  private dummyHash: Promise<string> | undefined;
+  private dummyHash: string | undefined;
 
   constructor(private readonly pepper: Buffer) {
     if (pepper.length < PASSWORD_PEPPER_MIN_BYTES) {
@@ -62,9 +62,20 @@ export class PasswordHasher {
    * reveal which accounts exist. Always false.
    */
   async verifyUnknownUser(password: string): Promise<false> {
-    this.dummyHash ??= this.hash('an unused password for timing only');
-    await this.verify(await this.dummyHash, password);
+    if (this.dummyHash === undefined) {
+      throw new Error('PasswordHasher.prepare() must complete before verifyUnknownUser()');
+    }
+    await this.verify(this.dummyHash, password);
     return false;
+  }
+
+  /**
+   * Makes the dummy hash for verifyUnknownUser() ahead of time. Creating it lazily would make the
+   * first unknown-username sign-in pay for a hash as well, a timing difference that reveals the
+   * username does not exist; the application awaits this before it accepts requests.
+   */
+  async prepare(): Promise<void> {
+    this.dummyHash ??= await this.hash('an unused password for timing only');
   }
 
   /** Whether a stored hash was made with other parameters and should be replaced on sign-in. */

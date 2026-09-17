@@ -6,7 +6,8 @@ import { describe, expect, it } from 'vitest';
 
 import { AppModule } from '../src/app.module';
 import { ConfigModule } from '../src/config/config.module';
-import { ENV, parseEnv, type Env } from '../src/config/env';
+import { ENV, type Env } from '../src/config/env';
+import { testEnv } from './support/env';
 import { missingInjections } from './support/explicit-injection';
 
 /**
@@ -25,11 +26,7 @@ class ImplicitConsumer {
 }
 
 // Nothing here connects: the application graph below is only built in preview mode.
-const env = parseEnv({
-  NODE_ENV: 'test',
-  LOG_LEVEL: 'silent',
-  DATABASE_URL: 'postgres://unused@127.0.0.1:1/unused',
-});
+const env = testEnv();
 
 @Module({ imports: [ConfigModule.forRoot(env)], providers: [ExplicitConsumer] })
 class ExplicitModule {}

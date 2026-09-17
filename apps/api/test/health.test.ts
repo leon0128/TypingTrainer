@@ -3,13 +3,11 @@ import { HealthResponseSchema } from '@typing-trainer/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createApp } from '../src/app';
-import { parseEnv } from '../src/config/env';
+import { testEnv } from './support/env';
 import { TEST_DATABASE_URL, createTestDatabase, type TestDatabase } from './support/test-database';
 
 async function startApp(databaseUrl: string): Promise<NestFastifyApplication> {
-  const app = await createApp(
-    parseEnv({ NODE_ENV: 'test', LOG_LEVEL: 'silent', DATABASE_URL: databaseUrl }),
-  );
+  const app = await createApp(testEnv({ DATABASE_URL: databaseUrl }));
   await app.init();
   await app.getHttpAdapter().getInstance().ready();
   return app;

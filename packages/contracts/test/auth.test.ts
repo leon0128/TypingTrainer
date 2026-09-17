@@ -32,8 +32,8 @@ describe('PasswordSchema', () => {
   });
 
   it('counts code points after NFKC normalization', () => {
-    // U+FB01 (ﬁ) normalizes to "fi": 14 ligatures are 28 characters.
-    expect(PasswordSchema.safeParse('ﬁ'.repeat(14)).success).toBe(true);
+    // U+FB01 (the "fi" ligature) normalizes to "fi": 14 ligatures are 28 characters.
+    expect(PasswordSchema.safeParse('\uFB01'.repeat(14)).success).toBe(true);
     // An astral character is one code point, not two UTF-16 units.
     expect(PasswordSchema.safeParse('😀'.repeat(14)).success).toBe(false);
     expect(PasswordSchema.safeParse('😀'.repeat(15)).success).toBe(true);

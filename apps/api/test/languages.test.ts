@@ -3,7 +3,7 @@ import { CONTENT_LANGUAGES, LanguagesResponseSchema } from '@typing-trainer/cont
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createApp } from '../src/app';
-import { parseEnv } from '../src/config/env';
+import { testEnv } from './support/env';
 import { TEST_DATABASE_URL, createTestDatabase, type TestDatabase } from './support/test-database';
 
 describe.runIf(TEST_DATABASE_URL !== undefined)('GET /api/languages (TEST_DATABASE_URL)', () => {
@@ -18,9 +18,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('GET /api/languages (TEST_DATABA
 
   beforeAll(async () => {
     database = await createTestDatabase(TEST_DATABASE_URL ?? '');
-    app = await createApp(
-      parseEnv({ NODE_ENV: 'test', LOG_LEVEL: 'silent', DATABASE_URL: database.url }),
-    );
+    app = await createApp(testEnv({ DATABASE_URL: database.url }));
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
   });

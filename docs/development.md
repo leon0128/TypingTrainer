@@ -23,6 +23,11 @@ pnpm api:dev    # http://127.0.0.1:3000/api/health/ready
 `apps/api/.env` is git-ignored and loaded by `api:dev` and the `migration:*` scripts; variables set
 in the shell take precedence.
 
+`PASSWORD_PEPPER` in the example is a development-only value. A deployment needs its own secret of
+at least 32 random bytes (for example `openssl rand -base64 32`), kept outside the database and its
+backups: it is mixed into every password hash, so losing it invalidates every password. The
+`migration:*` scripts read only `DATABASE_URL` and run without it.
+
 ## Migrations
 
 `synchronize` is always off, so every schema change is a migration (docs/requirements.md §9.2).

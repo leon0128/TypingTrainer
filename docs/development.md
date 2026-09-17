@@ -29,6 +29,11 @@ CIDR ranges allowed to set `X-Forwarded-For`, and `REGISTRATION_DAILY_LIMIT` cap
 24 hours (default 20). Sign-in and registration limits are kept in memory, so restarting the API
 resets them.
 
+`CONTENT_DIR` points at the compiled bundles (`content/dist`, run `pnpm content:build` after editing
+blocks). At startup the API verifies every bundle's schema and revision and refuses to start when an
+enabled language has no bundle or a bundle has no language row; with migrations pending it starts and
+leaves that check to `/api/health/ready`.
+
 `PASSWORD_PEPPER` in the example is a development-only value. A deployment needs its own secret of
 at least 32 random bytes (for example `openssl rand -base64 32`), kept outside the database and its
 backups: it is mixed into every password hash, so losing it invalidates every password. The

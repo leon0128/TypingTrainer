@@ -1,10 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import type { HealthCheck, HealthResponse } from '@typing-trainer/contracts';
 import type { DataSource } from 'typeorm';
 
+import { ContentConsistency } from '../content/content-consistency';
+
 /** The part of the data source readiness needs, so tests can substitute it. */
 export type DatabaseProbe = Pick<DataSource, 'query' | 'showMigrations'>;
+
+/** The part of the content consistency check readiness needs. */
+export type ContentProbe = Pick<ContentConsistency, 'findProblems'>;
 
 export const READY_CHECK_TIMEOUT_MS = 1000;
 
@@ -12,11 +17,15 @@ export const READY_CHECK_TIMEOUT_MS = 1000;
 export class HealthService {
   private readonly logger = new Logger(HealthService.name);
 
-  constructor(@InjectDataSource() private readonly database: DatabaseProbe) {}
+  constructor(
+    @InjectDataSource() private readonly database: DatabaseProbe,
+    @Inject(ContentConsistency) private readonly content: ContentProbe,
+  ) {}
 
   /**
-   * Readiness: the database answers and no migration is pending. The endpoint is public, so a
-   * failed check reports a fixed detail and the underlying error goes to the log only.
+   * Readiness: the database answers, no migration is pending, and every enabled language has a
+   * content bundle. The endpoint is public, so a failed check reports a fixed detail and the
+   * underlying error goes to the log only.
    */
   async ready(timeoutMs = READY_CHECK_TIMEOUT_MS): Promise<HealthResponse> {
     const checks = [
@@ -27,6 +36,10 @@ export class HealthService {
         if (await this.database.showMigrations()) {
           throw new Error('there are pending migrations');
         }
+      }),
+      await this.check('content', 'inconsistent', timeoutMs, async () => {
+        const problems = await this.content.findProblems();
+        if (problems.length > 0) throw new Error(problems.join('; '));
       }),
     ];
     return { status: checks.every((check) => check.ok) ? 'ok' : 'unavailable', checks };

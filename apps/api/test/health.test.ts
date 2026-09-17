@@ -45,6 +45,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('health endpoints (TEST_DATABASE
       expect(HealthResponseSchema.parse(response.json()).checks).toEqual([
         { name: 'database', ok: true },
         { name: 'migrations', ok: true },
+        { name: 'content', ok: true },
       ]);
     });
   });
@@ -71,6 +72,8 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('health endpoints (TEST_DATABASE
         checks: [
           { name: 'database', ok: true },
           { name: 'migrations', ok: false, detail: 'pending' },
+          // The languages table does not exist yet, so the content check cannot pass either.
+          { name: 'content', ok: false, detail: 'inconsistent' },
         ],
       });
     });

@@ -1,4 +1,5 @@
 import { isIP } from 'node:net';
+import { resolve } from 'node:path';
 
 import { z } from 'zod';
 
@@ -69,6 +70,12 @@ export const EnvSchema = z
     /** The one origin allowed to send state-changing requests (§7, CSRF). */
     APP_ORIGIN: OriginSchema,
     TRUST_PROXY: TrustProxySchema,
+    /** Directory of the compiled content bundles, resolved against the working directory (§5.2). */
+    CONTENT_DIR: z
+      .string()
+      .min(1)
+      .default('../../content/dist')
+      .transform((directory) => resolve(directory)),
     /** Accounts that may be created in any 24 hours across all clients (§7, Q31). */
     REGISTRATION_DAILY_LIMIT: z.coerce.number().int().min(1).default(20),
   })

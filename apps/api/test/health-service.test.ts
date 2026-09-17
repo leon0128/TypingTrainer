@@ -1,14 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
-import { HealthService, type DatabaseProbe } from '../src/modules/health/health.service';
+import {
+  HealthService,
+  type ContentProbe,
+  type DatabaseProbe,
+} from '../src/modules/health/health.service';
 
-function service(probe: Partial<DatabaseProbe>): HealthService {
+function service(
+  probe: Partial<DatabaseProbe>,
+  content: ContentProbe = { findProblems: () => Promise.resolve([]) },
+): HealthService {
   const database: DatabaseProbe = {
     query: () => Promise.resolve([{ '?column?': 1 }] as never),
     showMigrations: () => Promise.resolve(false),
     ...probe,
   };
-  return new HealthService(database);
+  return new HealthService(database, content);
 }
 
 describe('HealthService.ready', () => {
@@ -18,8 +25,22 @@ describe('HealthService.ready', () => {
       checks: [
         { name: 'database', ok: true },
         { name: 'migrations', ok: true },
+        { name: 'content', ok: true },
       ],
     });
+  });
+
+  it('reports content that disagrees with the languages table without naming the problem', async () => {
+    const report = await service(
+      {},
+      {
+        findProblems: () =>
+          Promise.resolve(['language "rust" is enabled but has no content bundle']),
+      },
+    ).ready();
+    expect(report.status).toBe('unavailable');
+    expect(report.checks).toContainEqual({ name: 'content', ok: false, detail: 'inconsistent' });
+    expect(JSON.stringify(report)).not.toContain('rust');
   });
 
   it('reports pending migrations', async () => {

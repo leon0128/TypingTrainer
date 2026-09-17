@@ -1,4 +1,9 @@
+import { fileURLToPath } from 'node:url';
+
 import { parseEnv, type Env } from '../../src/config/env';
+
+/** The repository's compiled content bundles. */
+export const TEST_CONTENT_DIR = fileURLToPath(new URL('../../../../content/dist', import.meta.url));
 
 /** A fixed test-only pepper (32 bytes). */
 export const TEST_PASSWORD_PEPPER = Buffer.alloc(32, 0x5a).toString('base64');
@@ -17,6 +22,7 @@ export function testEnv(overrides: Readonly<Record<string, string>> = {}): Env {
     DATABASE_URL: UNUSED_DATABASE_URL,
     PASSWORD_PEPPER: TEST_PASSWORD_PEPPER,
     APP_ORIGIN: TEST_APP_ORIGIN,
+    CONTENT_DIR: TEST_CONTENT_DIR,
     ...overrides,
   });
 }

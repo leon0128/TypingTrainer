@@ -1,3 +1,5 @@
+import { resolve } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { parseDatabaseUrl, parseEnv } from '../src/config/env';
@@ -20,6 +22,7 @@ describe('parseEnv', () => {
       APP_ORIGIN,
       TRUST_PROXY: false,
       REGISTRATION_DAILY_LIMIT: 20,
+      CONTENT_DIR: resolve('../../content/dist'),
     });
   });
 
@@ -80,6 +83,13 @@ describe('parseEnv', () => {
     for (const value of ['true', '1', '10.0.0.0/33', 'localhost', '10.0.0.1/8/9']) {
       expect(() => parseEnv({ ...REQUIRED, TRUST_PROXY: value })).toThrow(/TRUST_PROXY/);
     }
+  });
+});
+
+describe('CONTENT_DIR', () => {
+  it('resolves against the working directory', () => {
+    expect(parseEnv({ ...REQUIRED, CONTENT_DIR: 'bundles' }).CONTENT_DIR).toBe(resolve('bundles'));
+    expect(parseEnv({ ...REQUIRED, CONTENT_DIR: '/srv/content' }).CONTENT_DIR).toBe('/srv/content');
   });
 });
 

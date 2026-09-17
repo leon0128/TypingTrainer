@@ -13,6 +13,12 @@ import { dataSourceOptions } from '../../src/database/data-source-options';
  */
 export const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
+// The CI api job sets REQUIRE_TEST_DATABASE, so losing TEST_DATABASE_URL fails there instead of
+// silently skipping every database test.
+if (process.env.REQUIRE_TEST_DATABASE === '1' && TEST_DATABASE_URL === undefined) {
+  throw new Error('REQUIRE_TEST_DATABASE is set but TEST_DATABASE_URL is not');
+}
+
 export interface TestDatabase {
   readonly url: string;
   /** A data source for the database, initialized, with the application's entities. */

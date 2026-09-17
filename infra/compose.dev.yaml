@@ -1,0 +1,24 @@
+# Local development database only (docs/development.md). The production composition, with Caddy
+# and the API, is infra/compose.yaml. The credentials are development placeholders, not secrets.
+name: typing-trainer-dev
+
+services:
+  db:
+    # The same image as the api job in .github/workflows/ci.yml.
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: typing_trainer
+      POSTGRES_PASSWORD: typing_trainer
+      POSTGRES_DB: typing_trainer
+    ports:
+      - 127.0.0.1:5432:5432
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U typing_trainer -d typing_trainer]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  db-data:

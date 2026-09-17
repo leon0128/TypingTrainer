@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "pnpm --filter @typing-trainer/web dev",
     "api:dev": "pnpm --filter @typing-trainer/api dev",
+    "db:up": "docker compose -f infra/compose.dev.yaml up -d --wait",
+    "db:down": "docker compose -f infra/compose.dev.yaml down",
     "typecheck": "tsc -b",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",

@@ -6,3 +6,5 @@ dist/
 coverage/
 .DS_Store
 *.log
+# Local environment files; see apps/api/.env.example.
+.env

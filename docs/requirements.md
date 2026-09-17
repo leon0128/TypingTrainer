@@ -874,7 +874,8 @@ typing-trainer/
 │   └── content-cli/              # normalize, validate, compile, report
 └── infra/
     ├── docker/
-    └── compose.yaml
+    ├── compose.yaml              # production: caddy, api, db
+    └── compose.dev.yaml          # local development database only (v1.12)
 ```
 
 Design points:
@@ -1086,4 +1087,5 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.12 | Ranking index key order | `score` is ascending in the ranking indexes: backward index scans serve `ORDER BY score DESC`, and TypeORM cannot declare a descending key (§9.3) |
 | 1.12 | `synchronize` everywhere | Always `false`, including local development; migrations are applied explicitly (§9.2) |
 | 1.12 | Schema drift detection | `migration:check` runs in CI, but TypeORM compares CHECK constraints by name only (**found during implementation** by editing an entity's CHECK expression); an integration test compares PostgreSQL's normalized catalog of the migrated database with a reference database built from the entities (§9.2) |
+| 1.12 | Local development database | `infra/compose.dev.yaml` runs only PostgreSQL for development, bound to localhost with dev placeholder credentials; the API and web app run on the host. CI starts the same image as a GitHub Actions service, so no container orchestration is needed in either place (§9.4, docs/development.md) |
 | 1.12 | No decorator metadata | Column types and injection tokens are always explicit. **Found during implementation:** Nest injects `undefined` for a parameter without `@Inject` instead of failing at startup, so a test checks every application class (§9.2) |

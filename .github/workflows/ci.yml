@@ -32,3 +32,46 @@ jobs:
 
       - name: Content check
         run: pnpm content:check
+
+  api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        # The same image as infra/compose.dev.yaml.
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: typing_trainer
+          POSTGRES_PASSWORD: typing_trainer
+          POSTGRES_DB: typing_trainer
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U typing_trainer -d typing_trainer"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      DATABASE_URL: postgres://typing_trainer:typing_trainer@localhost:5432/typing_trainer
+      TEST_DATABASE_URL: postgres://typing_trainer:typing_trainer@localhost:5432/typing_trainer
+      # Fail instead of silently skipping the database tests if TEST_DATABASE_URL goes missing.
+      REQUIRE_TEST_DATABASE: '1'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Apply every migration to an empty database
+        run: pnpm --filter @typing-trainer/api migration:run
+
+      - name: Check that the migrations match the entities
+        run: pnpm --filter @typing-trainer/api migration:check
+
+      - name: Test the API against PostgreSQL
+        run: pnpm exec vitest run --project @typing-trainer/api

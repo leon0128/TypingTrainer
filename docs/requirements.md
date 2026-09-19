@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.13 |
+| Version | 1.14 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.12 — authentication: password hashing, sessions, CSRF, and rate limits (Appendix B) |
+| Supersedes | v1.13 — the play session API: issued runs, result validation, and stored runs (Appendix B) |
 
 **Legend**
 
@@ -740,7 +740,7 @@ erDiagram
     programming_languages ||--o{ play_sessions : used_in
 ```
 
-🟡 (v1.12) `user_preferences` (appearance, sounds) is created with the P3 features that use it; time zone and locale already live on `users` because aggregation needs them. The server-side record of issued runs that result validation checks against (§9.8) is defined with the play session API.
+🟡 (v1.12) `user_preferences` (appearance, sounds) is created with the P3 features that use it; time zone and locale already live on `users` because aggregation needs them. 🟡 (v1.14) `issued_runs` is the server-side record of what was handed out, which result validation checks a submission against (§9.8); it holds no user data beyond the reference to the player and is deleted a day after issuing.
 
 Only three substantive tables hold user data (`users`, `play_sessions`, and later `user_preferences`), plus the `programming_languages` lookup and the `auth_sessions` store. Two things that were separate in earlier drafts are now derived:
 
@@ -817,6 +817,22 @@ CREATE TABLE play_sessions (
          AND (opponent_score IS NULL OR opponent_score >= 0)),
   CHECK (EXTRACT(DOW FROM local_week_start) = 0)   -- weeks start on Sunday (§6.1)
 );
+
+CREATE TABLE issued_runs (                     -- v1.14: what the server handed out (§9.8)
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),   -- the session id the client uses
+  user_id          uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  language_id      int  NOT NULL REFERENCES programming_languages(id),
+  mode             text NOT NULL,
+  rng_seed         bigint NOT NULL,
+  content_revision text NOT NULL,
+  block_ids        text[] NOT NULL,
+  issued_at        timestamptz NOT NULL DEFAULT now(),
+  submitted_at     timestamptz,                -- set when a result is accepted or rejected
+  CHECK (mode IN ('single', 'cpu', 'ghost')),
+  CHECK (cardinality(block_ids) = 20),
+  CHECK (submitted_at IS NULL OR submitted_at >= issued_at)
+);
+CREATE INDEX idx_issued_runs_user ON issued_runs (user_id, issued_at);
 
 -- score is ascending: under equality on the leading columns a B-tree is scanned backwards for
 -- ORDER BY score DESC, and TypeORM index definitions cannot express a descending key (v1.12).
@@ -960,15 +976,21 @@ Expected steady-state footprint: PostgreSQL ~200 MB, API ~150 MB, Caddy ~20 MB �
 
 ---
 
-### 9.8 Result Validation and Keystroke Logs 🟡 (v1.10)
+### 9.8 Result Validation and Keystroke Logs 🟡 (v1.10, concrete checks in v1.14)
 
 | Item | Rule |
 | --- | --- |
-| Submitted data | With the result, the client submits the run's keystroke log: the engine keys as one string (Enter as `\n`, Tab as `\t`) and the run time between consecutive keys in whole milliseconds, pauses excluded. At most 12,000 keys (`SessionLogSchema` in `contracts`) |
-| Validation | The server replays the log with `typing-engine` against the blocks it issued and recomputes every counter and metric; the client's own numbers are not trusted. Live play and replay apply the same function with the same millisecond rounding, so they always agree. The specific plausibility checks (effective keystrokes against the blocks reached, run-time consistency, human speed limits) are defined with the play session API |
+| Submitted data | With the result, the client submits the run's keystroke log: the engine keys as one string (Enter as `\n`, Tab as `\t`) and the run time between consecutive keys in whole milliseconds, pauses excluded. At most 12,000 keys (`SessionLogSchema` in `contracts`); the request body is refused above 256 KB before it is parsed |
+| Validation | The server replays the log with `typing-engine` against the blocks it issued and recomputes every counter and metric; the client's own numbers are not trusted, and the response reports what the server computed. Live play and replay apply the same function with the same millisecond rounding, so they always agree |
+| Issued runs | 🟡 (v1.14) Starting a run records it in `issued_runs`. A result is accepted for that row only once, only for the user it was issued to, and only inside the submission window, all judged in one conditional `UPDATE` on the database clock. The row is marked submitted **before** validation, so a rejected result cannot be retried with a different log. A user may start 120 runs an hour, which bounds how fast the table grows; rows are deleted a day after issuing |
+| Plausibility checks | 🟡 (v1.14) In order: the first key must start the countdown (its delta is 0); no key may be logged after the run ended; run time may not exceed the wall-clock time since issuing, with a 2-second tolerance; the run may not be idle past the §4.1 limit and 30 seconds of grace; speed may not exceed 2,400 KPM in any 10-second window or 1,600 KPM over the run; effective keystrokes may not exceed what the blocks reached can hold. A failure answers 422 with the reason. The limits live in one module with their derivation from §4.3.1 and §4.3.2, since they are estimates made before there is real play data |
+| Content changes | 🟡 (v1.14) A result whose run was issued from a different content revision is refused with 409, because the blocks it was played against no longer exist on the server |
+| Stored run | 🟡 (v1.14) `started_at` is the submission time minus the run time in the log, never earlier than the issue time; `local_date` and `local_week_start` are computed in the inserting statement from the database clock and the player's profile time zone (§6.4), so day boundaries never depend on the application's clock or locale |
+| Empty log | 🟡 (v1.14) A log with no keystroke is not a run: the server answers 204 and stores nothing, but the issued run is used up. A run with keystrokes but no correct one is validated normally and stored with a score of 0, since results are always saved (§4.2) |
 | Retention | Only the aggregates are stored in `play_sessions`. The raw log is discarded after validation and never persisted, which keeps exact keystroke replay of past runs out of scope (§1.3) |
 | Idle rejection | The server rejects a result when the time from issuing the session to receiving the submission exceeds 120 seconds plus the 15-minute idle limit plus 30 seconds of grace, measured on its own clock (§4.1) |
 | Known limitation | Because idle rejection uses the time the submission reaches the server, a legitimate run whose submission is delayed beyond the grace period — a laptop going to sleep, a dropped connection — is rejected. The only remedy is to play again; at this scale no recovery mechanism is provided |
+
 
 ---
 
@@ -1100,3 +1122,9 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.13 | Rate limits | The §7 numbers, in memory with a 10,000-key bound; counters reset when the process restarts, an accepted limitation of the single-process deployment. `TRUST_PROXY` lists trusted proxies; hop counts are not accepted because Fastify 5's types have none and an explicit list is harder to misconfigure (§7) |
 | 1.13 | Private by default | A global guard requires a session for every route not marked public (§9.5) |
 | 1.12 | No decorator metadata | Column types and injection tokens are always explicit. **Found during implementation:** Nest injects `undefined` for a parameter without `@Inject` instead of failing at startup, so a test checks every application class (§9.2) |
+| 1.14 | Issued runs | A run is recorded in `issued_runs` when it starts and consumed by one conditional `UPDATE` that judges ownership, single use, and the submission window on the database clock; the row is marked submitted before validation, so a rejection cannot be retried (§9.8) |
+| 1.14 | Plausibility limits in one module | The fraud thresholds are named constants in a single module, each carrying how it follows from §4.3.1 / §4.3.2. They are estimates made before real play data exists, so a wrongly rejected run is corrected in one place; no environment variables (§9.8) |
+| 1.14 | `started_at` | The submission time minus the run time in the log, clamped to the issue time. The client's clock is not trusted, and the run time is already validated against the wall clock (§9.8) |
+| 1.14 | Local date in SQL | `local_date` and `local_week_start` are computed by the inserting statement from the database clock and the profile time zone, not in application code (§6.4, §9.8) |
+| 1.14 | Empty and scoreless runs | A log with no keystroke answers 204 and stores nothing while using up the issued run; a run with keystrokes but none correct is stored with score 0, because results are always saved (§4.2, §9.8) |
+| 1.14 | TypeORM result shapes | **Found during implementation:** `query()` returns rows for SELECT and INSERT but `[rows, affectedCount]` for UPDATE and DELETE with `RETURNING`, which made a consumed run look empty and made deletion counts report 2. One helper normalizes both shapes and the deletion tests assert exact counts (§9.2) |

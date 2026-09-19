@@ -11,6 +11,7 @@ import { registerRequestChecks } from './common/request-checks';
 import { createSchemaValidationPipe } from './common/schema-validation.pipe';
 import type { Env } from './config/env';
 import { AUTH_BODY_LIMIT_BYTES } from './modules/auth/auth.constants';
+import { RESULT_BODY_LIMIT_BYTES } from './modules/play/play.constants';
 
 const NEST_LOG_LEVELS = {
   fatal: ['fatal'],
@@ -38,9 +39,10 @@ export async function configureApp(
   const instance = app.getHttpAdapter().getInstance();
   await app.register(fastifyCookie);
   registerRequestChecks(instance, env.APP_ORIGIN);
-  // Auth bodies are a username and a password; anything larger is refused with 413 before parsing.
+  // Bodies are small and bounded; anything larger is refused with 413 before parsing.
   instance.addHook('onRoute', (route) => {
     if (route.url.startsWith('/api/auth/')) route.bodyLimit = AUTH_BODY_LIMIT_BYTES;
+    else if (route.url.endsWith('/result')) route.bodyLimit = RESULT_BODY_LIMIT_BYTES;
   });
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new ApiExceptionFilter());

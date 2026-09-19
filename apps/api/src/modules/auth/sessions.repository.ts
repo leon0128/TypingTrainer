@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import type { User } from '@typing-trainer/contracts';
 import type { DataSource } from 'typeorm';
 
+import { returnedRows } from '../../database/returned-rows';
 import {
   MAX_SESSIONS_PER_USER,
   SESSION_ABSOLUTE_LIFETIME,
@@ -70,12 +71,12 @@ export class SessionsRepository {
 
   /** Deletes every expired or idle session; returns how many were deleted. */
   async deleteExpired(): Promise<number> {
-    const rows = await this.dataSource.query<{ id: string }[]>(
+    const result: unknown = await this.dataSource.query(
       `DELETE FROM auth_sessions
        WHERE expires_at <= now() OR last_seen_at <= now() - $1::interval
        RETURNING id`,
       [SESSION_IDLE_LIFETIME],
     );
-    return rows.length;
+    return returnedRows<{ id: string }>(result).length;
   }
 }

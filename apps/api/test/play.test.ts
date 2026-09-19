@@ -169,7 +169,8 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       await query(`UPDATE issued_runs SET issued_at = now() - interval '25 hours' WHERE id = $1`, [
         stale.sessionId,
       ]);
-      expect(await app.get(IssuedRunsRepository).deleteStale()).toBeGreaterThanOrEqual(1);
+      // Exactly the stale one: the count comes from the rows the statement returned.
+      expect(await app.get(IssuedRunsRepository).deleteStale()).toBe(1);
       const ids = (await query<{ id: string }[]>('SELECT id FROM issued_runs')).map(
         (row) => row.id,
       );

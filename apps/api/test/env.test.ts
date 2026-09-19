@@ -22,6 +22,7 @@ describe('parseEnv', () => {
       APP_ORIGIN,
       TRUST_PROXY: false,
       REGISTRATION_DAILY_LIMIT: 20,
+      APP_VERSION: 'dev',
       CONTENT_DIR: resolve('../../content/dist'),
     });
   });

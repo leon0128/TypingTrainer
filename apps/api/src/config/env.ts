@@ -70,6 +70,8 @@ export const EnvSchema = z
     /** The one origin allowed to send state-changing requests (§7, CSRF). */
     APP_ORIGIN: OriginSchema,
     TRUST_PROXY: TrustProxySchema,
+    /** Recorded on every run, so a later scoring change never silently mixes results (R7). */
+    APP_VERSION: z.string().min(1).default('dev'),
     /** Directory of the compiled content bundles, resolved against the working directory (§5.2). */
     CONTENT_DIR: z
       .string()

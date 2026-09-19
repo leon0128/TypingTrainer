@@ -247,6 +247,9 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('authentication (TEST_DATABASE_U
     });
 
     it('deletes expired and idle sessions in bulk', async () => {
+      const sessions = app.get(SessionsRepository);
+      // Clear whatever earlier tests left behind, so the count below is only about these three.
+      await sessions.deleteExpired();
       const active = hashSessionToken(await registered());
       const idle = hashSessionToken(await registered());
       const expired = hashSessionToken(await registered());
@@ -259,7 +262,8 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('authentication (TEST_DATABASE_U
          WHERE id = $1`,
         [expired],
       );
-      expect(await app.get(SessionsRepository).deleteExpired()).toBeGreaterThanOrEqual(2);
+      // Exactly the two above: the count comes from the rows the statement returned.
+      expect(await sessions.deleteExpired()).toBe(2);
       const ids = (await query<{ id: string }[]>('SELECT id FROM auth_sessions')).map(
         (row) => row.id,
       );

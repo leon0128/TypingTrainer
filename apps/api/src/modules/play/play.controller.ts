@@ -4,18 +4,26 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  Param,
   Post,
   Req,
+  Res,
   UnauthorizedException,
 } from '@nestjs/common';
 import {
   StartSessionRequestSchema,
+  SubmitResultRequestSchema,
   type StartSessionRequest,
   type StartSessionResponse,
+  type SubmitResultRequest,
+  type SubmitResultResponse,
 } from '@typing-trainer/contracts';
-import type { FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
+import { z } from 'zod';
 
 import { PlayService } from './play.service';
+
+const SessionIdSchema = z.uuid();
 
 @Controller('play')
 export class PlayController {
@@ -28,8 +36,32 @@ export class PlayController {
     @Body({ schema: StartSessionRequestSchema }) body: StartSessionRequest,
     @Req() request: FastifyRequest,
   ): Promise<StartSessionResponse> {
-    // AuthGuard sets the user before any non-public handler runs; checked rather than asserted.
+    return this.play.start(this.user(request), body);
+  }
+
+  /**
+   * Submits the result of a run: 201 with the stored run, or 204 when the log holds no keystroke,
+   * which is a run that never started and is not saved. Either way the issued run is used up.
+   */
+  @Post('sessions/:id/result')
+  @HttpCode(HttpStatus.CREATED)
+  async submit(
+    @Param('id', { schema: SessionIdSchema }) sessionId: string,
+    @Body({ schema: SubmitResultRequestSchema }) body: SubmitResultRequest,
+    @Req() request: FastifyRequest,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ): Promise<SubmitResultResponse | undefined> {
+    const run = await this.play.submitResult(this.user(request), sessionId, body);
+    if (run === undefined) {
+      void reply.status(HttpStatus.NO_CONTENT);
+      return undefined;
+    }
+    return { run };
+  }
+
+  // AuthGuard sets the user before any non-public handler runs; checked rather than asserted.
+  private user(request: FastifyRequest): NonNullable<FastifyRequest['user']> {
     if (request.user === undefined) throw new UnauthorizedException('authentication required');
-    return this.play.start(request.user, body);
+    return request.user;
   }
 }

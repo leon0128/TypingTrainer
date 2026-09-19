@@ -223,6 +223,9 @@ importers:
       '@typing-trainer/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@typing-trainer/typing-engine':
+        specifier: workspace:*
+        version: link:../../packages/typing-engine
       fastify:
         specifier: 5.12.1
         version: 5.12.1

@@ -37,4 +37,6 @@ export {
 } from './auth';
 export type { AuthResponse, LoginRequest, RegisterRequest, User } from './auth';
 export { LanguageSchema, LanguagesResponseSchema } from './languages';
+export { PlayModeSchema, StartSessionRequestSchema, StartSessionResponseSchema } from './play';
+export type { PlayMode, StartSessionRequest, StartSessionResponse } from './play';
 export type { Language, LanguagesResponse } from './languages';

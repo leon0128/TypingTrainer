@@ -7,6 +7,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ContentModule } from './modules/content/content.module';
 import { HealthModule } from './modules/health/health.module';
 import { LanguagesModule } from './modules/languages/languages.module';
+import { PlayModule } from './modules/play/play.module';
 
 @Module({})
 export class AppModule {
@@ -20,6 +21,7 @@ export class AppModule {
         AuthModule,
         HealthModule,
         LanguagesModule,
+        PlayModule,
       ],
     };
   }

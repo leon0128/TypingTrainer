@@ -1,9 +1,14 @@
 import { InitialSchema1789646863673 } from './1789646863673-InitialSchema';
 import { AddUsernameCheck1789648873477 } from './1789648873477-AddUsernameCheck';
+import { AddIssuedRuns1789823131650 } from './1789823131650-AddIssuedRuns';
 
 /**
  * Every migration in order, listed explicitly: the production bundle has no migration files for a
  * glob to find. A migration missing from this list is never run, and `migration:check` then
  * reports the schema difference.
  */
-export const MIGRATIONS = [InitialSchema1789646863673, AddUsernameCheck1789648873477];
+export const MIGRATIONS = [
+  InitialSchema1789646863673,
+  AddUsernameCheck1789648873477,
+  AddIssuedRuns1789823131650,
+];

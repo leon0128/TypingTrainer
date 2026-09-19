@@ -22,6 +22,7 @@
     "@nestjs/typeorm": "12.0.1",
     "@node-rs/argon2": "2.2.1",
     "@typing-trainer/contracts": "workspace:*",
+    "@typing-trainer/typing-engine": "workspace:*",
     "fastify": "5.12.1",
     "pg": "8.23.0",
     "reflect-metadata": "0.2.2",

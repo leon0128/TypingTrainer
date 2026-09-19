@@ -38,6 +38,14 @@ export {
 export type { AuthResponse, LoginRequest, RegisterRequest, User } from './auth';
 export { LanguageSchema, LanguagesResponseSchema } from './languages';
 export {
+  HISTORY_DEFAULT_PAGE_SIZE,
+  HISTORY_MAX_PAGE_SIZE,
+  HistoryEntrySchema,
+  HistoryRequestSchema,
+  HistoryResponseSchema,
+} from './history';
+export type { HistoryEntry, HistoryRequest, HistoryResponse } from './history';
+export {
   RankingEntrySchema,
   RankingPeriodSchema,
   RankingsRequestSchema,

@@ -55,6 +55,9 @@ export function LanguageScreen() {
           <Link className="underline" to="/rankings">
             Rankings
           </Link>
+          <Link className="underline" to="/history">
+            History
+          </Link>
           {user !== null && (
             <p className="flex items-center gap-3">
               <span>{user.username}</span>

@@ -5,6 +5,7 @@ import type { Env } from './config/env';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ContentModule } from './modules/content/content.module';
+import { HistoryModule } from './modules/history/history.module';
 import { HealthModule } from './modules/health/health.module';
 import { LanguagesModule } from './modules/languages/languages.module';
 import { PlayModule } from './modules/play/play.module';
@@ -20,6 +21,7 @@ export class AppModule {
         DatabaseModule.forRoot(env),
         ContentModule,
         AuthModule,
+        HistoryModule,
         HealthModule,
         LanguagesModule,
         PlayModule,

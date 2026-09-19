@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.15 |
+| Version | 1.16 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.14 — the web app: routing, the API client, play and result screens (Appendix B) |
+| Supersedes | v1.15 — the web app's final commit: content line-width fix, dev proxy, reload/submission behavior (Appendix B) |
 
 **Legend**
 
@@ -592,6 +592,16 @@ Mode is deliberately *not* a partition key: all modes use the same engine, the s
 | Confirmation | Deletion is irreversible, so it is behind a confirmation dialog |
 | Account deletion | Erases the user and all associated rows (Q19) |
 
+🟡 (v1.16) The "updates immediately" claim rests on rankings, dashboard, and conquest records
+being plain queries over `play_sessions` with nothing cached or denormalized in between; deleting
+a row is therefore visible on the next request by construction, not by any synchronization step.
+U9 verified this directly for rankings, the only one of the three built so far, with an
+integration test: create two runs, confirm both appear in the ranking, delete the higher-scoring
+one through `DELETE /api/history/:id`, and confirm the ranking updates to the remaining run. The
+dashboard (P2) and conquest records (P2) are not implemented yet, so the same claim for them is
+unverified until they exist — the structural reasoning carries over unchanged, but it has not been
+exercised.
+
 ### 6.4 Time Zone Handling 🟡 (Q17)
 
 Taking the browser's time zone on every request would make past daily and weekly aggregates **shift whenever the user travels or changes networks** — last week's record could move into a different week.
@@ -1154,3 +1164,8 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.15 | Contract schema typing in the client | The API client types a response schema structurally (a `safeParse` method) rather than as zod's own `ZodType<T>`. **Found during implementation:** naming `ZodType<T>` made `tsc` compare its three type parameters under `exactOptionalPropertyTypes`, measuring 5.4 GB and 112 s before running out of memory; the structural type checks in well under a second |
 | 1.15 | Event timestamps vs. the run clock | An event's `timeStamp` and `performance.now()` share a time origin in a browser (measured against each other, ~6 ms apart), but not in every test environment — jsdom reports epoch milliseconds. **Found during implementation:** mixing the two clocks made a run measure itself as idle for decades and discard itself; a key time far from the run store's own clock is replaced by it |
 | 1.15 | Line width is enforced, not advisory | **Found on the real play screen in U7**, by typing every key of a block through the actual store and render layer and measuring the caret's screen position: the code panel scrolls horizontally but nothing scrolls it to follow the caret, so a line wider than the panel (itself capped at 1040px, unaffected by a wider window) leaves the caret invisible for however many keystrokes cross the excess width. The three blocks flagged in `content/blocks/AUTHORING_NOTES.md` were rewritten to fit 88 columns and re-verified the same way with zero off-screen keystrokes (§8.1) |
+| 1.16 | Verification effort scaled to risk | Starting with U8, mutation testing and live browser checks are reserved for logic touching money, auth, fraud detection, or data integrity (CHECK constraints, score calculation, timezone math, duplicate prevention); UI display, CSS state, and loading toggles get plain pass/fail unit tests. Reference-implementation cross-checks (RFC vectors, etc.) apply only the first time an algorithm is implemented. U1–U7 keep their original verification depth; this is not retroactive |
+| 1.16 | Rankings are the player's own top 10, not a leaderboard | §6.1's "signed-in user only" scope means `GET /api/rankings` never returns another player's data — it is a personal-best list per period and language, not competition against other players (§6.1, §9.5) |
+| 1.16 | "Today" and "this week" computed at query time | Unlike `storeRun`, which fixes `local_date`/`local_week_start` once at insert time, rankings and history compute the current day and week boundary fresh on every request, from the database clock and the player's profile time zone in the same statement. A stored run's date never changes, but which stored rows count as "today" moves the instant local midnight passes for that profile (§6.1, §6.3, §6.4) |
+| 1.16 | No new index for history | The history list reuses the existing `user_id`-leading composite indexes rather than adding one for `(user_id, started_at)`; at the §9.6 target scale (10,000 rows per user) an in-memory sort after a `user_id` filter is fast enough. Recorded as a considered-and-declined optimization, not an oversight, should it need revisiting (§6.3, §9.6) |
+| 1.16 | Ownership checks return 404, not 403 | Deleting another user's run answers 404, the same as an unknown id, rather than 403 — consistent with `issued_runs` consumption (§9.8) and `auth/me` (§7): a request never reveals whether a resource exists for someone else (§6.3) |

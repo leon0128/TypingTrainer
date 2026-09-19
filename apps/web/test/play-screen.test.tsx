@@ -4,7 +4,7 @@ import { IDLE_LIMIT_MS, PLAY_DURATION_MS } from '@typing-trainer/typing-engine';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PlayScreen } from '../src/features/play/PlayScreen';
 import { useRunSession } from '../src/features/play/run-session';
@@ -40,12 +40,41 @@ const beginRun = () => {
   useRunSession.getState().begin(ISSUED, performance.now());
 };
 
+/**
+ * Deliberately unlike anything the fixture run could produce: the screen must show what the
+ * server stored, not what the client counted (§9.8).
+ */
+const STORED = {
+  id: '33333333-3333-4333-8333-333333333333',
+  language: 'python',
+  mode: 'single',
+  startedAt: '2026-09-20T01:00:00.000Z',
+  localDate: '2026-09-20',
+  effectiveKeystrokes: 123,
+  missCount: 4,
+  rawKeystrokes: 111,
+  kpm: 61.5,
+  accuracy: 0.9688,
+  score: 60,
+};
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
+
+/** Types both issued blocks correctly, which ends the run (§4.1). */
+async function finishTheRun() {
+  // `{{` is how user-event types a literal brace, and `{Enter}` is the Enter key.
+  await userEvent.type(typingInput(), 'if(a{{{Enter}b{Enter}');
+  await userEvent.type(typingInput(), 'a: 1');
+}
+
 beforeEach(() => {
-  useRunSession.setState({ run: null });
+  useRunSession.setState({ run: null, submission: { kind: 'unsent' } });
 });
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
 });
 
 describe('play screen', () => {
@@ -90,21 +119,70 @@ describe('play screen', () => {
     expect(snapshot?.phase).toBe('playing');
   });
 
-  it('shows the score when the run is over, and offers another language', async () => {
+  it('submits the run when it ends and shows what the server stored', async () => {
+    const calls: { url: string; body: string }[] = [];
+    vi.stubGlobal('fetch', (url: string, init: { body?: string } = {}) => {
+      calls.push({ url, body: init.body ?? '' });
+      return Promise.resolve(json({ run: STORED }, 201));
+    });
+
     beginRun();
     renderScreen();
-
-    // Finish both blocks: the run ends as soon as the last one is done (§4.1).
-    // `{{` is how user-event types a literal brace, and `{Enter}` is the Enter key.
-    await userEvent.type(typingInput(), 'if(a{{{Enter}b{Enter}');
-    await userEvent.type(typingInput(), 'a: 1');
+    await finishTheRun();
 
     expect(useRunSession.getState().run?.getSnapshot().endedBy).toBe('blocks');
-    expect(screen.getByRole('heading', { name: 'Run over' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Run saved' })).toBeTruthy();
     expect(screen.queryAllByLabelText('Code to type')).toHaveLength(0);
+    expect(calls[0]?.url).toContain('/result');
+
+    // The server's numbers are the ones shown, not the client's own count.
+    const panel = screen.getByLabelText('Run saved').textContent;
+    expect(panel).toContain(String(STORED.score));
+    expect(panel).toContain(String(STORED.kpm));
+    expect(panel).toContain(String(STORED.effectiveKeystrokes));
+    expect(panel).toContain(STORED.localDate);
+    const counted = useRunSession.getState().run?.liveMetrics();
+    expect(counted?.score).not.toBe(STORED.score);
+    expect(panel).not.toContain(`Score${String(counted?.score)}`);
 
     await userEvent.click(screen.getByRole('button', { name: 'Choose a language' }));
     expect(await screen.findByText('choose a language')).toBeTruthy();
     expect(useRunSession.getState().run).toBeNull();
+  });
+
+  it('shows why the server refused a result, with no way to send it again', async () => {
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve(
+        json(
+          { statusCode: 422, error: 'Unprocessable Entity', message: 'result rejected: speed' },
+          422,
+        ),
+      ),
+    );
+
+    beginRun();
+    renderScreen();
+    await finishTheRun();
+
+    expect(await screen.findByText('result rejected: speed')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Send again' })).toBeNull();
+  });
+
+  it('offers to send the result again when the request never reached the server', async () => {
+    let attempt = 0;
+    vi.stubGlobal('fetch', () => {
+      attempt += 1;
+      return attempt === 1
+        ? Promise.reject(new TypeError('Failed to fetch'))
+        : Promise.resolve(json({ run: STORED }, 201));
+    });
+
+    beginRun();
+    renderScreen();
+    await finishTheRun();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Send again' }));
+    expect(await screen.findByRole('heading', { name: 'Run saved' })).toBeTruthy();
+    expect(attempt).toBe(2);
   });
 });

@@ -40,7 +40,24 @@ export function onUnauthorized(listener: Listener): () => void {
  * an API that disagree fail here rather than somewhere later with a confusing symptom.
  */
 export async function request<T>(path: string, options: RequestOptions<T>): Promise<T> {
-  const { method = 'GET', body, schema, signal } = options;
+  const { url, response } = await send(path, options);
+  return parse(url, response, options.schema);
+}
+
+/**
+ * Like `request`, but an answer with no content is a result of its own rather than a missing
+ * body: submitting a run with no keystroke is answered 204, and nothing is stored (§9.8).
+ */
+export async function requestMaybe<T>(path: string, options: RequestOptions<T>): Promise<T | null> {
+  const { url, response } = await send(path, options);
+  if (response.status === 204) return null;
+  return parse(url, response, options.schema);
+}
+
+async function send<T>(
+  path: string,
+  { method = 'GET', body, signal }: RequestOptions<T>,
+): Promise<{ url: string; response: Response }> {
   const url = `${BASE_PATH}${path}`;
 
   let response: Response;
@@ -58,6 +75,14 @@ export async function request<T>(path: string, options: RequestOptions<T>): Prom
   }
 
   if (!response.ok) throw await toRequestError(response);
+  return { url, response };
+}
+
+async function parse<T>(
+  url: string,
+  response: Response,
+  schema: ResponseSchema<T> | null,
+): Promise<T> {
   if (schema === null) return undefined as T;
 
   let payload: unknown;

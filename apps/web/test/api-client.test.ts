@@ -1,7 +1,7 @@
 import { AuthResponseSchema } from '@typing-trainer/contracts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { onUnauthorized, request } from '../src/lib/api/client';
+import { onUnauthorized, request, requestMaybe } from '../src/lib/api/client';
 import { ApiRequestError, ContractError, NetworkError } from '../src/lib/api/errors';
 
 const USER = {
@@ -119,6 +119,30 @@ describe('request', () => {
     );
     remove();
     expect(seen).toHaveBeenCalledOnce();
+  });
+
+  it('answers null for a 204 when the caller allows one, and the body otherwise', async () => {
+    stubFetch(() => new Response(null, { status: 204 }));
+    await expect(
+      requestMaybe('/play/sessions/x/result', { method: 'POST', schema: AuthResponseSchema }),
+    ).resolves.toBeNull();
+
+    stubFetch(() => json({ user: USER }));
+    await expect(requestMaybe('/auth/me', { schema: AuthResponseSchema })).resolves.toEqual({
+      user: USER,
+    });
+  });
+
+  it('still raises for an error response when a 204 would be allowed', async () => {
+    stubFetch(() =>
+      json(
+        { statusCode: 422, error: 'Unprocessable Entity', message: 'result rejected: speed' },
+        { status: 422 },
+      ),
+    );
+    await expect(
+      requestMaybe('/play/sessions/x/result', { method: 'POST', schema: AuthResponseSchema }),
+    ).rejects.toMatchObject({ status: 422, message: 'result rejected: speed' });
   });
 
   it('raises a network error when the request never reached the server', async () => {

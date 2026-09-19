@@ -23,6 +23,8 @@ export function PlayScreen() {
 function RunView({ run }: { run: RunStore }) {
   const navigate = useNavigate();
   const clear = useRunSession((state) => state.clear);
+  const submission = useRunSession((state) => state.submission);
+  const submit = useRunSession((state) => state.submit);
   const snapshot = useSyncExternalStore(run.subscribe, run.getSnapshot);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -80,6 +82,11 @@ function RunView({ run }: { run: RunStore }) {
       cancelAnimationFrame(frame);
     };
   }, [snapshot.phase, run]);
+
+  // The run is submitted as soon as it ends; the store sends it once (§9.8).
+  useEffect(() => {
+    if (snapshot.phase === 'ended') void submit();
+  }, [snapshot.phase, submit]);
 
   const focusInput = (event: MouseEvent) => {
     // Keep focus on the hidden input instead of letting the click blur it (and pause the run).
@@ -148,7 +155,8 @@ function RunView({ run }: { run: RunStore }) {
       {snapshot.phase === 'ended' && (
         <ResultPanel
           metrics={metrics}
-          endedBy={snapshot.endedBy}
+          submission={submission}
+          onRetry={() => void submit()}
           onPlayAgain={() => {
             clear();
             void navigate('/', { replace: true });

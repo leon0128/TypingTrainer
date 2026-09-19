@@ -1,51 +1,96 @@
 import type { OfficialMetrics } from '@typing-trainer/typing-engine';
 
 import { formatPercent } from './format';
-import type { RunEnd } from './run-store';
+import type { Submission } from './run-session';
 
 export interface ResultPanelProps {
+  /** What the client counted, shown while the server's answer is still on its way. */
   readonly metrics: OfficialMetrics;
-  readonly endedBy: RunEnd | null;
+  readonly submission: Submission;
+  readonly onRetry: () => void;
   readonly onPlayAgain: () => void;
 }
 
 /**
- * What the run scored (F-04, §3.6). These are the official formulas, computed from the same
- * counters the server recomputes; submitting the run and showing what was stored follows.
+ * What the run scored (F-04, §3.6). Once the server answers, its stored numbers are the ones
+ * shown: the client's own are never what counts (§9.8).
  */
-export function ResultPanel({ metrics, endedBy, onPlayAgain }: ResultPanelProps) {
+export function ResultPanel({ metrics, submission, onRetry, onPlayAgain }: ResultPanelProps) {
+  const stored = submission.kind === 'saved' ? submission.run : null;
+  const shown = stored ?? metrics;
+  const effective = stored?.effectiveKeystrokes ?? metrics.effective;
+  const miss = stored?.missCount ?? metrics.miss;
+  const raw = stored?.rawKeystrokes ?? metrics.raw;
+
   return (
     <section className="result-panel" aria-labelledby="result-title">
-      <h2 id="result-title">{endedBy === 'idle' ? 'Run discarded' : 'Run over'}</h2>
+      <h2 id="result-title">{title(submission)}</h2>
+      <p className="submission" role="status">
+        {statusLine(submission)}
+      </p>
 
-      {endedBy === 'idle' ? (
-        <p>This run sat idle for too long, so it is not saved (§4.1).</p>
-      ) : (
+      {submission.kind !== 'discarded' && submission.kind !== 'empty' && (
         <dl>
           <dt>Score</dt>
-          <dd>{metrics.score}</dd>
+          <dd>{shown.score}</dd>
 
           <dt>KPM</dt>
           <dd>
-            {metrics.kpm} <small>effective keystrokes ÷ 2 minutes</small>
+            {shown.kpm} <small>effective keystrokes ÷ 2 minutes</small>
           </dd>
 
           <dt>Accuracy</dt>
           <dd>
-            {formatPercent(metrics.accuracy)}{' '}
-            <small>miss rate {formatPercent(metrics.missRate)}</small>
+            {formatPercent(shown.accuracy)}{' '}
+            <small>miss rate {formatPercent(1 - shown.accuracy)}</small>
           </dd>
 
           <dt>Keystrokes</dt>
           <dd>
-            effective {metrics.effective} · miss {metrics.miss} · raw {metrics.raw}
+            effective {effective} · miss {miss} · raw {raw}
           </dd>
         </dl>
       )}
 
-      <button type="button" onClick={onPlayAgain}>
-        Choose a language
-      </button>
+      <p className="result-actions">
+        {submission.kind === 'failed' && submission.canRetry && (
+          <button type="button" onClick={onRetry}>
+            Send again
+          </button>
+        )}
+        <button type="button" onClick={onPlayAgain}>
+          Choose a language
+        </button>
+      </p>
     </section>
   );
+}
+
+function title(submission: Submission): string {
+  switch (submission.kind) {
+    case 'discarded':
+      return 'Run discarded';
+    case 'empty':
+      return 'Nothing typed';
+    case 'saved':
+      return 'Run saved';
+    default:
+      return 'Run over';
+  }
+}
+
+function statusLine(submission: Submission): string {
+  switch (submission.kind) {
+    case 'unsent':
+    case 'sending':
+      return 'Saving this run…';
+    case 'saved':
+      return `Saved as your run for ${submission.run.localDate}.`;
+    case 'empty':
+      return 'No keystroke was recorded, so nothing was saved.';
+    case 'discarded':
+      return 'This run sat idle past the limit, so it was not saved (§4.1).';
+    case 'failed':
+      return submission.message;
+  }
 }

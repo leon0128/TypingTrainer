@@ -10,5 +10,6 @@ import { LanguagesService } from './languages.service';
   imports: [TypeOrmModule.forFeature([ProgrammingLanguage])],
   controllers: [LanguagesController],
   providers: [LanguagesRepository, LanguagesService],
+  exports: [LanguagesRepository],
 })
 export class LanguagesModule {}

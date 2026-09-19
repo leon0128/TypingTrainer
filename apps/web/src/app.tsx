@@ -6,6 +6,7 @@ import { LoginScreen } from './features/auth/LoginScreen';
 import { RegisterScreen } from './features/auth/RegisterScreen';
 import { StartupScreen } from './features/auth/StartupScreen';
 import { LanguageScreen } from './features/languages/LanguageScreen';
+import { RankingsScreen } from './features/rankings/RankingsScreen';
 import { PlayScreen } from './features/play/PlayScreen';
 
 /** Screens that need a session; an ended session lands here as `anonymous` and goes to sign-in. */
@@ -61,6 +62,14 @@ export function App() {
         element={
           <RequireAuth>
             <PlayScreen />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/rankings"
+        element={
+          <RequireAuth>
+            <RankingsScreen />
           </RequireAuth>
         }
       />

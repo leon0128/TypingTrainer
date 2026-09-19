@@ -1,6 +1,6 @@
 import type { ContentLanguage, Language } from '@typing-trainer/contracts';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 import { useAuthStore } from '../auth/auth-store';
 import { describeError } from '../../lib/api/describe-error';
@@ -51,14 +51,19 @@ export function LanguageScreen() {
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
       <header className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-semibold">TypingTrainer</h1>
-        {user !== null && (
-          <p className="flex items-center gap-3 text-sm">
-            <span>{user.username}</span>
-            <button className="underline" type="button" onClick={() => void signOut()}>
-              Sign out
-            </button>
-          </p>
-        )}
+        <div className="flex items-center gap-3 text-sm">
+          <Link className="underline" to="/rankings">
+            Rankings
+          </Link>
+          {user !== null && (
+            <p className="flex items-center gap-3">
+              <span>{user.username}</span>
+              <button className="underline" type="button" onClick={() => void signOut()}>
+                Sign out
+              </button>
+            </p>
+          )}
+        </div>
       </header>
 
       <h2 className="text-lg">Choose a language</h2>

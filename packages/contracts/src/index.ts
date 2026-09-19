@@ -38,6 +38,13 @@ export {
 export type { AuthResponse, LoginRequest, RegisterRequest, User } from './auth';
 export { LanguageSchema, LanguagesResponseSchema } from './languages';
 export {
+  RankingEntrySchema,
+  RankingPeriodSchema,
+  RankingsRequestSchema,
+  RankingsResponseSchema,
+} from './rankings';
+export type { RankingEntry, RankingPeriod, RankingsRequest, RankingsResponse } from './rankings';
+export {
   PlayModeSchema,
   PlayRunSchema,
   StartSessionRequestSchema,

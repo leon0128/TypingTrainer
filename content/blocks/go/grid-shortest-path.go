@@ -9,10 +9,11 @@ func shortestPath(grid []string, start, goal [2]int) int {
 		}
 		for _, d := range [][2]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}} {
 			next := [2]int{cell[0] + d[0], cell[1] + d[1]}
-			if next[0] < 0 || next[0] >= len(grid) || next[1] < 0 || next[1] >= len(grid[0]) {
+			row, col := next[0], next[1]
+			if row < 0 || row >= len(grid) || col < 0 || col >= len(grid[0]) {
 				continue
 			}
-			if _, visited := dist[next]; visited || grid[next[0]][next[1]] == '#' {
+			if _, visited := dist[next]; visited || grid[row][col] == '#' {
 				continue
 			}
 			dist[next] = dist[cell] + 1

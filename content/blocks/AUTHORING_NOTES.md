@@ -42,8 +42,21 @@ docs/requirements.md §5.2; this file only collects lessons learned while writin
   so keep long lines short by rewriting them: extract a local variable or split the condition.
   google-java-format joins manual line breaks back up to 100 columns, so breaking a line by hand
   does not help in Java.
-- Written before this guideline and wider than 88 columns, to be checked on the real play
-  screen in U7: go/poll-until-canceled.go (94), go/grid-shortest-path.go (94),
-  go/table-driven-test.go (90).
+- **U7 finding:** the three blocks below were checked on the real play screen by typing every
+  key of each through the actual store and render layer and measuring the caret's on-screen
+  position, not just estimated from column counts. The `.code-panel` scrolls horizontally
+  (`overflow-x: auto`) but nothing scrolls it to follow the caret, so a line wider than the
+  panel leaves the caret off-screen for however many keystrokes it takes to cross the excess
+  width — unusable, not merely tight, and unaffected by a wider browser window since the panel
+  is capped at `max-width: 1040px` (§9.4 play screen). All three were rewritten to fit the
+  88-column guideline (a local variable for a long condition, splitting a long signature or call
+  across lines with a trailing comma so gofmt keeps the break) and re-verified the same way, with
+  zero off-screen keystrokes over the full block:
+  - go/poll-until-canceled.go: was 94 columns (one line, the function signature), now 67.
+  - go/grid-shortest-path.go: was 94 columns (one line, a chained condition), now 78.
+  - go/table-driven-test.go: was 90 columns. The AUTHORING_NOTES entry that flagged it recorded
+    only the block, not the line — the actual offender was `t.Errorf(...)` (90 columns), not the
+    `if got := ...` line (74 columns) that looked like the obvious candidate; checking the real
+    render layer instead of eyeballing the source caught this. Now 53.
 
 Add new findings of this kind here.

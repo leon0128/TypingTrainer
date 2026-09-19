@@ -39,6 +39,23 @@ at least 32 random bytes (for example `openssl rand -base64 32`), kept outside t
 backups: it is mixed into every password hash, so losing it invalidates every password. The
 `migration:*` scripts read only `DATABASE_URL` and run without it.
 
+## Web
+
+```bash
+pnpm dev        # http://localhost:5173, proxies /api to the API dev server
+```
+
+The web app and the API run as two separate dev servers. Vite's dev proxy forwards `/api/*` to
+`VITE_API_TARGET` (default `http://127.0.0.1:3000`), so the browser sees only one origin
+(`http://localhost:5173`): the session cookie is sent on every request, and the `Origin` header
+the API checks (§7) is the app's own, unaffected by the proxy — verified by watching a proxied
+POST arrive at the API with `Origin: http://localhost:5173` unchanged. A GET request carries no
+`Origin` at all, which is why §7 checks it only on state-changing methods.
+
+Nothing about a play session is kept in browser storage: reloading `/play` sends the player back
+to language selection, and the run the server issued is simply never submitted — it falls outside
+the submission window and is deleted a day later (§9.8).
+
 ## Migrations
 
 `synchronize` is always off, so every schema change is a migration (docs/requirements.md §9.2).

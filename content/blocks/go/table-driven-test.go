@@ -12,7 +12,10 @@ func TestRepeat(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := strings.Repeat(tt.input, tt.count); got != tt.want {
-				t.Errorf("Repeat(%q, %d) = %q, want %q", tt.input, tt.count, got, tt.want)
+				t.Errorf(
+					"Repeat(%q, %d) = %q, want %q",
+					tt.input, tt.count, got, tt.want,
+				)
 			}
 		})
 	}

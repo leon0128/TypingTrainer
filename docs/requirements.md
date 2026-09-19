@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.14 |
+| Version | 1.15 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.13 — the play session API: issued runs, result validation, and stored runs (Appendix B) |
+| Supersedes | v1.14 — the web app: routing, the API client, play and result screens (Appendix B) |
 
 **Legend**
 
@@ -652,6 +652,23 @@ Taking the browser's time zone on every request would make past daily and weekly
 | Alignment padding | Plain whitespace from the start, never dimmed, underlined, or highlighted; it is not typed and the caret never rests on it 🟡 (v1.3) |
 | Miss | Flash the cursor position in the error color for ~150 ms |
 
+🟡 (v1.15) The diagram above is the vs CPU layout (P2); single play (P1, F-02) shows one column —
+language, block position, live KPM/ACC/SCORE, and the countdown in the header, the current block,
+and the next block dimmed beside it, with no opponent side. The live metrics while a run is going
+are the official formulas (§3.6) computed from the run so far, not an estimate: the run length is
+fixed, so they already hold before the run ends. What the server stores once the run is submitted
+is what is shown on the result screen (§9.8), not the client's own count.
+
+🟡 (v1.15) **Line width is a hard constraint, not just a guideline.** The code panel scrolls
+horizontally (`overflow-x: auto`) when a line is wider than it, but nothing scrolls it to follow
+the caret, so a line wider than the panel leaves the caret off the visible area for however many
+keystrokes it takes to cross the excess width — confirmed on the real play screen by typing every
+key of the three blocks flagged in `content/blocks/AUTHORING_NOTES.md` and measuring the caret's
+screen position; two of the three left the caret off-screen for several keystrokes before being
+rewritten to fit. A wider browser window does not help, since the panel is capped at 1040px
+(§9.4). The 88-column authoring guideline (§5.1's referenced notes) is therefore the effective
+limit for existing and future content, not an aspiration.
+
 ### 8.2 Appearance Settings 🔵
 
 | Setting | Options |
@@ -693,8 +710,9 @@ Taking the browser's time zone on every request would make past daily and weekly
 | Layer | Choice | Rationale |
 | --- | --- | --- |
 | Frontend | **React 19 + TypeScript + Vite** | Strongly SPA-shaped; SSR adds nothing here. Vite builds fast and deploys as static files |
-| State | **Zustand** for UI; engine state kept outside React in a ref/reducer | Per-keystroke updates must not go through the React render cycle |
-| Styling | **Tailwind CSS** | Pairs well with CSS custom properties for theming |
+| Routing | **react-router 8** (declarative mode: `BrowserRouter`/`Routes`/`Route`) 🟡 (v1.15) | Only a handful of screens (auth, language selection, play); the declarative API is enough, and the major version tracks upstream support rather than pinning to the version approved mid-design |
+| State | **Zustand** for UI (currently just the signed-in user); engine and run state kept outside React in an external store, `useSyncExternalStore` | Per-keystroke updates must not go through the React render cycle |
+| Styling | **Tailwind CSS v4** for screens other than the play grid, which keeps its own stylesheet 🟡 (v1.15) | Pairs well with CSS custom properties for theming; the play screen's character states are bound to the layout engine's own output and P3's appearance settings theme them through the same custom properties |
 | Charts | **Recharts** | Declarative React API; category axes express the collapsed-gap all-time view directly |
 | API | **NestJS (Fastify adapter)** | Dependency injection, layer separation, and validation are built in, which makes a SOLID structure the default rather than a convention to police |
 | Validation | **Zod** in a shared contracts package | One schema definition shared by the frontend, the API, and the content CLI |
@@ -976,7 +994,7 @@ Expected steady-state footprint: PostgreSQL ~200 MB, API ~150 MB, Caddy ~20 MB �
 
 ---
 
-### 9.8 Result Validation and Keystroke Logs 🟡 (v1.10, concrete checks in v1.14)
+### 9.8 Result Validation and Keystroke Logs 🟡 (v1.10, concrete checks in v1.14, client behavior in v1.15)
 
 | Item | Rule |
 | --- | --- |
@@ -990,6 +1008,8 @@ Expected steady-state footprint: PostgreSQL ~200 MB, API ~150 MB, Caddy ~20 MB �
 | Retention | Only the aggregates are stored in `play_sessions`. The raw log is discarded after validation and never persisted, which keeps exact keystroke replay of past runs out of scope (§1.3) |
 | Idle rejection | The server rejects a result when the time from issuing the session to receiving the submission exceeds 120 seconds plus the 15-minute idle limit plus 30 seconds of grace, measured on its own clock (§4.1) |
 | Known limitation | Because idle rejection uses the time the submission reaches the server, a legitimate run whose submission is delayed beyond the grace period — a laptop going to sleep, a dropped connection — is rejected. The only remedy is to play again; at this scale no recovery mechanism is provided |
+| Client state on reload | 🟡 (v1.15) The run in progress lives only in memory in the browser tab; nothing about it is written to storage. Reloading the play screen leaves no run to resume, so the player is sent back to language selection, and the issued run on the server is simply never submitted — it falls outside the submission window on its own and is deleted a day later, exactly as an abandoned run is. Persisting it would mean deciding what run time a restored run has and what a second tab is playing, neither of which P1 needs |
+| Submission is sent once | 🟡 (v1.15) The client submits automatically when a run ends (except one discarded for being idle, which is never sent) and only once: the server has already marked the run submitted before it judges the result, so a second attempt could not store anything even if tried. Only a request that never reached the server (no response at all) is offered a retry; a 409 or 410 response is final and is shown as such |
 
 
 ---
@@ -1128,3 +1148,9 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.14 | Local date in SQL | `local_date` and `local_week_start` are computed by the inserting statement from the database clock and the profile time zone, not in application code (§6.4, §9.8) |
 | 1.14 | Empty and scoreless runs | A log with no keystroke answers 204 and stores nothing while using up the issued run; a run with keystrokes but none correct is stored with score 0, because results are always saved (§4.2, §9.8) |
 | 1.14 | TypeORM result shapes | **Found during implementation:** `query()` returns rows for SELECT and INSERT but `[rows, affectedCount]` for UPDATE and DELETE with `RETURNING`, which made a consumed run look empty and made deletion counts report 2. One helper normalizes both shapes and the deletion tests assert exact counts (§9.2) |
+| 1.15 | Session and reload | No play state is persisted client-side; a reload during a run sends the player back to language selection and the issued run expires unused (§9.8) |
+| 1.15 | Submitting a result | Sent once, automatically, when a run ends (never for one discarded as idle); only a request that never reached the server is offered a retry, since the server marks a run submitted before judging it (§9.8) |
+| 1.15 | Dev proxy and Origin | The Vite dev server proxies `/api` to the API so the browser stays on one origin. **Verified, not assumed:** a proxied POST was watched arriving at the API with `Origin: http://localhost:5173` unchanged — `changeOrigin` rewrites `Host`, not `Origin`, which the browser sets from the page's own origin regardless of the proxy — and a GET carries no `Origin` at all, matching §7's check on state-changing methods only (docs/development.md) |
+| 1.15 | Contract schema typing in the client | The API client types a response schema structurally (a `safeParse` method) rather than as zod's own `ZodType<T>`. **Found during implementation:** naming `ZodType<T>` made `tsc` compare its three type parameters under `exactOptionalPropertyTypes`, measuring 5.4 GB and 112 s before running out of memory; the structural type checks in well under a second |
+| 1.15 | Event timestamps vs. the run clock | An event's `timeStamp` and `performance.now()` share a time origin in a browser (measured against each other, ~6 ms apart), but not in every test environment — jsdom reports epoch milliseconds. **Found during implementation:** mixing the two clocks made a run measure itself as idle for decades and discard itself; a key time far from the run store's own clock is replaced by it |
+| 1.15 | Line width is enforced, not advisory | **Found on the real play screen in U7**, by typing every key of a block through the actual store and render layer and measuring the caret's screen position: the code panel scrolls horizontally but nothing scrolls it to follow the caret, so a line wider than the panel (itself capped at 1040px, unaffected by a wider window) leaves the caret invisible for however many keystrokes cross the excess width. The three blocks flagged in `content/blocks/AUTHORING_NOTES.md` were rewritten to fit 88 columns and re-verified the same way with zero off-screen keystrokes (§8.1) |

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "language": "go",
-  "revision": "22bf3553938202120d6bfb31f435fc725650b09f86279200b08437dac115fdfe",
+  "revision": "fcd0e6e7346594d6fb4f3c05baa97377fd025b4ba42b9f2e70da0233071eae7f",
   "blocks": [
     {
       "blockId": "go/atomic-counter",
@@ -7818,7 +7818,7 @@
     },
     {
       "blockId": "go/grid-shortest-path",
-      "canonicalKeystrokes": 521,
+      "canonicalKeystrokes": 530,
       "atoms": [
         {
           "kind": "literal",
@@ -8756,6 +8756,90 @@
         },
         {
           "kind": "literal",
+          "text": "row"
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "col"
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": ":="
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "next"
+        },
+        {
+          "kind": "literal",
+          "text": "["
+        },
+        {
+          "kind": "literal",
+          "text": "0"
+        },
+        {
+          "kind": "auto",
+          "text": "]",
+          "filledBy": 218
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": " ",
+          "required": false
+        },
+        {
+          "kind": "literal",
+          "text": "next"
+        },
+        {
+          "kind": "literal",
+          "text": "["
+        },
+        {
+          "kind": "literal",
+          "text": "1"
+        },
+        {
+          "kind": "auto",
+          "text": "]",
+          "filledBy": 224
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "            ",
+          "filledBy": 227
+        },
+        {
+          "kind": "literal",
           "text": "if"
         },
         {
@@ -8765,20 +8849,7 @@
         },
         {
           "kind": "literal",
-          "text": "next"
-        },
-        {
-          "kind": "literal",
-          "text": "["
-        },
-        {
-          "kind": "literal",
-          "text": "0"
-        },
-        {
-          "kind": "auto",
-          "text": "]",
-          "filledBy": 213
+          "text": "row"
         },
         {
           "kind": "separator",
@@ -8814,20 +8885,7 @@
         },
         {
           "kind": "literal",
-          "text": "next"
-        },
-        {
-          "kind": "literal",
-          "text": "["
-        },
-        {
-          "kind": "literal",
-          "text": "0"
-        },
-        {
-          "kind": "auto",
-          "text": "]",
-          "filledBy": 224
+          "text": "row"
         },
         {
           "kind": "separator",
@@ -8858,7 +8916,7 @@
         {
           "kind": "auto",
           "text": ")",
-          "filledBy": 231
+          "filledBy": 244
         },
         {
           "kind": "separator",
@@ -8876,20 +8934,7 @@
         },
         {
           "kind": "literal",
-          "text": "next"
-        },
-        {
-          "kind": "literal",
-          "text": "["
-        },
-        {
-          "kind": "literal",
-          "text": "1"
-        },
-        {
-          "kind": "auto",
-          "text": "]",
-          "filledBy": 238
+          "text": "col"
         },
         {
           "kind": "separator",
@@ -8925,20 +8970,7 @@
         },
         {
           "kind": "literal",
-          "text": "next"
-        },
-        {
-          "kind": "literal",
-          "text": "["
-        },
-        {
-          "kind": "literal",
-          "text": "1"
-        },
-        {
-          "kind": "auto",
-          "text": "]",
-          "filledBy": 249
+          "text": "col"
         },
         {
           "kind": "separator",
@@ -8977,12 +9009,12 @@
         {
           "kind": "auto",
           "text": "]",
-          "filledBy": 258
+          "filledBy": 265
         },
         {
           "kind": "auto",
           "text": ")",
-          "filledBy": 256
+          "filledBy": 263
         },
         {
           "kind": "separator",
@@ -9001,7 +9033,7 @@
         {
           "kind": "auto",
           "text": "                ",
-          "filledBy": 264
+          "filledBy": 271
         },
         {
           "kind": "literal",
@@ -9015,12 +9047,12 @@
         {
           "kind": "auto",
           "text": "            ",
-          "filledBy": 267
+          "filledBy": 274
         },
         {
           "kind": "auto",
           "text": "}",
-          "filledBy": 263
+          "filledBy": 270
         },
         {
           "kind": "separator",
@@ -9030,7 +9062,7 @@
         {
           "kind": "auto",
           "text": "            ",
-          "filledBy": 270
+          "filledBy": 277
         },
         {
           "kind": "literal",
@@ -9087,7 +9119,7 @@
         {
           "kind": "auto",
           "text": "]",
-          "filledBy": 282
+          "filledBy": 289
         },
         {
           "kind": "literal",
@@ -9126,7 +9158,12 @@
         },
         {
           "kind": "literal",
-          "text": "next"
+          "text": "row"
+        },
+        {
+          "kind": "auto",
+          "text": "]",
+          "filledBy": 299
         },
         {
           "kind": "literal",
@@ -9134,43 +9171,12 @@
         },
         {
           "kind": "literal",
-          "text": "0"
+          "text": "col"
         },
         {
           "kind": "auto",
           "text": "]",
-          "filledBy": 294
-        },
-        {
-          "kind": "auto",
-          "text": "]",
-          "filledBy": 292
-        },
-        {
-          "kind": "literal",
-          "text": "["
-        },
-        {
-          "kind": "literal",
-          "text": "next"
-        },
-        {
-          "kind": "literal",
-          "text": "["
-        },
-        {
-          "kind": "literal",
-          "text": "1"
-        },
-        {
-          "kind": "auto",
-          "text": "]",
-          "filledBy": 300
-        },
-        {
-          "kind": "auto",
-          "text": "]",
-          "filledBy": 298
+          "filledBy": 302
         },
         {
           "kind": "separator",
@@ -9197,7 +9203,7 @@
         {
           "kind": "auto",
           "text": "'",
-          "filledBy": 307
+          "filledBy": 308
         },
         {
           "kind": "separator",
@@ -9216,7 +9222,7 @@
         {
           "kind": "auto",
           "text": "                ",
-          "filledBy": 312
+          "filledBy": 313
         },
         {
           "kind": "literal",
@@ -9230,12 +9236,12 @@
         {
           "kind": "auto",
           "text": "            ",
-          "filledBy": 315
+          "filledBy": 316
         },
         {
           "kind": "auto",
           "text": "}",
-          "filledBy": 311
+          "filledBy": 312
         },
         {
           "kind": "separator",
@@ -9245,7 +9251,7 @@
         {
           "kind": "auto",
           "text": "            ",
-          "filledBy": 318
+          "filledBy": 319
         },
         {
           "kind": "literal",
@@ -9262,7 +9268,7 @@
         {
           "kind": "auto",
           "text": "]",
-          "filledBy": 321
+          "filledBy": 322
         },
         {
           "kind": "separator",
@@ -9293,7 +9299,7 @@
         {
           "kind": "auto",
           "text": "]",
-          "filledBy": 328
+          "filledBy": 329
         },
         {
           "kind": "separator",
@@ -9321,7 +9327,7 @@
         {
           "kind": "auto",
           "text": "            ",
-          "filledBy": 335
+          "filledBy": 336
         },
         {
           "kind": "literal",
@@ -9369,7 +9375,7 @@
         {
           "kind": "auto",
           "text": ")",
-          "filledBy": 342
+          "filledBy": 343
         },
         {
           "kind": "separator",
@@ -9379,7 +9385,7 @@
         {
           "kind": "auto",
           "text": "        ",
-          "filledBy": 348
+          "filledBy": 349
         },
         {
           "kind": "auto",
@@ -9394,7 +9400,7 @@
         {
           "kind": "auto",
           "text": "    ",
-          "filledBy": 351
+          "filledBy": 352
         },
         {
           "kind": "auto",
@@ -9409,7 +9415,7 @@
         {
           "kind": "auto",
           "text": "    ",
-          "filledBy": 354
+          "filledBy": 355
         },
         {
           "kind": "literal",
@@ -17835,7 +17841,7 @@
     },
     {
       "blockId": "go/poll-until-canceled",
-      "canonicalKeystrokes": 238,
+      "canonicalKeystrokes": 241,
       "atoms": [
         {
           "kind": "literal",
@@ -17853,6 +17859,16 @@
         {
           "kind": "literal",
           "text": "("
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "    ",
+          "filledBy": 4
         },
         {
           "kind": "literal",
@@ -17934,7 +17950,7 @@
         {
           "kind": "auto",
           "text": ")",
-          "filledBy": 21
+          "filledBy": 23
         },
         {
           "kind": "separator",
@@ -17944,6 +17960,15 @@
         {
           "kind": "literal",
           "text": "bool"
+        },
+        {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
         },
         {
           "kind": "auto",
@@ -17976,7 +18001,7 @@
         {
           "kind": "auto",
           "text": "    ",
-          "filledBy": 30
+          "filledBy": 34
         },
         {
           "kind": "literal",
@@ -18019,7 +18044,7 @@
         {
           "kind": "auto",
           "text": ")",
-          "filledBy": 39
+          "filledBy": 43
         },
         {
           "kind": "separator",
@@ -18029,7 +18054,7 @@
         {
           "kind": "auto",
           "text": "    ",
-          "filledBy": 42
+          "filledBy": 46
         },
         {
           "kind": "literal",
@@ -18059,7 +18084,7 @@
         {
           "kind": "auto",
           "text": ")",
-          "filledBy": 49
+          "filledBy": 53
         },
         {
           "kind": "separator",
@@ -18069,7 +18094,7 @@
         {
           "kind": "auto",
           "text": "    ",
-          "filledBy": 51
+          "filledBy": 55
         },
         {
           "kind": "literal",
@@ -18092,7 +18117,7 @@
         {
           "kind": "auto",
           "text": "        ",
-          "filledBy": 56
+          "filledBy": 60
         },
         {
           "kind": "literal",
@@ -18114,7 +18139,7 @@
         {
           "kind": "auto",
           "text": ")",
-          "filledBy": 61
+          "filledBy": 65
         },
         {
           "kind": "separator",
@@ -18133,7 +18158,7 @@
         {
           "kind": "auto",
           "text": "            ",
-          "filledBy": 65
+          "filledBy": 69
         },
         {
           "kind": "literal",
@@ -18156,12 +18181,12 @@
         {
           "kind": "auto",
           "text": "        ",
-          "filledBy": 70
+          "filledBy": 74
         },
         {
           "kind": "auto",
           "text": "}",
-          "filledBy": 64
+          "filledBy": 68
         },
         {
           "kind": "separator",
@@ -18171,7 +18196,7 @@
         {
           "kind": "auto",
           "text": "        ",
-          "filledBy": 73
+          "filledBy": 77
         },
         {
           "kind": "literal",
@@ -18194,7 +18219,7 @@
         {
           "kind": "auto",
           "text": "        ",
-          "filledBy": 78
+          "filledBy": 82
         },
         {
           "kind": "literal",
@@ -18228,7 +18253,7 @@
         {
           "kind": "auto",
           "text": ")",
-          "filledBy": 86
+          "filledBy": 90
         },
         {
           "kind": "literal",
@@ -18242,7 +18267,7 @@
         {
           "kind": "auto",
           "text": "            ",
-          "filledBy": 89
+          "filledBy": 93
         },
         {
           "kind": "literal",
@@ -18272,7 +18297,7 @@
         {
           "kind": "auto",
           "text": ")",
-          "filledBy": 96
+          "filledBy": 100
         },
         {
           "kind": "separator",
@@ -18282,7 +18307,7 @@
         {
           "kind": "auto",
           "text": "        ",
-          "filledBy": 98
+          "filledBy": 102
         },
         {
           "kind": "literal",
@@ -18321,12 +18346,12 @@
         {
           "kind": "auto",
           "text": "        ",
-          "filledBy": 107
+          "filledBy": 111
         },
         {
           "kind": "auto",
           "text": "}",
-          "filledBy": 77
+          "filledBy": 81
         },
         {
           "kind": "separator",
@@ -18336,12 +18361,12 @@
         {
           "kind": "auto",
           "text": "    ",
-          "filledBy": 110
+          "filledBy": 114
         },
         {
           "kind": "auto",
           "text": "}",
-          "filledBy": 55
+          "filledBy": 59
         },
         {
           "kind": "separator",
@@ -18351,7 +18376,7 @@
         {
           "kind": "auto",
           "text": "}",
-          "filledBy": 29
+          "filledBy": 33
         }
       ]
     },
@@ -26018,7 +26043,7 @@
     },
     {
       "blockId": "go/table-driven-test",
-      "canonicalKeystrokes": 364,
+      "canonicalKeystrokes": 367,
       "atoms": [
         {
           "kind": "literal",
@@ -26863,6 +26888,16 @@
           "text": "("
         },
         {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "                    ",
+          "filledBy": 190
+        },
+        {
           "kind": "literal",
           "text": "\""
         },
@@ -26873,7 +26908,7 @@
         {
           "kind": "auto",
           "text": "\"",
-          "filledBy": 190
+          "filledBy": 192
         },
         {
           "kind": "literal",
@@ -26881,8 +26916,13 @@
         },
         {
           "kind": "separator",
-          "canonical": " ",
-          "required": false
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "                    ",
+          "filledBy": 196
         },
         {
           "kind": "literal",
@@ -26952,6 +26992,20 @@
           "text": "want"
         },
         {
+          "kind": "literal",
+          "text": ","
+        },
+        {
+          "kind": "separator",
+          "canonical": "\n",
+          "required": true
+        },
+        {
+          "kind": "auto",
+          "text": "                ",
+          "filledBy": 215
+        },
+        {
           "kind": "auto",
           "text": ")",
           "filledBy": 189
@@ -26964,7 +27018,7 @@
         {
           "kind": "auto",
           "text": "            ",
-          "filledBy": 212
+          "filledBy": 218
         },
         {
           "kind": "auto",
@@ -26979,7 +27033,7 @@
         {
           "kind": "auto",
           "text": "        ",
-          "filledBy": 215
+          "filledBy": 221
         },
         {
           "kind": "auto",
@@ -26999,7 +27053,7 @@
         {
           "kind": "auto",
           "text": "    ",
-          "filledBy": 219
+          "filledBy": 225
         },
         {
           "kind": "auto",

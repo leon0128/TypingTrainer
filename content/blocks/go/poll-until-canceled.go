@@ -1,4 +1,6 @@
-func pollUntilCanceled(ctx context.Context, interval time.Duration, check func() bool) error {
+func pollUntilCanceled(
+	ctx context.Context, interval time.Duration, check func() bool,
+) error {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	for {

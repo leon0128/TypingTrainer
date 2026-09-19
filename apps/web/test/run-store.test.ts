@@ -10,7 +10,12 @@ import {
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
-import { createRunStore, issuedRunProblem, type RunStore } from '../src/features/play/run-store';
+import {
+  createRunStore,
+  issuedRunProblem,
+  onRunClock,
+  type RunStore,
+} from '../src/features/play/run-store';
 import { IF_PROGRAM, PADDED_PROGRAM } from './program-fixture';
 
 /** `if (a) { b }` then `a:  1`: two blocks, both short enough to finish inside a run. */
@@ -60,6 +65,21 @@ describe('issuedRunProblem', () => {
 
   it('refuses a run with no blocks', () => {
     expect(issuedRunProblem(issuedRun({ blocks: [] }))).toMatch(/no blocks/);
+  });
+});
+
+describe('onRunClock', () => {
+  it('keeps an event timestamp that is on the same clock', () => {
+    const now = performance.now();
+    expect(onRunClock(now - 5)).toBe(now - 5);
+  });
+
+  it('replaces a timestamp from another clock, which would wreck the run', () => {
+    // jsdom reports epoch milliseconds for an event; a browser reports time since the origin.
+    const fromAnotherClock = Date.now();
+    const replaced = onRunClock(fromAnotherClock);
+    expect(replaced).not.toBe(fromAnotherClock);
+    expect(replaced).toBeCloseTo(performance.now(), -1);
   });
 });
 

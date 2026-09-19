@@ -5,7 +5,7 @@ import { useAuthStore } from './features/auth/auth-store';
 import { LoginScreen } from './features/auth/LoginScreen';
 import { RegisterScreen } from './features/auth/RegisterScreen';
 import { StartupScreen } from './features/auth/StartupScreen';
-import { DEMO_PROGRAM } from './features/play/demo-program';
+import { LanguageScreen } from './features/languages/LanguageScreen';
 import { PlayScreen } from './features/play/PlayScreen';
 
 /** Screens that need a session; an ended session lands here as `anonymous` and goes to sign-in. */
@@ -52,8 +52,15 @@ export function App() {
         path="/"
         element={
           <RequireAuth>
-            {/* The P0 demo block until language selection and the issued run arrive (U7). */}
-            <PlayScreen program={DEMO_PROGRAM} />
+            <LanguageScreen />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/play"
+        element={
+          <RequireAuth>
+            <PlayScreen />
           </RequireAuth>
         }
       />

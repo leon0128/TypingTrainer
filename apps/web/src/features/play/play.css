@@ -11,8 +11,6 @@
   --cursor-bg: #fff1a8;
   --caret: #9a6700;
   --error: #cf222e;
-  --banner-bg: #fff8c5;
-  --banner-border: #d4a72c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,8 +26,6 @@
     --cursor-bg: #4d3800;
     --caret: #d29922;
     --error: #f85149;
-    --banner-bg: #272115;
-    --banner-border: #9e6a03;
   }
 }
 
@@ -50,15 +46,6 @@ body {
   padding: 24px;
 }
 
-.preview-banner {
-  margin: 0 0 16px;
-  padding: 8px 12px;
-  border: 1px solid var(--banner-border);
-  border-radius: 6px;
-  background: var(--banner-bg);
-  font-size: 14px;
-}
-
 .play-header {
   display: flex;
   flex-wrap: wrap;
@@ -71,8 +58,15 @@ body {
   font-size: 20px;
 }
 
-.block-name {
+.block-name,
+.live-metrics {
   color: var(--muted);
+}
+
+/* The next block, shown dimmed and untouched next to the one being typed (§8.1). */
+.code-next {
+  margin-top: 12px;
+  opacity: 0.55;
 }
 
 .stopwatch {

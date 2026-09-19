@@ -1,17 +1,32 @@
+import type { EngineState } from '@typing-trainer/typing-engine';
 import { useMemo } from 'react';
 
 import type { Layout } from './layout';
 import { Line } from './Line';
-import { lineViews } from './line-view';
-import type { PlaySnapshot } from './play-store';
+import { lineViews, type LineView } from './line-view';
 
-export function CodeView({ layout, snapshot }: { layout: Layout; snapshot: PlaySnapshot }) {
-  const { engine, lastMiss, missSeq } = snapshot;
-  const views = useMemo(() => lineViews(layout, engine), [layout, engine]);
+export interface CodeViewProps {
+  readonly layout: Layout;
+  /** The block being typed, or null to preview an untouched block (the next one, §8.1). */
+  readonly engine: EngineState | null;
+  readonly missSeq: number;
+  readonly lastMiss: { readonly atomIndex: number; readonly charIndex: number } | null;
+}
+
+/** Nothing typed, no caret: every cell renders in its resting state. */
+const UNTOUCHED: LineView = { typedUntil: 0, cursorHere: false, filledAutoKey: '' };
+
+export function CodeView({ layout, engine, missSeq, lastMiss }: CodeViewProps) {
+  const views = useMemo(
+    () => (engine === null ? layout.lines.map(() => UNTOUCHED) : lineViews(layout, engine)),
+    [layout, engine],
+  );
 
   // Flash only while the caret is still where the latest miss left it.
   const flashSeq =
-    lastMiss?.atomIndex === engine.atomIndex && lastMiss.charIndex === engine.charIndex
+    engine !== null &&
+    lastMiss?.atomIndex === engine.atomIndex &&
+    lastMiss.charIndex === engine.charIndex
       ? missSeq
       : 0;
 

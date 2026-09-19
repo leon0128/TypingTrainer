@@ -90,14 +90,14 @@ export default defineConfig(
     languageOptions: { globals: globals.browser },
     rules: {
       // The block compiler and its TypeScript dependency must never enter the browser bundle
-      // (§9.4); apps/web uses them only in tests.
+      // (§9.4). apps/web no longer depends on either; the rule keeps it that way.
       '@typescript-eslint/no-restricted-imports': [
         'error',
         {
           paths: [
             {
               name: '@typing-trainer/block-compiler',
-              message: 'block-compiler is test-only in apps/web and must not reach the bundle.',
+              message: 'block-compiler is a build-time package and must not reach the bundle.',
             },
             {
               name: 'typescript',

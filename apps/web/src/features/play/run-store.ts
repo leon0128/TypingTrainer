@@ -60,6 +60,18 @@ export interface RunStore {
 }
 
 /**
+ * A key's time on the store's clock. In a browser an event timestamp and `performance.now()`
+ * share the time origin (HR-Time), and the event's own reading is the more accurate one — it is
+ * when the key was pressed, not when the handler ran. Some environments (jsdom, for one) report
+ * epoch milliseconds instead, and mixing the two clocks would make a run look idle for decades,
+ * so a reading that is nowhere near the store's clock is replaced by it.
+ */
+export function onRunClock(timeStamp: number): number {
+  const now = performance.now();
+  return Math.abs(now - timeStamp) > 1000 ? now : timeStamp;
+}
+
+/**
  * Why an issued run cannot be played, or null when it can. The run length and idle limit are
  * enforced on both sides (§9.8), so a server that uses different ones means the client is out of
  * date and must not play a run neither side agrees on.

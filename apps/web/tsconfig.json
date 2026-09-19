@@ -8,12 +8,5 @@
     "types": ["vite/client"]
   },
   "include": ["src", "test", "vite.config.ts"],
-  // Fixtures are block sources compared byte for byte, not part of this program.
-  "exclude": ["test/fixtures"],
-  "references": [
-    { "path": "../../packages/contracts" },
-    { "path": "../../packages/typing-engine" },
-    // Tests only (demo program check); src must not import it, see eslint.config.js.
-    { "path": "../../packages/block-compiler" }
-  ]
+  "references": [{ "path": "../../packages/contracts" }, { "path": "../../packages/typing-engine" }]
 }

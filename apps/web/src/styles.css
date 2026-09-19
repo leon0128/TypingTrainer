@@ -1,0 +1,7 @@
+@import 'tailwindcss';
+
+/*
+ * The play screen keeps its own stylesheet (features/play/play.css): its character states are
+ * bound to what line-view produces, and P3's appearance settings will theme them through the
+ * custom properties defined there.
+ */

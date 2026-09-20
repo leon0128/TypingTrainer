@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.17 |
+| Version | 1.18 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.16 — deployment: images, Compose, backups, and what was verified (Appendix B) |
+| Supersedes | v1.17 — deployment on a 512 MB Lightsail plan: native services instead of Docker (§9.7, Appendix B) |
 
 **Legend**
 
@@ -975,6 +975,8 @@ Composition: `caddy` (TLS and static file serving) → `api` (NestJS) → `db` (
 
 🟡 (v1.17) **Two images, three containers.** The web build is baked into the Caddy image at build time (`infra/docker/caddy.Dockerfile`), so nothing is copied between containers at start-up and there is no start-order dependency. The API image (`infra/docker/api.Dockerfile`) holds the esbuild bundle, the content bundles, and `dist/migrate.js`: the production image has no TypeORM CLI, so migrations are applied by an explicit `docker compose run --rm api node dist/migrate.js` and never at start-up (§9.2). The database is on an internal network with no published port. Both images are published by `.github/workflows/docker.yml` under the 12-character commit hash. **`APP_VERSION` is that hash**: it is a required build argument, an image without a real value fails to build, and every stored run records it (`play_sessions.app_version`, R7). Procedures, the backup script, and what has and has not been verified are in `docs/deployment.md`.
 
+🟡 (v1.18) **Native deployment for a 512 MB Lightsail plan.** Docker's own daemons cost roughly 100–150 MB of a 512 MB host, so that plan runs the same three parts as services: PostgreSQL 16 (PGDG), Caddy (the same `infra/Caddyfile`, with `API_UPSTREAM` and `WEB_ROOT` set), and the API under systemd with a cgroup memory limit, on Debian 12 with a 1 GB swap file. The release is one tarball per commit, built by `.github/workflows/release-tarball.yml` on the platform it runs on (linux-x64, glibc) and published as a GitHub release named by the commit hash, which is `APP_VERSION` as before. `infra/native/setup.sh` prepares the host once; `infra/native/deploy.sh <version>` verifies the checksum, runs the explicit migration, switches the `current` link, waits for `/api/health/ready`, and switches back if it never comes. The Docker composition remains the path for 1 GB and larger hosts and for the Raspberry Pi. The memory figures are estimates until measured on a running instance.
+
 #### Bandwidth
 
 The concern behind the Pi fallback is Lightsail's monthly transfer allowance. At this scale it is not a binding constraint:
@@ -1180,3 +1182,4 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.17 | `TRUST_PROXY` is the edge network | Compose gives the Caddy/API network a fixed subnet and `TRUST_PROXY` names exactly that range. **Verified:** the API sees the real client address rather than Caddy's, and a forged `X-Forwarded-For` is ignored (§7) |
 | 1.17 | Backup script must not report a failed dump as good | **Found during testing:** the first version's pipeline status was gzip's, so a dead `pg_dump` left a valid-looking empty archive under the real name. It now uses `pipefail` and requires pg_dump's completion marker before renaming; a failed dump and a stopped database both exit non-zero and leave no file (§9.6) |
 | 1.17 | What is and is not verified for deployment | **Verified locally:** both images build for amd64 and arm64; migrations and `citext` run on an amd64 PostgreSQL; the `__Host-` cookie, Origin checks, client address, HTTP/2 and compression over real TLS with Caddy's local CA; `app_version` recorded by a run through the stack; backup, restore, and pruning. **Not verified:** a real browser with a public certificate, GitHub Actions and GHCR, any Raspberry Pi measurement, and Lightsail itself (`docs/deployment.md`, "Not yet verified") |
+| 1.18 | Native deployment for 512 MB | Docker's daemons would take about a quarter of the host, so the small Lightsail plan runs PostgreSQL, Caddy, and the API as systemd services from a release tarball (`infra/native/`). The Caddyfile is shared through `API_UPSTREAM` and `WEB_ROOT`, whose defaults keep the Compose behaviour, checked with `caddy adapt`. `backup.sh` gains `BACKUP_DB_COMMAND`, tested with a passing, a failing and an incomplete dump. **Not yet verified:** the scripts on a real Debian 12 instance, the tarball workflow on GitHub Actions, and every memory figure |

@@ -1,0 +1,42 @@
+# The API as a native systemd service (docs/deployment.md, "Lightsail 512 MB"). Installed by
+# setup.sh. APP_VERSION comes from the current release (version.env), so an update never edits the
+# secrets file.
+[Unit]
+Description=TypingTrainer API
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+DynamicUser=yes
+WorkingDirectory=/opt/typing-trainer/current
+EnvironmentFile=/etc/typing-trainer/env
+EnvironmentFile=/opt/typing-trainer/current/version.env
+Environment=NODE_ENV=production HOST=127.0.0.1 PORT=3000
+Environment=CONTENT_DIR=/opt/typing-trainer/current/content/dist
+# V8 collects harder as the heap nears this, well under the unit's limits below.
+Environment=NODE_OPTIONS=--max-old-space-size=96
+ExecStart=/usr/local/bin/node --enable-source-maps dist/main.js
+Restart=always
+RestartSec=2
+
+# A cgroup limit, so a runaway API is throttled and then restarted instead of taking Postgres with
+# it. MemoryHigh reclaims (into swap) first; MemoryMax is the kill line.
+MemoryHigh=160M
+MemoryMax=220M
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

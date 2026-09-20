@@ -21,7 +21,7 @@ infra/docker/version.sh    # 12 characters, plus -dirty if the tree has uncommit
 The API image refuses to build without one (`APP_VERSION` build argument). Deploy only images built
 from a clean tree.
 
-## First deployment (Lightsail)
+## First deployment (Lightsail, 1 GB or more: Docker)
 
 1. Create an instance with at least 1 GB of RAM (Ubuntu LTS), open TCP 80 and 443 and UDP 443 in
    its firewall, and point a DNS `A` record for the host name at its static IP. Caddy obtains its
@@ -67,6 +67,62 @@ A failed dump exits non-zero and leaves no file, so cron mail is the alarm. Rest
 database with `gunzip -c <dump> | docker compose exec -T db psql -U typing_trainer -d <database>`.
 **Verified:** a dump restores into a fresh database with the same rows, old dumps are pruned by age,
 and a stopped database or a failed `pg_dump` fails the script without leaving a file.
+
+## Lightsail 512 MB (native, no Docker)
+
+On the $5 plan (512 MB) Docker's daemons alone take roughly 100–150 MB, so PostgreSQL, Caddy and the
+API run directly on the host from a release tarball. The estimate is 300–380 MB resident, with a 1 GB
+swap file as the safety net; **these figures are not measured**, so check them after the first
+deployment (below). Everything for this lives in `infra/native/`.
+
+1. Create the instance: **Linux/Unix, OS only, Debian 12** (Ubuntu's snapd and SSM agent cost 50 MB
+   or more), the $5 plan. Attach a static IP, open TCP 80 and 443 and UDP 443, and point the DNS `A`
+   record at it.
+2. Copy `infra/native/` to the server and run, as root:
+
+   ```bash
+   ./setup.sh typing.example.com
+   ```
+
+   It adds the swap file and `vm.swappiness=20`, installs PostgreSQL 16, Caddy and Node 24 (the
+   official tarball, checked against its checksum), applies the low-memory PostgreSQL settings,
+   creates the database and role, installs the API service, and writes `/etc/typing-trainer/env`
+   with fresh secrets. **Copy `PASSWORD_PEPPER` from that file to somewhere off the server and off the
+   backups now** (§7).
+3. Deploy a release. Every push to master publishes `typing-trainer-<hash>-linux-x64.tar.gz` (and its
+   `.sha256`) as a GitHub release named by the 12-character hash, from
+   `.github/workflows/release-tarball.yml`:
+
+   ```bash
+   ./deploy.sh <hash>
+   ```
+
+   While the repository is private the download fails; download the two files elsewhere, copy them
+   to the server, and run `TARBALL=/path/typing-trainer-<hash>-linux-x64.tar.gz ./deploy.sh <hash>`.
+   The script extracts the release, runs the migration (explicit, as always), switches
+   `/opt/typing-trainer/current`, restarts the API, and waits for `/api/health/ready`; if that never
+   comes it switches back and exits non-zero.
+4. Check `https://<host>/api/health/ready`, then sign in with a real browser (see "Not yet verified").
+
+Update and roll back are both `./deploy.sh <hash>`: an old release directory is reused as it is
+(the newest three are kept). Backups use the same script with the native command:
+
+```cron
+15 3 * * * BACKUP_DIR=/var/backups/typing-trainer BACKUP_DB_COMMAND="runuser -u postgres -- pg_dump --no-owner typing_trainer" /srv/typing-trainer/infra/backup.sh
+```
+
+(`backup.sh` is not in the tarball; copy it next to `infra/native/`, or adjust the path.) Restore with
+`gunzip -c <dump> | runuser -u postgres -- psql typing_trainer` into an empty database.
+
+**Measure after the first deployment**, and write the numbers here:
+
+```bash
+free -m; systemctl status typing-trainer-api postgresql@16-main caddy | grep -E 'Memory|Active'
+```
+
+If the API is often near its `MemoryHigh=160M`, or swap use keeps growing, move to the $7 plan
+(Lightsail can create a larger instance from a snapshot) and the Docker path above. The limits are in
+`typing-trainer-api.service`, `postgresql-512mb.conf` and `caddy-drop-in.conf`.
 
 ## Raspberry Pi 3 B+ (fallback)
 
@@ -142,3 +198,8 @@ stack is stored with the image's version as `app_version`.
   Cloudflare Tunnel.
 - **Lightsail**: the instance sizing and the transfer allowance are from §9.7's estimate, not from
   a running instance.
+- **The native 512 MB deployment**: `setup.sh` and `deploy.sh` have only been syntax-checked, and the
+  service unit passed `systemd-analyze verify` on Debian 12; neither has run on a real instance.
+  The tarball was assembled and unpacked on the development machine (structure, version file, and
+  `dist/main.js` reaching environment validation), but the linux-x64 Argon2 binding comes only from
+  the GitHub Actions run, which has never happened. The memory figures are estimates.

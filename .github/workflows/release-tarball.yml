@@ -1,0 +1,51 @@
+name: Release tarball
+
+# Builds the native-deployment tarball (infra/native, docs/deployment.md "Lightsail 512 MB") for the
+# server's platform, linux-x64 with glibc, which is what an ubuntu runner installs the Argon2
+# binding for. A push to master publishes it as a GitHub release named by the 12-character commit
+# hash, the same value as the Docker images' tag and APP_VERSION (R7). Pull requests only build it.
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tarball:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Version
+        id: version
+        run: echo "value=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+
+      - run: pnpm install --frozen-lockfile --filter @typing-trainer/api... --filter @typing-trainer/web...
+
+      - run: pnpm --filter @typing-trainer/api build
+      - run: pnpm --filter @typing-trainer/web build
+
+      - name: Assemble
+        run: infra/native/build-tarball.sh "${{ steps.version.outputs.value }}" out
+
+      - name: Publish
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          gh release create "$VERSION" out/* \
+            --target "$GITHUB_SHA" \
+            --title "$VERSION" \
+            --notes "Native deployment tarball for commit $VERSION (docs/deployment.md)."

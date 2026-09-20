@@ -9,6 +9,9 @@
 #                       it off the host, for example "rclone copyto" needs a destination, so wrap
 #                       it in a script; a non-zero exit fails this script and cron reports it
 #   COMPOSE_FILES       compose files, default "-f compose.yaml" (add -f compose.pi.yaml on the Pi)
+#   BACKUP_DB_COMMAND   a command that writes the dump to standard output, replacing the Compose
+#                       database; the native deployment (infra/native) uses
+#                       "runuser -u postgres -- pg_dump --no-owner typing_trainer"
 #
 # The password pepper is not in the database and so not in this dump: back it up separately (§7).
 set -euo pipefail
@@ -26,9 +29,14 @@ trap 'rm -f "$tmp"' EXIT
 # good backup, so it is written aside and renamed only when pg_dump and gzip both succeeded
 # (pipefail: without it the pipeline's status would be gzip's, and a failed pg_dump would leave a
 # valid-looking empty archive) and the dump ends with the marker pg_dump writes when it completes.
-# shellcheck disable=SC2086
-(cd "$here" && docker compose ${COMPOSE_FILES:--f compose.yaml} exec -T db \
-  pg_dump -U typing_trainer --no-owner typing_trainer) | gzip > "$tmp"
+if [ -n "${BACKUP_DB_COMMAND:-}" ]; then
+  # shellcheck disable=SC2086
+  $BACKUP_DB_COMMAND | gzip > "$tmp"
+else
+  # shellcheck disable=SC2086
+  (cd "$here" && docker compose ${COMPOSE_FILES:--f compose.yaml} exec -T db \
+    pg_dump -U typing_trainer --no-owner typing_trainer) | gzip > "$tmp"
+fi
 gunzip -c "$tmp" | tail -n 5 | grep -q 'PostgreSQL database dump complete' \
   || { echo "backup failed: the dump is incomplete" >&2; exit 1; }
 mv "$tmp" "$file"

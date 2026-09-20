@@ -1,0 +1,60 @@
+name: Docker images
+
+# Builds the two images (§9.7) for linux/amd64 and linux/arm64. Pull requests only build them, to
+# prove they still build; a push to master also publishes both under the commit hash, which is the
+# APP_VERSION the deployed API records on every run (R7), and under `latest`.
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: ghcr.io
+  # GHCR image names must be lower case.
+  IMAGE_PREFIX: ghcr.io/leon0128/typingtrainer
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        image:
+          - { name: api, dockerfile: infra/docker/api.Dockerfile }
+          - { name: caddy, dockerfile: infra/docker/caddy.Dockerfile }
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Version
+        id: version
+        # The same value infra/docker/version.sh gives for a clean tree: the 12-character hash.
+        run: echo "value=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        if: github.event_name == 'push'
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.image.dockerfile }}
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name == 'push' }}
+          build-args: |
+            APP_VERSION=${{ steps.version.outputs.value }}
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.image.name }}:${{ steps.version.outputs.value }}
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.image.name }}:latest
+          cache-from: type=gha,scope=${{ matrix.image.name }}
+          cache-to: type=gha,scope=${{ matrix.image.name }},mode=max

@@ -60,7 +60,7 @@ export const DashboardSummarySchema = z.object({
   totalRuns: z.int().nonnegative(),
   totalKeystrokes: z.int().nonnegative(),
   bestScores: z.array(z.object({ language: ContentLanguageSchema, score: z.int().nonnegative() })),
-  /** Filled in once vs CPU conquest records exist (§6.2); null until then. */
+  /** The highest CPU level beaten in any language (§6.2); null when none has been. */
   highestCpuLevelBeaten: z.int().positive().nullable(),
 });
 

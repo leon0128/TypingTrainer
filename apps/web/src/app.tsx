@@ -6,6 +6,7 @@ import { LoginScreen } from './features/auth/LoginScreen';
 import { RegisterScreen } from './features/auth/RegisterScreen';
 import { StartupScreen } from './features/auth/StartupScreen';
 import { LanguageScreen } from './features/languages/LanguageScreen';
+import { ConquestsScreen } from './features/conquests/ConquestsScreen';
 import { DashboardScreen } from './features/dashboard/DashboardScreen';
 import { HistoryScreen } from './features/history/HistoryScreen';
 import { RankingsScreen } from './features/rankings/RankingsScreen';
@@ -72,6 +73,14 @@ export function App() {
         element={
           <RequireAuth>
             <RankingsScreen />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/conquests"
+        element={
+          <RequireAuth>
+            <ConquestsScreen />
           </RequireAuth>
         }
       />

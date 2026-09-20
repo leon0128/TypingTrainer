@@ -7,6 +7,7 @@ import type {
   User,
 } from '@typing-trainer/contracts';
 
+import { ConquestsRepository } from '../conquests/conquests.repository';
 import { LanguagesRepository } from '../languages/languages.repository';
 import { DashboardRepository } from './dashboard.repository';
 
@@ -14,6 +15,7 @@ export type DashboardSource = Pick<
   DashboardRepository,
   'today' | 'runs' | 'bestPerDay' | 'totals' | 'bestPerLanguage'
 >;
+export type HighestLevelSource = Pick<ConquestsRepository, 'highestLevel'>;
 export type LanguageIdSource = Pick<LanguagesRepository, 'findEnabled'>;
 
 /** Adds days to a `YYYY-MM-DD` date; calendar arithmetic only, no time zone involved. */
@@ -32,6 +34,7 @@ function weekStart(date: string): string {
 export class DashboardService {
   constructor(
     @Inject(DashboardRepository) private readonly dashboard: DashboardSource,
+    @Inject(ConquestsRepository) private readonly conquests: HighestLevelSource,
     @Inject(LanguagesRepository) private readonly languages: LanguageIdSource,
   ) {}
 
@@ -74,9 +77,10 @@ export class DashboardService {
       points = best.map((row) => ({ x: row.day, score: row.score }));
     }
 
-    const [totals, bests] = await Promise.all([
+    const [totals, bests, highestCpuLevel] = await Promise.all([
       this.dashboard.totals(user.id),
       this.dashboard.bestPerLanguage(user.id),
+      this.conquests.highestLevel(user.id),
     ]);
     return {
       period: request.period,
@@ -91,7 +95,7 @@ export class DashboardService {
           language: row.slug as ContentLanguage,
           score: row.score,
         })),
-        highestCpuLevelBeaten: null,
+        highestCpuLevelBeaten: highestCpuLevel,
       },
     };
   }

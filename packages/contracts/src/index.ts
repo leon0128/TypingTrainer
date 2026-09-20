@@ -84,3 +84,5 @@ export type {
   DashboardResponse,
   DashboardSummary,
 } from './dashboard';
+export { CPU_LEVEL_COUNT, ConquestsResponseSchema, LanguageConquestSchema } from './conquests';
+export type { ConquestsResponse, LanguageConquest } from './conquests';

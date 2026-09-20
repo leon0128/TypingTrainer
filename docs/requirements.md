@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.23 |
+| Version | 1.24 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.22 — vs CPU can be played: level selection, the CPU column, and the result (§4.3, §8.1, Appendix B) |
+| Supersedes | v1.23 — conquest records are built and derived from `play_sessions` (§4.3.4, §6.3, §9.5, Appendix B) |
 
 **Legend**
 
@@ -598,8 +598,9 @@ a row is therefore visible on the next request by construction, not by any synch
 U9 verified this directly for rankings with an integration test: create two runs, confirm both
 appear in the ranking, delete the higher-scoring one through `DELETE /api/history/:id`, and
 confirm the ranking updates to the remaining run. U11 does the same for the dashboard (both the
-chart points and the summary). Conquest records (P2) are not implemented yet, so the claim for
-them is unverified until they exist — the structural reasoning carries over unchanged.
+chart points and the summary), and U13 does it for conquest records: deleting the winning run
+removes the conquest on the next request, and a level stays beaten while another winning run at it
+remains. Rankings, dashboard, and conquest records are therefore all verified.
 
 ### 6.4 Time Zone Handling 🟡 (Q17)
 
@@ -948,7 +949,7 @@ Design points:
 | GET | `/api/dashboard` | `?period=daily\|weekly\|total&language=&from=&to=` (`from`/`to` are inclusive local dates; §6.2) |
 | GET | `/api/history` | Paged list |
 | DELETE | `/api/history/:id` | Delete one run |
-| GET | `/api/cpu-conquests` | Conquest state per language |
+| GET | `/api/cpu-conquests` | Conquest state of every enabled language: highest level beaten, the levels beaten, and their count (§4.3.4) |
 | GET / PUT | `/api/preferences` | Appearance, sound, locale, time zone |
 
 🟡 (v1.13) Every route requires a signed-in session unless it is explicitly public; the public routes are the health checks, `GET /api/languages`, and register, login, and logout. Errors use one body shape, `{ statusCode, error, message }`, and server errors never include their cause.
@@ -1199,3 +1200,7 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.22 | CHECK constraints must test for NULL explicitly | **Found by the first constraint test:** `"cpu_level" BETWEEN 1 AND 100` is NULL, not false, for a NULL level, and a CHECK accepts NULL, so a `cpu` run with no level passed `chk_issued_runs_cpu_level` as first written. The constraint now states `IS NOT NULL`, as the `play_sessions` one already does (§9.3) |
 | 1.23 | vs CPU selection | Language selection has a Single play / vs CPU switch; vs CPU shows a level field, **initially 1** (§4.3), with the level's speed beside it, and refuses anything but a whole number from 1 to 100 before a request is made. The level is not remembered between runs, since nothing about play is kept in browser storage (§9.8) |
 | 1.23 | Result screen for vs CPU | Titled "You won" or "You lost" from the server's judgment, with the CPU's level and score and, on a win, a reminder that a tie counts as one. The client never computes the result itself (§9.8) |
+| 1.24 | Conquests are a query, in one place | A level is beaten in a language when the user has a `cpu` run there with result `win`; the definition lives in one repository that both `GET /api/cpu-conquests` and the dashboard summary use, so the two cannot disagree. Nothing is stored, and no migration was needed: `idx_sessions_conquest` (partial, on `cpu` wins) already existed (§4.3.4, §9.3) |
+| 1.24 | "Total conquest count" is levels | The count is the number of distinct levels beaten in the language, which is what the grid shows, not the number of winning runs; a level beaten five times counts once (§4.3.4) |
+| 1.24 | Conquest display | A screen of its own, with per language the highest level beaten, the count out of 100, and a 10×10 grid whose beaten cells carry a mark as well as a fill. There is no "challenge the next level" button: starting a run stays on language selection (§4.3.4) |
+| 1.24 | Verified for conquest records | Integration tests cover wins only (a tie is a win; losses and single play are not), one level counted once however often beaten, languages kept apart, other players excluded, the dashboard summary across languages, and deletion. Removing the win filter, the mode filter, the user filter, the de-duplication, or the summary's win filter each fails a test |

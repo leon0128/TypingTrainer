@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.32 |
+| Version | 1.33 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.31 — key sound settings are stored and served (§8.3, §9.3, §9.5, Appendix B) |
+| Supersedes | v1.32 — the key sounds are synthesized and the player is built (§8.3, Appendix B) |
 
 **Legend**
 
@@ -1237,3 +1237,8 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.31 | Not checked in a browser | The Ghost screens are covered by unit tests against a stubbed server; the whole path from a real API through the play screen was not driven in a browser this time, and the side-by-side layout was not measured for the Ghost either (§8.1) |
 | 1.32 | Sound settings | `user_preferences` gains `sound_pack` (`off`, `mechanical`, `soft`, `beep`) and `sound_volume` (0 to 100), each with a CHECK, served and changed through `GET / PUT /api/preferences` as `soundPack` and `soundVolume` like the appearance (§8.3, §9.3) |
 | 1.32 | Silent until chosen | The defaults are **pack `off`, volume 30**: nothing is heard until the player asks for it, and it is low when they do. §8.3 said "three plus off" and "defaulting low" but not which pack is the default; the requester confirmed off (§8.3) |
+| 1.33 | Sounds are synthesized | The three packs (Mechanical, Soft, Beep) are made in code, hit and miss each, into `AudioBuffer`s the first time a pack is used, rather than loaded from files: nothing to license, nothing to download, and the same samples on every device, which lets a test pin them. Mechanical is a bright click over a low "thock", Soft a cushioned thump with no bright edge, Beep a plain tone (880 Hz for a hit, 300 Hz for a miss). A recorded pack can replace any of them later, since a pack is only a supply of buffers (§8.3) |
+| 1.33 | A miss is softer and lower | Held by tests for every pack: the miss's **peak is at most half the hit's** and its pitch (sign changes per second) is lower. **Judged by peak, not RMS:** the first version of the test also required a lower RMS and failed for Mechanical, whose hit is a short click carrying little energy, so a longer gentle miss has more total energy while being far quieter at its peak; RMS is a poor measure of a transient and the requirement was dropped (§8.3) |
+| 1.33 | No clicks | Every sound starts within 5% of its peak of silence, ends exactly at zero, and falls to zero over its last 6 ms, so a voice that ends, or is cut, never clicks; a voice cut for a new one fades over 5 ms first (§8.3) |
+| 1.33 | The voice pool | At most 8 notes sound at once, and the oldest is cut for the ninth, as §8.3 requires; a note that ends by itself frees its place, so nothing is cut needlessly. **Verified** with a stand-in for the browser's audio, and changing the cap, never cutting, cutting the newest, cutting without the fade, or resuming the context on every key each fails a test (§8.3) |
+| 1.33 | Nothing is created until wanted | With the pack off or the volume at 0 no audio context is made, and neither is the context of a browser that has no Web Audio; otherwise the context is made, and resumed, by the first sound or by a gesture that unlocks it, and volume is a squared curve on 0 to 100 (§8.3) |

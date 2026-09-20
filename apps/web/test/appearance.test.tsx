@@ -124,10 +124,95 @@ describe('the appearance store', () => {
     const saving = useAppearance.getState().change({ fontSize: 24 });
     expect(property('--code-size')).toBe('24px');
     expect(useAppearance.getState().appearance.fontSize).toBe(24);
+    await vi.waitFor(() => {
+      expect(bodies).toHaveLength(1);
+    });
 
     release(json(preferences({ ...DEFAULT_APPEARANCE, fontSize: 24 })));
     await saving;
     expect(JSON.parse(bodies[0] ?? '{}')).toEqual({ fontSize: 24 });
+  });
+
+  it('sends quick changes one after the other, in order', async () => {
+    const releases: ((response: Response) => void)[] = [];
+    const bodies: unknown[] = [];
+    vi.stubGlobal('fetch', (_url: string, init: { body?: string }) => {
+      bodies.push(JSON.parse(init.body ?? '{}'));
+      return new Promise<Response>((resolve) => {
+        releases.push(resolve);
+      });
+    });
+
+    const first = useAppearance.getState().change({ fontSize: 24 });
+    const second = useAppearance.getState().change({ theme: 'dark' });
+    await vi.waitFor(() => {
+      expect(bodies).toHaveLength(1);
+    });
+    // The second waits for the first to be answered, however long that takes.
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(bodies).toEqual([{ fontSize: 24 }]);
+
+    releases[0]?.(json(preferences({ ...DEFAULT_APPEARANCE, fontSize: 24 })));
+    await first;
+    await vi.waitFor(() => {
+      expect(bodies).toEqual([{ fontSize: 24 }, { theme: 'dark' }]);
+    });
+    releases[1]?.(json(preferences({ ...DEFAULT_APPEARANCE, fontSize: 24, theme: 'dark' })));
+    await second;
+  });
+
+  it('does not let a slow answer undo a later change it knew nothing about', async () => {
+    const releases: ((response: Response) => void)[] = [];
+    vi.stubGlobal('fetch', () => {
+      return new Promise<Response>((resolve) => {
+        releases.push(resolve);
+      });
+    });
+
+    const first = useAppearance.getState().change({ fontSize: 24 });
+    const second = useAppearance.getState().change({ colorPreset: 'monochrome' });
+    await vi.waitFor(() => {
+      expect(releases).toHaveLength(1);
+    });
+    // The first answer describes a server that has not yet heard of the second change.
+    releases[0]?.(json(preferences({ ...DEFAULT_APPEARANCE, fontSize: 24 })));
+    await first;
+    expect(useAppearance.getState().appearance.colorPreset).toBe('monochrome');
+    expect(root().getAttribute('data-preset')).toBe('monochrome');
+
+    await vi.waitFor(() => {
+      expect(releases).toHaveLength(2);
+    });
+    releases[1]?.(
+      json(preferences({ ...DEFAULT_APPEARANCE, fontSize: 24, colorPreset: 'monochrome' })),
+    );
+    await second;
+    expect(useAppearance.getState().appearance).toEqual({
+      ...DEFAULT_APPEARANCE,
+      fontSize: 24,
+      colorPreset: 'monochrome',
+    });
+  });
+
+  it('undoes only the failed change when a later one is on screen', async () => {
+    let calls = 0;
+    vi.stubGlobal('fetch', () => {
+      calls += 1;
+      return Promise.resolve(
+        calls === 1
+          ? json({ statusCode: 500, error: 'Internal Server Error', message: 'try again' }, 500)
+          : json(preferences({ ...DEFAULT_APPEARANCE, colorPreset: 'monochrome' })),
+      );
+    });
+    await Promise.all([
+      useAppearance.getState().change({ fontSize: 24 }),
+      useAppearance.getState().change({ colorPreset: 'monochrome' }),
+    ]);
+    expect(useAppearance.getState().appearance).toEqual({
+      ...DEFAULT_APPEARANCE,
+      colorPreset: 'monochrome',
+    });
+    expect(useAppearance.getState().error).toBe('try again');
   });
 
   it('goes back to what it was, and says why, when saving fails', async () => {

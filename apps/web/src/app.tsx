@@ -1,6 +1,7 @@
 import { useEffect, type ReactElement } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 
+import { SettingsScreen } from './features/appearance/SettingsScreen';
 import { followSystemTheme, useAppearance } from './features/appearance/appearance-store';
 import { useAuthStore } from './features/auth/auth-store';
 import { LoginScreen } from './features/auth/LoginScreen';
@@ -83,6 +84,14 @@ export function App() {
         element={
           <RequireAuth>
             <RankingsScreen />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <RequireAuth>
+            <SettingsScreen />
           </RequireAuth>
         }
       />

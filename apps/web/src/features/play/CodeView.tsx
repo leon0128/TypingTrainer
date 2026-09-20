@@ -1,6 +1,7 @@
 import type { EngineState } from '@typing-trainer/typing-engine';
-import { useMemo } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 
+import { followCaret } from './follow-caret';
 import type { Layout } from './layout';
 import { Line } from './Line';
 import { lineViews, type LineView } from './line-view';
@@ -17,10 +18,16 @@ export interface CodeViewProps {
 const UNTOUCHED: LineView = { typedUntil: 0, cursorHere: false, filledAutoKey: '' };
 
 export function CodeView({ layout, engine, missSeq, lastMiss }: CodeViewProps) {
+  const preRef = useRef<HTMLPreElement>(null);
   const views = useMemo(
     () => (engine === null ? layout.lines.map(() => UNTOUCHED) : lineViews(layout, engine)),
     [layout, engine],
   );
+
+  // Before paint, so the caret is never shown outside the panel even for one frame (§8.1).
+  useLayoutEffect(() => {
+    if (engine !== null && preRef.current !== null) followCaret(preRef.current);
+  }, [engine]);
 
   // Flash only while the caret is still where the latest miss left it.
   const flashSeq =
@@ -31,7 +38,7 @@ export function CodeView({ layout, engine, missSeq, lastMiss }: CodeViewProps) {
       : 0;
 
   return (
-    <pre className="code" aria-label="Code to type">
+    <pre ref={preRef} className="code" aria-label="Code to type">
       {layout.lines.map((line, index) => {
         const view = views[index];
         if (!view) return null;

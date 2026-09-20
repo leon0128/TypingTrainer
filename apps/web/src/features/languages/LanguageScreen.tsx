@@ -61,6 +61,9 @@ export function LanguageScreen() {
           <Link className="underline" to="/rankings">
             Rankings
           </Link>
+          <Link className="underline" to="/settings">
+            Appearance
+          </Link>
           <Link className="underline" to="/conquests">
             Conquests
           </Link>

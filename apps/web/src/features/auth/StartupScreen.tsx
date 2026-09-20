@@ -1,14 +1,16 @@
+import { useTranslation } from '../../i18n';
 import { useAuthStore } from './auth-store';
 
 /** Shown while the first `me` request is in flight, and when it failed (§9.6: no SLA, retry). */
 export function StartupScreen() {
+  const { t } = useTranslation();
   const startupError = useAuthStore((state) => state.startupError);
   const load = useAuthStore((state) => state.load);
 
   return (
     <main className="mx-auto flex max-w-sm flex-col gap-4 p-6" aria-busy={startupError === null}>
       {startupError === null ? (
-        <p role="status">Loading…</p>
+        <p role="status">{t('common.loading')}</p>
       ) : (
         <>
           <p role="alert">{startupError}</p>
@@ -17,7 +19,7 @@ export function StartupScreen() {
             type="button"
             onClick={() => void load()}
           >
-            Try again
+            {t('common.tryAgain')}
           </button>
         </>
       )}

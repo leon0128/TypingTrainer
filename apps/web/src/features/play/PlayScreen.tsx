@@ -1,8 +1,14 @@
 import type { TypingProgram } from '@typing-trainer/contracts';
-import { RUN_BLOCK_COUNT, type SessionState } from '@typing-trainer/typing-engine';
+import {
+  PLAY_DURATION_MS,
+  RUN_BLOCK_COUNT,
+  type SessionState,
+} from '@typing-trainer/typing-engine';
+import type { TFunction } from 'i18next';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router';
 
+import { useTranslation } from '../../i18n';
 import { soundPlayer } from '../sound/sound';
 import { CodeView } from './CodeView';
 import { formatSeconds } from './format';
@@ -25,6 +31,7 @@ export function PlayScreen() {
 }
 
 function RunView({ run }: { run: RunStore }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const clear = useRunSession((state) => state.clear);
   const submission = useRunSession((state) => state.submission);
@@ -115,43 +122,49 @@ function RunView({ run }: { run: RunStore }) {
 
   const { session } = snapshot;
   const metrics = run.liveMetrics();
-  const overlay = overlayText(snapshot.phase, focused, imeActive);
+  const overlay = overlayText(snapshot.phase, focused, imeActive, t);
 
   return (
     <main className="play">
       <header className="play-header">
-        <h1>TypingTrainer</h1>
+        <h1>{t('app.name')}</h1>
         <span className="block-name">
           {run.issued.language}
-          {opponent !== null && ` · vs ${opponent.label}`} · block{' '}
-          {Math.min(session.blockIndex + 1, RUN_BLOCK_COUNT)} / {session.programs.length}
+          {opponent !== null && ` · ${t('play.versus', { opponent: opponent.label })}`} ·{' '}
+          {t('play.block', {
+            current: Math.min(session.blockIndex + 1, RUN_BLOCK_COUNT),
+            total: session.programs.length,
+          })}
         </span>
         <span className="live-metrics">
-          KPM {Math.round(metrics.kpm)} · ACC {Math.round(metrics.accuracy * 100)}% · SCORE{' '}
-          {metrics.score}
+          {t('play.liveMetrics', {
+            kpm: Math.round(metrics.kpm),
+            accuracy: Math.round(metrics.accuracy * 100),
+            score: metrics.score,
+          })}
         </span>
         <span className="stopwatch">
-          Left <span ref={remainingRef}>0.0 s</span>
+          {t('play.left')} <span ref={remainingRef}>{formatSeconds(PLAY_DURATION_MS)}</span>
         </span>
       </header>
 
       <input
         ref={inputRef}
         className="hidden-input"
-        aria-label="Typing input"
+        aria-label={t('play.typingInput')}
         autoComplete="off"
         autoCapitalize="off"
         spellCheck={false}
       />
 
       <p className="status" role="status">
-        {statusText(snapshot.phase)}
+        {statusText(snapshot.phase, t)}
       </p>
 
       {snapshot.phase !== 'ended' && (
         <div className={opponent === null ? undefined : 'versus'}>
-          <section className="column" aria-label="You">
-            {opponent !== null && <h2 className="column-title">You</h2>}
+          <section className="column" aria-label={t('play.you')}>
+            {opponent !== null && <h2 className="column-title">{t('play.you')}</h2>}
             <BlockColumn
               session={session}
               layoutOf={layoutOf}
@@ -162,9 +175,12 @@ function RunView({ run }: { run: RunStore }) {
             />
           </section>
           {opponent !== null && opponentSession !== null && (
-            <section className="column opponent-column" aria-label="Opponent">
+            <section className="column opponent-column" aria-label={t('play.opponentGroup')}>
               <h2 className="column-title">
-                {opponent.label} · SCORE {opponent.liveMetrics().score}
+                {t('play.opponentScore', {
+                  opponent: opponent.label,
+                  score: opponent.liveMetrics().score,
+                })}
               </h2>
               <BlockColumn
                 session={opponentSession}
@@ -212,6 +228,7 @@ function BlockColumn({
   overlay,
   onMouseDown,
 }: BlockColumnProps) {
+  const { t } = useTranslation();
   const current = session.programs[session.blockIndex];
   const next = session.programs[session.blockIndex + 1];
   return (
@@ -232,7 +249,7 @@ function BlockColumn({
         </section>
       )}
       {next !== undefined && (
-        <section className="code-panel code-next" aria-label="Next block">
+        <section className="code-panel code-next" aria-label={t('play.nextBlock')}>
           <CodeView layout={layoutOf(next)} engine={null} missSeq={0} lastMiss={null} />
         </section>
       )}
@@ -240,21 +257,26 @@ function BlockColumn({
   );
 }
 
-function statusText(phase: RunPhase): string {
+function statusText(phase: RunPhase, t: TFunction): string {
   switch (phase) {
     case 'ready':
-      return 'Start typing. The countdown starts with your first keystroke.';
+      return t('play.statusReady');
     case 'playing':
-      return 'Typing. Backspace is disabled; progress is forward-only.';
+      return t('play.statusPlaying');
     case 'paused':
-      return 'Paused.';
+      return t('play.statusPaused');
     case 'ended':
-      return 'Run over.';
+      return t('play.statusEnded');
   }
 }
 
-function overlayText(phase: RunPhase, focused: boolean, imeActive: boolean): string | null {
-  if (imeActive) return 'Turn off your IME (Japanese input) to type.';
+function overlayText(
+  phase: RunPhase,
+  focused: boolean,
+  imeActive: boolean,
+  t: TFunction,
+): string | null {
+  if (imeActive) return t('play.overlayIme');
   if (focused || phase === 'ended') return null;
-  return phase === 'paused' ? 'Paused — click here to resume' : 'Click here to start';
+  return phase === 'paused' ? t('play.overlayResume') : t('play.overlayStart');
 }

@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.35 |
+| Version | 1.36 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.34 — the localization foundation: language resources, switching, and translated API errors (§8.4, Appendix B) |
+| Supersedes | v1.35 — sign-in, registration, language selection, play, and the result are in Japanese too (§8.4, Appendix B) |
 
 **Legend**
 
@@ -1254,3 +1254,8 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.35 | Error wording | Three messages changed in English too, because their old form was a code or a status: a rejected result names its reason ("the typing speed was implausibly high", not `speed`), a Ghost with no record names the period ("today", "this week", "all time"), and a server fault says "The server had a problem. Try again in a moment." instead of showing its status text. A refusal that says when to try again now says "1 second" and "N seconds" correctly (§9.5) |
 | 1.35 | A found and fixed race | **Found by a test:** asking for Japanese, which takes a moment to load, and then English before it finished (as happens when saving the language fails and it is put back) ended in Japanese, because the slow load finished last. A request that is no longer the newest now stands down; removing that check fails the test (§8.4) |
 | 1.35 | Untranslated text is a lint error | `eslint-plugin-i18next` flags text written directly into a screen. Every screen is on an allowlist of files not yet translated, which only ever shrinks and which the translation of each screen removes it from. **Attributes** such as `aria-label` are not checked yet (the plugin's text-only mode); they are covered when the screens are translated (§8.4) |
+| 1.36 | Screens translated | Sign-in, registration, the startup screen, language selection (all three modes), the play screen, and the result screen read in English or Japanese. Rankings, history, the dashboard, conquests, and the appearance screen follow; the lint allowlist names them (§8.4) |
+| 1.36 | The language before an account | Sign-in and registration carry a switch, English or 日本語, each named in its own language and marked with `lang`. It applies at once and lasts for that visit; nothing is sent. **Registration gives the new account the language the screen is in**, saved before the app is told it is signed in, because the moment it is, the app loads the account's settings and they would still say English. A test looks at the sign-in state when that request goes out, and saving after signing in fails it. If saving fails the account is still made and signs in (§8.4) |
+| 1.36 | Dates and numbers follow the language | A saved run's day is written by `Intl` in the language ("September 20, 2026", "2026年9月20日"), the countdown and percentages use its number format, and units come from the resources ("12.3 s", "12.3 秒"). The word "(§4.1)" no longer appears in the idle-run message: a section number is not text for a player (§8.4) |
+| 1.36 | No English left over | A test renders each translated screen in Japanese and fails if any sentence of the English resource is still on it; a sentence written in English in place of a key, a status left untranslated, and a description left untranslated each fail it, which was checked. It complements the lint rule, which sees text written straight into a screen but not one returned from a function (§8.4) |
+| 1.36 | Opponents are named by language | "CPU Lv.50", and for the Ghost "自分 · 今日のベスト 88" (its English being "Ghost · today's best 88"), are made when the run starts, so a language change during a run does not rename the opponent until the next (§8.4) |

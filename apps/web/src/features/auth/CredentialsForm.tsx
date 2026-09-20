@@ -1,5 +1,6 @@
 import { useId, useState, type SubmitEventHandler } from 'react';
 
+import { useTranslation } from '../../i18n';
 import { describeError } from '../../lib/api/describe-error';
 
 export interface CredentialsFormProps {
@@ -20,6 +21,7 @@ export function CredentialsForm({
   passwordAutoComplete,
   hint,
 }: CredentialsFormProps) {
+  const { t } = useTranslation();
   const usernameId = useId();
   const passwordId = useId();
   const [username, setUsername] = useState('');
@@ -49,7 +51,7 @@ export function CredentialsForm({
   return (
     <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
       <div className="flex flex-col gap-1">
-        <label htmlFor={usernameId}>Username</label>
+        <label htmlFor={usernameId}>{t('auth.username')}</label>
         <input
           id={usernameId}
           className="rounded border border-slate-400 bg-white px-3 py-2 dark:bg-slate-900"
@@ -65,7 +67,7 @@ export function CredentialsForm({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor={passwordId}>Password</label>
+        <label htmlFor={passwordId}>{t('auth.password')}</label>
         <input
           id={passwordId}
           className="rounded border border-slate-400 bg-white px-3 py-2 dark:bg-slate-900"
@@ -94,7 +96,7 @@ export function CredentialsForm({
         type="submit"
         disabled={busy}
       >
-        {busy ? 'Working…' : submitLabel}
+        {busy ? t('common.working') : submitLabel}
       </button>
     </form>
   );

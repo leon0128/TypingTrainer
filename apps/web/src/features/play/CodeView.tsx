@@ -1,6 +1,8 @@
 import type { EngineState } from '@typing-trainer/typing-engine';
 import { useLayoutEffect, useMemo, useRef } from 'react';
 
+import { useTranslation } from '../../i18n';
+
 import { followCaret } from './follow-caret';
 import type { Layout } from './layout';
 import { Line } from './Line';
@@ -18,6 +20,7 @@ export interface CodeViewProps {
 const UNTOUCHED: LineView = { typedUntil: 0, cursorHere: false, filledAutoKey: '' };
 
 export function CodeView({ layout, engine, missSeq, lastMiss }: CodeViewProps) {
+  const { t } = useTranslation();
   const preRef = useRef<HTMLPreElement>(null);
   const views = useMemo(
     () => (engine === null ? layout.lines.map(() => UNTOUCHED) : lineViews(layout, engine)),
@@ -38,7 +41,7 @@ export function CodeView({ layout, engine, missSeq, lastMiss }: CodeViewProps) {
       : 0;
 
   return (
-    <pre ref={preRef} className="code" aria-label="Code to type">
+    <pre ref={preRef} className="code" aria-label={t('play.codeToType')}>
       {layout.lines.map((line, index) => {
         const view = views[index];
         if (!view) return null;

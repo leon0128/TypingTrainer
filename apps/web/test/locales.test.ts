@@ -42,7 +42,21 @@ const placeholders = (text: string): string[] =>
  * Text that is the same in every language: names, and nothing that a person would read as English.
  * A key belongs here only if translating it would be wrong; the list is short on purpose.
  */
-const SAME_IN_EVERY_LANGUAGE = new Set<string>([]);
+const SAME_IN_EVERY_LANGUAGE = new Set<string>([
+  // The product's name.
+  'app.name',
+  // Each language's name for itself, so it can be found whichever language is showing.
+  'languageNames.en',
+  'languageNames.ja',
+  // A name and an abbreviation that are written the same way in Japanese, and formats that are
+  // only a number and a unit symbol.
+  'modes.cpu',
+  'opponent.cpu',
+  'play.versus',
+  'result.kpm',
+  'common.percent',
+  'common.milliseconds',
+]);
 
 describe('the language resources (§8.4)', () => {
   const english = messages(LANGUAGES.en);

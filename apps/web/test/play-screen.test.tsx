@@ -148,7 +148,8 @@ describe('play screen', () => {
     expect(panel).toContain(String(STORED.score));
     expect(panel).toContain(String(STORED.kpm));
     expect(panel).toContain(String(STORED.effectiveKeystrokes));
-    expect(panel).toContain(STORED.localDate);
+    // The day, written as English writes a date.
+    expect(panel).toContain('September 20, 2026');
     const counted = useRunSession.getState().run?.liveMetrics();
     expect(counted?.score).not.toBe(STORED.score);
     expect(panel).not.toContain(`Score${String(counted?.score)}`);

@@ -46,5 +46,120 @@
     "unreachable": "The server could not be reached. Check your connection.",
     "unexpectedResponse": "The server sent an unexpected response.",
     "generic": "Something went wrong."
+  },
+  "app": {
+    "name": "TypingTrainer"
+  },
+  "common": {
+    "loading": "Loading…",
+    "tryAgain": "Try again",
+    "working": "Working…",
+    "chooseLanguage": "Choose a language",
+    "signOut": "Sign out",
+    "seconds": "{{value}} s",
+    "percent": "{{value}} %",
+    "milliseconds": "{{value}} ms"
+  },
+  "nav": {
+    "rankings": "Rankings",
+    "appearance": "Appearance",
+    "conquests": "Conquests",
+    "dashboard": "Dashboard",
+    "history": "History"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "enterBoth": "Enter your username and password.",
+    "noAccount": "No account yet?",
+    "createOne": "Create one",
+    "createTitle": "Create an account",
+    "createSubmit": "Create account",
+    "passwordHint": "At least {{min}} characters. A phrase you can type is fine.",
+    "checkDetails": "Check your details.",
+    "haveAccount": "Already have an account?",
+    "username": "Username",
+    "password": "Password",
+    "languageSwitch": "Language"
+  },
+  "modes": {
+    "single": "Single play",
+    "cpu": "vs CPU",
+    "ghost": "Ghost"
+  },
+  "home": {
+    "cpuLevel": "CPU level ({{min}}–{{max}})",
+    "aboutKpm": "about {{kpm}} KPM",
+    "levelInvalid": "enter a whole number from {{min}} to {{max}}",
+    "raceBest": "Race your best of",
+    "ghostExplain": "The Ghost types at the pace that scores exactly that record, and never misses. Beat it, and you have a new record.",
+    "loadingLanguages": "Loading languages…",
+    "noLanguages": "No language is available to play right now.",
+    "starting": "Starting…",
+    "best": "best {{score}}",
+    "noRecord": "No record yet",
+    "modeGroup": "Mode",
+    "recordGroup": "Record",
+    "footer": "A run lasts 120 seconds over 20 blocks. The countdown starts with your first keystroke. The CPU never misses; a tie with it counts as a win."
+  },
+  "periodsShort": {
+    "daily": "Today",
+    "weekly": "This week",
+    "total": "All time"
+  },
+  "periodBest": {
+    "daily": "today's best",
+    "weekly": "this week's best",
+    "total": "all-time best"
+  },
+  "opponent": {
+    "cpu": "CPU Lv.{{level}}",
+    "ghost": "Ghost · {{period}} {{score}}",
+    "ghostShort": "Ghost ({{period}})"
+  },
+  "play": {
+    "block": "block {{current}} / {{total}}",
+    "versus": "vs {{opponent}}",
+    "left": "Left",
+    "liveMetrics": "KPM {{kpm}} · ACC {{accuracy}}% · SCORE {{score}}",
+    "opponentScore": "{{opponent}} · SCORE {{score}}",
+    "you": "You",
+    "opponentGroup": "Opponent",
+    "nextBlock": "Next block",
+    "codeToType": "Code to type",
+    "typingInput": "Typing input",
+    "statusReady": "Start typing. The countdown starts with your first keystroke.",
+    "statusPlaying": "Typing. Backspace is disabled; progress is forward-only.",
+    "statusPaused": "Paused.",
+    "statusEnded": "Run over.",
+    "overlayIme": "Turn off your IME (Japanese input) to type.",
+    "overlayResume": "Paused — click here to resume",
+    "overlayStart": "Click here to start"
+  },
+  "result": {
+    "discarded": "Run discarded",
+    "empty": "Nothing typed",
+    "saved": "Run saved",
+    "over": "Run over",
+    "won": "You won",
+    "lost": "You lost",
+    "saving": "Saving this run…",
+    "savedFor": "Saved as your run for {{date}}.",
+    "noKeystroke": "No keystroke was recorded, so nothing was saved.",
+    "idle": "This run sat idle past the limit, so it was not saved.",
+    "score": "Score",
+    "kpm": "KPM",
+    "kpmNote": "effective keystrokes ÷ 2 minutes",
+    "accuracy": "Accuracy",
+    "missRate": "miss rate {{value}}",
+    "keystrokes": "Keystrokes",
+    "keystrokeCounts": "effective {{effective}} · miss {{miss}} · raw {{raw}}",
+    "sendAgain": "Send again",
+    "matchLine": "{{opponent}} scored {{opponentScore}}; you scored {{score}}.",
+    "tieWins": "A tie counts as a win.",
+    "unknownOpponent": "The opponent"
+  },
+  "languageNames": {
+    "en": "English",
+    "ja": "日本語"
   }
 }

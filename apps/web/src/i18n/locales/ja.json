@@ -45,5 +45,120 @@
     "unreachable": "サーバーに接続できません。通信環境を確認してください。",
     "unexpectedResponse": "サーバーから想定外の応答がありました。",
     "generic": "問題が発生しました。"
+  },
+  "app": {
+    "name": "TypingTrainer"
+  },
+  "common": {
+    "loading": "読み込み中…",
+    "tryAgain": "再試行",
+    "working": "処理中…",
+    "chooseLanguage": "言語",
+    "signOut": "ログアウト",
+    "seconds": "{{value}} 秒",
+    "percent": "{{value}} %",
+    "milliseconds": "{{value}} ms"
+  },
+  "nav": {
+    "rankings": "ランキング",
+    "appearance": "外観",
+    "conquests": "対戦記録",
+    "dashboard": "ダッシュボード",
+    "history": "履歴"
+  },
+  "auth": {
+    "signIn": "ログイン",
+    "enterBoth": "ユーザー名とパスワードを入力してください。",
+    "noAccount": "アカウントをお持ちでない方は",
+    "createOne": "新規登録",
+    "createTitle": "アカウントを作成",
+    "createSubmit": "アカウントを作成",
+    "passwordHint": "{{min}}文字以上。覚えやすいフレーズでも構いません。",
+    "checkDetails": "入力内容を確認してください。",
+    "haveAccount": "アカウントをお持ちの方は",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "languageSwitch": "言語"
+  },
+  "modes": {
+    "single": "シングルプレイ",
+    "cpu": "vs CPU",
+    "ghost": "vs 自分"
+  },
+  "home": {
+    "cpuLevel": "CPU の Level({{min}}–{{max}})",
+    "aboutKpm": "約 {{kpm}} KPM",
+    "levelInvalid": "{{min}}〜{{max}} の整数を入力してください",
+    "raceBest": "自己ベストに挑戦:",
+    "ghostExplain": "自分の記録とちょうど同じスコアになる速さで、ミスなく打ち進めます。上回れば新記録です。",
+    "loadingLanguages": "言語を読み込み中…",
+    "noLanguages": "いま遊べる言語がありません。",
+    "starting": "開始中…",
+    "best": "ベスト {{score}}",
+    "noRecord": "記録なし",
+    "modeGroup": "モード",
+    "recordGroup": "記録",
+    "footer": "1 回のプレイは 20 ブロック・120 秒です。最初のキー入力でカウントダウンが始まります。CPU はミスをしません。同点は勝ちです。"
+  },
+  "periodsShort": {
+    "daily": "今日",
+    "weekly": "今週",
+    "total": "全期間"
+  },
+  "periodBest": {
+    "daily": "今日のベスト",
+    "weekly": "今週のベスト",
+    "total": "全期間のベスト"
+  },
+  "opponent": {
+    "cpu": "CPU Lv.{{level}}",
+    "ghost": "自分 · {{period}} {{score}}",
+    "ghostShort": "自分({{period}})"
+  },
+  "play": {
+    "block": "ブロック {{current}} / {{total}}",
+    "versus": "vs {{opponent}}",
+    "left": "残り",
+    "liveMetrics": "KPM {{kpm}} · 正確率 {{accuracy}}% · スコア {{score}}",
+    "opponentScore": "{{opponent}} · スコア {{score}}",
+    "you": "あなた",
+    "opponentGroup": "対戦相手",
+    "nextBlock": "次のブロック",
+    "codeToType": "入力するコード",
+    "typingInput": "入力欄",
+    "statusReady": "入力を始めてください。最初のキー入力でカウントダウンが始まります。",
+    "statusPlaying": "入力中。Backspace は使えません。先へ進むだけです。",
+    "statusPaused": "一時停止中。",
+    "statusEnded": "終了。",
+    "overlayIme": "入力するには IME(日本語入力)をオフにしてください。",
+    "overlayResume": "一時停止中 — ここをクリックして再開",
+    "overlayStart": "ここをクリックして開始"
+  },
+  "result": {
+    "discarded": "プレイを破棄しました",
+    "empty": "入力がありません",
+    "saved": "プレイを保存しました",
+    "over": "終了",
+    "won": "勝ち",
+    "lost": "負け",
+    "saving": "プレイを保存中…",
+    "savedFor": "{{date}}のプレイとして保存しました。",
+    "noKeystroke": "キー入力が記録されなかったため、保存されませんでした。",
+    "idle": "放置時間の上限を超えたため、このプレイは保存されませんでした。",
+    "score": "スコア",
+    "kpm": "KPM",
+    "kpmNote": "有効キー入力数 ÷ 2 分",
+    "accuracy": "正確率",
+    "missRate": "ミス率 {{value}}",
+    "keystrokes": "キー入力",
+    "keystrokeCounts": "有効 {{effective}} · ミス {{miss}} · 総数 {{raw}}",
+    "sendAgain": "再送信",
+    "matchLine": "{{opponent}}のスコアは {{opponentScore}}、あなたは {{score}} でした。",
+    "tieWins": "同点は勝ちです。",
+    "unknownOpponent": "対戦相手"
+  },
+  "languageNames": {
+    "en": "English",
+    "ja": "日本語"
   }
 }

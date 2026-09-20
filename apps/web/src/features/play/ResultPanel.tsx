@@ -1,8 +1,9 @@
 import type { PlayRun } from '@typing-trainer/contracts';
 import type { OfficialMetrics } from '@typing-trainer/typing-engine';
+import type { TFunction } from 'i18next';
 
+import { i18n, useTranslation } from '../../i18n';
 import { formatPercent } from './format';
-import { GHOST_PERIOD_LABELS } from './opponent';
 import type { Submission } from './run-session';
 
 export interface ResultPanelProps {
@@ -18,6 +19,7 @@ export interface ResultPanelProps {
  * shown: the client's own are never what counts (§9.8).
  */
 export function ResultPanel({ metrics, submission, onRetry, onPlayAgain }: ResultPanelProps) {
+  const { t } = useTranslation();
   const stored = submission.kind === 'saved' ? submission.run : null;
   const shown = stored ?? metrics;
   const effective = stored?.effectiveKeystrokes ?? metrics.effective;
@@ -26,48 +28,50 @@ export function ResultPanel({ metrics, submission, onRetry, onPlayAgain }: Resul
 
   return (
     <section className="result-panel" aria-labelledby="result-title">
-      <h2 id="result-title">{title(submission)}</h2>
+      <h2 id="result-title">{title(submission, t)}</h2>
       <p className="submission" role="status">
-        {statusLine(submission)}
+        {statusLine(submission, t)}
       </p>
       {stored?.result != null && (
         <p className="match-result">
-          {opponentName(stored)} scored {stored.opponentScore}; you scored {stored.score}.{' '}
-          {stored.result === 'win' ? 'A tie counts as a win.' : ''}
+          {t('result.matchLine', {
+            opponent: opponentName(stored, t),
+            opponentScore: stored.opponentScore,
+            score: stored.score,
+          })}{' '}
+          {stored.result === 'win' ? t('result.tieWins') : ''}
         </p>
       )}
 
       {submission.kind !== 'discarded' && submission.kind !== 'empty' && (
         <dl>
-          <dt>Score</dt>
+          <dt>{t('result.score')}</dt>
           <dd>{shown.score}</dd>
 
-          <dt>KPM</dt>
+          <dt>{t('result.kpm')}</dt>
           <dd>
-            {shown.kpm} <small>effective keystrokes ÷ 2 minutes</small>
+            {shown.kpm} <small>{t('result.kpmNote')}</small>
           </dd>
 
-          <dt>Accuracy</dt>
+          <dt>{t('result.accuracy')}</dt>
           <dd>
             {formatPercent(shown.accuracy)}{' '}
-            <small>miss rate {formatPercent(1 - shown.accuracy)}</small>
+            <small>{t('result.missRate', { value: formatPercent(1 - shown.accuracy) })}</small>
           </dd>
 
-          <dt>Keystrokes</dt>
-          <dd>
-            effective {effective} · miss {miss} · raw {raw}
-          </dd>
+          <dt>{t('result.keystrokes')}</dt>
+          <dd>{t('result.keystrokeCounts', { effective, miss, raw })}</dd>
         </dl>
       )}
 
       <p className="result-actions">
         {submission.kind === 'failed' && submission.canRetry && (
           <button type="button" onClick={onRetry}>
-            Send again
+            {t('result.sendAgain')}
           </button>
         )}
         <button type="button" onClick={onPlayAgain}>
-          Choose a language
+          {t('common.chooseLanguage')}
         </button>
       </p>
     </section>
@@ -75,39 +79,46 @@ export function ResultPanel({ metrics, submission, onRetry, onPlayAgain }: Resul
 }
 
 /** Who the player raced, as the stored run names them. */
-function opponentName(run: PlayRun): string {
-  if (run.cpuLevel !== null) return `CPU Lv.${String(run.cpuLevel)}`;
+function opponentName(run: PlayRun, t: TFunction): string {
+  if (run.cpuLevel !== null) return t('opponent.cpu', { level: run.cpuLevel });
   return run.ghostPeriod === null
-    ? 'The opponent'
-    : `Ghost (${GHOST_PERIOD_LABELS[run.ghostPeriod]})`;
+    ? t('result.unknownOpponent')
+    : t('opponent.ghostShort', { period: t(`periodBest.${run.ghostPeriod}`) });
 }
 
-function title(submission: Submission): string {
+function title(submission: Submission, t: TFunction): string {
   switch (submission.kind) {
     case 'discarded':
-      return 'Run discarded';
+      return t('result.discarded');
     case 'empty':
-      return 'Nothing typed';
+      return t('result.empty');
     case 'saved':
-      if (submission.run.result === 'win') return 'You won';
-      if (submission.run.result === 'lose') return 'You lost';
-      return 'Run saved';
+      if (submission.run.result === 'win') return t('result.won');
+      if (submission.run.result === 'lose') return t('result.lost');
+      return t('result.saved');
     default:
-      return 'Run over';
+      return t('result.over');
   }
 }
 
-function statusLine(submission: Submission): string {
+/** A calendar date, as the player's language writes it; the day is fixed, so no time zone applies. */
+function dateOf(isoDate: string): string {
+  return new Intl.DateTimeFormat(i18n.language, { dateStyle: 'long', timeZone: 'UTC' }).format(
+    new Date(`${isoDate}T00:00:00Z`),
+  );
+}
+
+function statusLine(submission: Submission, t: TFunction): string {
   switch (submission.kind) {
     case 'unsent':
     case 'sending':
-      return 'Saving this run…';
+      return t('result.saving');
     case 'saved':
-      return `Saved as your run for ${submission.run.localDate}.`;
+      return t('result.savedFor', { date: dateOf(submission.run.localDate) });
     case 'empty':
-      return 'No keystroke was recorded, so nothing was saved.';
+      return t('result.noKeystroke');
     case 'discarded':
-      return 'This run sat idle past the limit, so it was not saved (§4.1).';
+      return t('result.idle');
     case 'failed':
       return submission.message;
   }

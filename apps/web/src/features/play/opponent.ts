@@ -1,4 +1,4 @@
-import type { GhostPeriod, StartSessionResponse } from '@typing-trainer/contracts';
+import type { StartSessionResponse } from '@typing-trainer/contracts';
 import {
   computeMetrics,
   cpuKeys,
@@ -13,15 +13,10 @@ import {
   type SessionState,
 } from '@typing-trainer/typing-engine';
 
-/** How a Ghost's record is named beside its score, e.g. "today's best". */
-export const GHOST_PERIOD_LABELS: Record<GhostPeriod, string> = {
-  daily: "today's best",
-  weekly: "this week's best",
-  total: 'all-time best',
-};
+import { i18n } from '../../i18n';
 
 export interface Opponent {
-  /** What the opponent is called on screen: "CPU Lv.50", or "Ghost · today's best 88". */
+  /** What the opponent is called on screen, in the language it was made in (§8.4): "CPU Lv.50". */
   readonly label: string;
   // Function properties rather than methods: both are passed unbound to useSyncExternalStore.
   readonly getSnapshot: () => SessionState;
@@ -46,14 +41,17 @@ export function createOpponent(issued: StartSessionResponse): Opponent | null {
   if (issued.mode === 'cpu' && issued.cpuLevel !== null) {
     return replaying(
       issued,
-      `CPU Lv.${String(issued.cpuLevel)}`,
+      i18n.t('opponent.cpu', { level: issued.cpuLevel }),
       cpuTimeline(issued.blocks, issued.cpuLevel, BigInt(issued.seed)),
     );
   }
   if (issued.mode === 'ghost' && issued.ghostPeriod !== null && issued.ghostScore !== null) {
     return replaying(
       issued,
-      `Ghost · ${GHOST_PERIOD_LABELS[issued.ghostPeriod]} ${String(issued.ghostScore)}`,
+      i18n.t('opponent.ghost', {
+        period: i18n.t(`periodBest.${issued.ghostPeriod}`),
+        score: issued.ghostScore,
+      }),
       ghostTimeline(issued.blocks, issued.ghostScore),
     );
   }

@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router';
 
 import { useAuthStore } from '../auth/auth-store';
 import { describeError } from '../../lib/api/describe-error';
+import { useTranslation } from '../../i18n';
 import { getGhostRecords } from '../../lib/api/ghost-records';
 import { listLanguages } from '../../lib/api/languages';
 import { startSession, type Opponent } from '../../lib/api/play';
@@ -17,24 +18,17 @@ import { useRunSession } from '../play/run-session';
 
 type Mode = 'single' | 'cpu' | 'ghost';
 
-const MODES: { value: Mode; label: string }[] = [
-  { value: 'single', label: 'Single play' },
-  { value: 'cpu', label: 'vs CPU' },
-  { value: 'ghost', label: 'Ghost' },
-];
+const MODES: Mode[] = ['single', 'cpu', 'ghost'];
 
 /** The record a Ghost reproduces, by period (§4.4). */
-const GHOST_PERIODS: { value: GhostPeriod; label: string }[] = [
-  { value: 'daily', label: 'Today' },
-  { value: 'weekly', label: 'This week' },
-  { value: 'total', label: 'All time' },
-];
+const GHOST_PERIODS: GhostPeriod[] = ['daily', 'weekly', 'total'];
 
 const SELECTED = 'rounded bg-slate-800 px-3 py-1 text-white dark:bg-slate-200 dark:text-slate-900';
 const UNSELECTED = 'rounded border border-slate-400 px-3 py-1';
 
 /** Language selection (F-03): pick a language and the server issues a run of 20 blocks. */
 export function LanguageScreen() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const begin = useRunSession((state) => state.begin);
   const user = useAuthStore((state) => state.user);
@@ -109,53 +103,57 @@ export function LanguageScreen() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
       <header className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-semibold">TypingTrainer</h1>
+        <h1 className="text-2xl font-semibold">{t('app.name')}</h1>
         <div className="flex items-center gap-3 text-sm">
           <Link className="underline" to="/rankings">
-            Rankings
+            {t('nav.rankings')}
           </Link>
           <Link className="underline" to="/settings">
-            Appearance
+            {t('nav.appearance')}
           </Link>
           <Link className="underline" to="/conquests">
-            Conquests
+            {t('nav.conquests')}
           </Link>
           <Link className="underline" to="/dashboard">
-            Dashboard
+            {t('nav.dashboard')}
           </Link>
           <Link className="underline" to="/history">
-            History
+            {t('nav.history')}
           </Link>
           {user !== null && (
             <p className="flex items-center gap-3">
               <span>{user.username}</span>
               <button className="underline" type="button" onClick={() => void signOut()}>
-                Sign out
+                {t('common.signOut')}
               </button>
             </p>
           )}
         </div>
       </header>
 
-      <div className="flex flex-wrap items-center gap-3" role="group" aria-label="Mode">
+      <div
+        className="flex flex-wrap items-center gap-3"
+        role="group"
+        aria-label={t('home.modeGroup')}
+      >
         {MODES.map((entry) => (
           <button
-            key={entry.value}
+            key={entry}
             type="button"
-            aria-pressed={mode === entry.value}
-            className={mode === entry.value ? SELECTED : UNSELECTED}
+            aria-pressed={mode === entry}
+            className={mode === entry ? SELECTED : UNSELECTED}
             onClick={() => {
-              setMode(entry.value);
+              setMode(entry);
               // Forget the last look at the records, so a stale one is never shown while the new loads.
-              if (entry.value === 'ghost') setRecords(null);
+              if (entry === 'ghost') setRecords(null);
             }}
           >
-            {entry.label}
+            {t(`modes.${entry}`)}
           </button>
         ))}
         {mode === 'cpu' && (
           <label className="flex items-center gap-2 text-sm">
-            CPU level ({CPU_MIN_LEVEL}–{CPU_MAX_LEVEL})
+            {t('home.cpuLevel', { min: CPU_MIN_LEVEL, max: CPU_MAX_LEVEL })}
             <input
               className="w-20 rounded border border-slate-400 bg-transparent px-2 py-1"
               inputMode="numeric"
@@ -167,8 +165,8 @@ export function LanguageScreen() {
             />
             <span className="text-slate-600 dark:text-slate-400">
               {levelValid
-                ? `about ${String(Math.round(cpuBaseKpm(level)))} KPM`
-                : `enter a whole number from ${String(CPU_MIN_LEVEL)} to ${String(CPU_MAX_LEVEL)}`}
+                ? t('home.aboutKpm', { kpm: Math.round(cpuBaseKpm(level)) })
+                : t('home.levelInvalid', { min: CPU_MIN_LEVEL, max: CPU_MAX_LEVEL })}
             </span>
           </label>
         )}
@@ -176,30 +174,31 @@ export function LanguageScreen() {
 
       {mode === 'ghost' && (
         <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-3" role="group" aria-label="Record">
-            <span className="text-sm">Race your best of</span>
+          <div
+            className="flex flex-wrap items-center gap-3"
+            role="group"
+            aria-label={t('home.recordGroup')}
+          >
+            <span className="text-sm">{t('home.raceBest')}</span>
             {GHOST_PERIODS.map((entry) => (
               <button
-                key={entry.value}
+                key={entry}
                 type="button"
-                aria-pressed={ghostPeriod === entry.value}
-                className={ghostPeriod === entry.value ? SELECTED : UNSELECTED}
+                aria-pressed={ghostPeriod === entry}
+                className={ghostPeriod === entry ? SELECTED : UNSELECTED}
                 onClick={() => {
-                  setGhostPeriod(entry.value);
+                  setGhostPeriod(entry);
                 }}
               >
-                {entry.label}
+                {t(`periodsShort.${entry}`)}
               </button>
             ))}
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            The Ghost types at the pace that scores exactly that record, and never misses. Beat it,
-            and you have a new record.
-          </p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{t('home.ghostExplain')}</p>
         </div>
       )}
 
-      <h2 className="text-lg">Choose a language</h2>
+      <h2 className="text-lg">{t('common.chooseLanguage')}</h2>
 
       {error !== null && (
         <p
@@ -211,9 +210,9 @@ export function LanguageScreen() {
       )}
 
       {languages === null ? (
-        <p role="status">Loading languages…</p>
+        <p role="status">{t('home.loadingLanguages')}</p>
       ) : languages.length === 0 ? (
-        <p role="status">No language is available to play right now.</p>
+        <p role="status">{t('home.noLanguages')}</p>
       ) : (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {languages.map((language) => (
@@ -230,10 +229,10 @@ export function LanguageScreen() {
                       start(language.slug);
                     }}
                   >
-                    {starting === language.slug ? 'Starting…' : language.displayName}
+                    {starting === language.slug ? t('home.starting') : language.displayName}
                     {mode === 'ghost' && records !== null && (
                       <span className="block text-xs text-slate-600 dark:text-slate-400">
-                        {noRecord ? 'No record yet' : `best ${String(record)}`}
+                        {noRecord ? t('home.noRecord') : t('home.best', { score: record })}
                       </span>
                     )}
                   </button>
@@ -244,10 +243,7 @@ export function LanguageScreen() {
         </ul>
       )}
 
-      <p className="text-sm text-slate-600 dark:text-slate-400">
-        A run lasts 120 seconds over 20 blocks. The countdown starts with your first keystroke. The
-        CPU never misses; a tie with it counts as a win.
-      </p>
+      <p className="text-sm text-slate-600 dark:text-slate-400">{t('home.footer')}</p>
     </main>
   );
 }

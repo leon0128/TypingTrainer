@@ -1,21 +1,25 @@
 import { Link, useNavigate } from 'react-router';
 
+import { useTranslation } from '../../i18n';
 import * as authApi from '../../lib/api/auth';
 import { useAuthStore } from './auth-store';
 import { CredentialsForm } from './CredentialsForm';
+import { LanguageToggle } from './LanguageToggle';
 
 export function LoginScreen() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const signedIn = useAuthStore((state) => state.signedIn);
 
   return (
     <main className="mx-auto flex max-w-sm flex-col gap-6 p-6">
-      <h1 className="text-2xl font-semibold">Sign in</h1>
+      <LanguageToggle />
+      <h1 className="text-2xl font-semibold">{t('auth.signIn')}</h1>
       <CredentialsForm
-        submitLabel="Sign in"
+        submitLabel={t('auth.signIn')}
         passwordAutoComplete="current-password"
         validate={(username, password) =>
-          username === '' || password === '' ? 'Enter your username and password.' : null
+          username === '' || password === '' ? t('auth.enterBoth') : null
         }
         onSubmit={async (username, password) => {
           signedIn(await authApi.login({ username, password }));
@@ -23,9 +27,9 @@ export function LoginScreen() {
         }}
       />
       <p>
-        No account yet?{' '}
+        {t('auth.noAccount')}{' '}
         <Link className="underline" to="/register">
-          Create one
+          {t('auth.createOne')}
         </Link>
         .
       </p>

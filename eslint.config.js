@@ -116,9 +116,12 @@ export default defineConfig(
   {
     files: ['apps/web/src/**/*.tsx'],
     ignores: [
-      // No screen is translated yet.
-      'apps/web/src/app.tsx',
-      'apps/web/src/features/**/*.tsx',
+      // Screens not translated yet (rankings, history, dashboard, conquests, and appearance).
+      'apps/web/src/features/rankings/*.tsx',
+      'apps/web/src/features/history/*.tsx',
+      'apps/web/src/features/dashboard/*.tsx',
+      'apps/web/src/features/conquests/*.tsx',
+      'apps/web/src/features/appearance/*.tsx',
     ],
     ...i18next.configs['flat/recommended'],
   },

@@ -10,6 +10,7 @@ import { useAppearance } from '../src/features/appearance/appearance-store';
 import { fontStack } from '../src/features/appearance/fonts';
 import { PALETTES } from '../src/features/appearance/palettes';
 import { useAuthStore } from '../src/features/auth/auth-store';
+import { soundPlayer } from '../src/features/sound/sound';
 
 const USER = {
   id: '11111111-1111-4111-8111-111111111111',
@@ -33,7 +34,11 @@ const root = () => document.documentElement;
 const property = (name: string) => root().style.getPropertyValue(name);
 
 beforeEach(() => {
-  useAppearance.setState({ appearance: DEFAULT_APPEARANCE, error: null });
+  useAppearance.setState({
+    appearance: DEFAULT_APPEARANCE,
+    sound: { soundPack: 'off', soundVolume: 30 },
+    error: null,
+  });
   useAuthStore.setState({ status: 'loading', user: null, startupError: null });
 });
 
@@ -286,5 +291,64 @@ describe('the app', () => {
       expect(root().getAttribute('data-preset')).toBe('standard');
     });
     expect(property('--code-size')).toBe('18px');
+  });
+});
+
+describe('key sounds in the store', () => {
+  const stored = (soundPack: string, soundVolume: number) => ({
+    timezone: 'UTC',
+    locale: 'en',
+    ...DEFAULT_APPEARANCE,
+    soundPack,
+    soundVolume,
+  });
+
+  it('gives the player what the server has on load, and nothing when it is off', async () => {
+    const configure = vi.spyOn(soundPlayer, 'configure');
+    vi.stubGlobal('fetch', () => Promise.resolve(json(stored('mechanical', 65))));
+    await useAppearance.getState().load();
+    expect(useAppearance.getState().sound).toEqual({ soundPack: 'mechanical', soundVolume: 65 });
+    expect(configure).toHaveBeenLastCalledWith({ pack: 'mechanical', volume: 65 });
+    vi.restoreAllMocks();
+  });
+
+  it('is silent by default, for a signed-out visitor too', () => {
+    const configure = vi.spyOn(soundPlayer, 'configure');
+    useAppearance.getState().reset();
+    expect(useAppearance.getState().sound).toEqual({ soundPack: 'off', soundVolume: 30 });
+    expect(configure).toHaveBeenLastCalledWith({ pack: 'off', volume: 30 });
+    vi.restoreAllMocks();
+  });
+
+  it('applies a sound change before the server answers, and undoes it if saving fails', async () => {
+    const configure = vi.spyOn(soundPlayer, 'configure');
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve(
+        json({ statusCode: 500, error: 'Internal Server Error', message: 'try again' }, 500),
+      ),
+    );
+    const saving = useAppearance.getState().change({ soundPack: 'beep', soundVolume: 80 });
+    expect(configure).toHaveBeenCalledWith({ pack: 'beep', volume: 80 });
+    await saving;
+    expect(useAppearance.getState().sound).toEqual({ soundPack: 'off', soundVolume: 30 });
+    expect(configure).toHaveBeenLastCalledWith({ pack: 'off', volume: 30 });
+    expect(useAppearance.getState().error).toBe('try again');
+    vi.restoreAllMocks();
+  });
+
+  it('changes the sound without touching the appearance, and the other way round', async () => {
+    vi.stubGlobal('fetch', (_url: string, init: { body?: string }) =>
+      Promise.resolve(
+        json({
+          ...stored('soft', 30),
+          ...JSON.parse(init.body ?? '{}'),
+        }),
+      ),
+    );
+    await useAppearance.getState().change({ soundPack: 'soft' });
+    expect(useAppearance.getState().appearance).toEqual(DEFAULT_APPEARANCE);
+    await useAppearance.getState().change({ theme: 'dark' });
+    expect(useAppearance.getState().sound).toEqual({ soundPack: 'soft', soundVolume: 30 });
+    vi.restoreAllMocks();
   });
 });

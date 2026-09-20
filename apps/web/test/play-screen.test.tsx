@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { soundPlayer } from '../src/features/sound/sound';
 import { PlayScreen } from '../src/features/play/PlayScreen';
 import { useRunSession } from '../src/features/play/run-session';
 import { IF_PROGRAM, PADDED_PROGRAM } from './program-fixture';
@@ -298,5 +299,63 @@ describe('a Ghost run', () => {
     const text = document.querySelector('.match-result')?.textContent ?? '';
     expect(text).toMatch(line);
     if (result === 'lose') expect(text).not.toMatch(/tie/);
+  });
+});
+
+describe('key sounds on the play screen', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('gets the sounds ready as soon as the play screen opens, before any key', () => {
+    const prepare = vi.spyOn(soundPlayer, 'prepare').mockImplementation(() => undefined);
+    beginRun();
+    renderScreen();
+    expect(prepare).toHaveBeenCalledTimes(1);
+  });
+
+  it('sounds a hit for a correct key and a miss for a wrong one', async () => {
+    const play = vi.spyOn(soundPlayer, 'play').mockImplementation(() => undefined);
+    beginRun();
+    renderScreen();
+
+    await userEvent.type(typingInput(), 'ix');
+    // "i" is right; "x" is not the "f" that follows.
+    expect(play.mock.calls).toEqual([['hit'], ['miss']]);
+  });
+
+  it('is silent for keys the engine does not count', async () => {
+    const play = vi.spyOn(soundPlayer, 'play').mockImplementation(() => undefined);
+    beginRun();
+    renderScreen();
+
+    await userEvent.type(typingInput(), '{Shift}{Backspace}{ArrowLeft}');
+    expect(play).not.toHaveBeenCalled();
+  });
+
+  it('sounds each key once, at the key, and not for the opponent', async () => {
+    const play = vi.spyOn(soundPlayer, 'play').mockImplementation(() => undefined);
+    useRunSession
+      .getState()
+      .begin(
+        { ...ISSUED, mode: 'cpu', cpuLevel: 100, ghostPeriod: null, ghostScore: null },
+        performance.now(),
+      );
+    renderScreen();
+    await userEvent.type(typingInput(), 'if(a');
+    // Four keys, four sounds: the level-100 CPU typing beside the player adds none.
+    expect(play).toHaveBeenCalledTimes(4);
+  });
+
+  it('stays silent once the run has ended', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(json({ run: STORED }, 201)));
+    const play = vi.spyOn(soundPlayer, 'play').mockImplementation(() => undefined);
+    beginRun();
+    renderScreen();
+    await finishTheRun();
+    await screen.findByRole('heading', { name: 'Run saved' });
+    const played = play.mock.calls.length;
+    await userEvent.keyboard('zzz');
+    expect(play.mock.calls.length).toBe(played);
   });
 });

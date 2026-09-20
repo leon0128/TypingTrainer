@@ -214,6 +214,49 @@ describe('the sound player', () => {
     expect(voiceGain.connectedTo).toBe(master);
   });
 
+  describe('preparing', () => {
+    it('makes the context and builds both sounds, so the first key only has to start a note', () => {
+      const { player, contexts } = setup();
+      player.configure({ pack: 'mechanical', volume: 50 });
+      player.prepare();
+      const context = only(contexts);
+      expect(context.resumed).toBe(1);
+      expect(context.buffersMade).toBe(2);
+      expect(context.sources).toHaveLength(0);
+
+      player.play('hit');
+      player.play('miss');
+      expect(context.buffersMade).toBe(2);
+      expect(context.resumed).toBe(1);
+      expect(context.sources).toHaveLength(2);
+    });
+
+    it('does nothing while the pack is off or the volume is 0', () => {
+      const { player, contexts } = setup();
+      player.configure({ pack: 'off', volume: 50 });
+      player.prepare();
+      player.configure({ pack: 'soft', volume: 0 });
+      player.prepare();
+      expect(contexts).toHaveLength(0);
+    });
+
+    it('is harmless when done twice, or where there is no Web Audio', () => {
+      const { player, contexts } = setup();
+      player.configure({ pack: 'beep', volume: 50 });
+      player.prepare();
+      player.prepare();
+      expect(only(contexts).buffersMade).toBe(2);
+
+      const broken = new SoundPlayer(() => {
+        throw new Error('no AudioContext');
+      });
+      broken.configure({ pack: 'beep', volume: 50 });
+      expect(() => {
+        broken.prepare();
+      }).not.toThrow();
+    });
+  });
+
   describe('the voice pool (§8.3)', () => {
     it(`never sounds more than ${String(MAX_VOICES)} notes at once, cutting the oldest`, () => {
       const { player, contexts } = setup();

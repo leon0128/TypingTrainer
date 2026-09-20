@@ -263,3 +263,25 @@ describe('the log the server replays', () => {
     );
   });
 });
+
+describe('what a key press returns', () => {
+  it('tells how the engine judged the key', () => {
+    const store = createRunStore(issuedRun(), 0);
+    expect(store.press('i', 100)).toBe('CORRECT');
+    expect(store.press('x', 200)).toBe('MISS');
+    expect(store.press('f', 300)).toBe('CORRECT');
+  });
+
+  it('says EXPIRED for a key after the run has ended', () => {
+    const store = createRunStore(issuedRun(), 0);
+    play(store, [...IF_KEYS, ...PADDED_KEYS], 0, 10);
+    expect(store.getSnapshot().phase).toBe('ended');
+    expect(store.press('a', 1000)).toBe('EXPIRED');
+  });
+
+  it('says EXPIRED for the key that lands after time is up', () => {
+    const store = createRunStore(issuedRun(), 0);
+    store.press('i', 0);
+    expect(store.press('f', PLAY_DURATION_MS + 5)).toBe('EXPIRED');
+  });
+});

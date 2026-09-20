@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.33 |
+| Version | 1.34 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.32 — the key sounds are synthesized and the player is built (§8.3, Appendix B) |
+| Supersedes | v1.33 — the key sounds play, and are set on the settings screen (§8.3, §9.6, Appendix B) |
 
 **Legend**
 
@@ -1242,3 +1242,8 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.33 | No clicks | Every sound starts within 5% of its peak of silence, ends exactly at zero, and falls to zero over its last 6 ms, so a voice that ends, or is cut, never clicks; a voice cut for a new one fades over 5 ms first (§8.3) |
 | 1.33 | The voice pool | At most 8 notes sound at once, and the oldest is cut for the ninth, as §8.3 requires; a note that ends by itself frees its place, so nothing is cut needlessly. **Verified** with a stand-in for the browser's audio, and changing the cap, never cutting, cutting the newest, cutting without the fade, or resuming the context on every key each fails a test (§8.3) |
 | 1.33 | Nothing is created until wanted | With the pack off or the volume at 0 no audio context is made, and neither is the context of a browser that has no Web Audio; otherwise the context is made, and resumed, by the first sound or by a gesture that unlocks it, and volume is a squared curve on 0 to 100 (§8.3) |
+| 1.34 | Sounding a key | The play screen sounds the key in the key handler itself, before React renders: a correct key plays the hit, a miss the miss, and a key the engine ignored, or one after the run ended, plays nothing; the opponent's keys never sound. `RunStore.press` now returns the engine's verdict for this (§8.3, §9.6) |
+| 1.34 | **Measured in a real browser** | Against the real play screen and a real `AudioContext` (Mechanical, volume 60): with the pack off, 5 keys created no context and started no sound; with it on, no context exists before the run is started, one is made when the play screen opens, and it is `running` with no further gesture; over 240 keystrokes at about 80 a second, including 24 misses, **every key started its sound within 0.2 ms at the median and 0.4 ms at most**; a burst of 60 keys with no pause started 60 sounds and cut 52, leaving 8 (§8.3, §9.6) |
+| 1.34 | The first key was too slow | **Found by that measurement:** with the context and the first buffer made on the first key, that key took **29.7 ms** to start its sound, almost all of §9.6's 33 ms. `prepare()` now makes the context and builds both sounds when the play screen opens, after the click that started the run, and the first key takes **0.8 ms**. A pack that is off, or a volume of 0, prepares nothing (§9.6) |
+| 1.34 | Not measured | This was one browser (a desktop Chromium pane) on one machine, with dispatched key events. Nothing was **listened to**: the measurements say sounds start promptly and stop cleanly, not that the packs sound good; `outputLatency`, which the pane reported as 0, so the time from `start()` to the speaker is not known, only `baseLatency` (5.3 ms); and Safari, Firefox, and a phone were not tried. Autoplay was allowed in the pane without a gesture; a browser that suspends the context until one will resume it on the first key (§8.3) |
+| 1.34 | Settings screen | `/settings` gains Key sounds: the four packs, a volume slider (steps of 5, disabled while off), and buttons to hear a hit and a miss, disabled with an explanation while the pack is off. Choosing a pack plays a hit, since that click is the gesture the browser wants before it allows sound. Changes apply at once, save in order like the appearance, and keep the volume when the pack is set to off (§8.3) |

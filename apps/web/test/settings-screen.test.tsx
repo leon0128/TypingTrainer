@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 import { DEFAULT_APPEARANCE, type Appearance } from '@typing-trainer/contracts';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAppearance } from '../src/features/appearance/appearance-store';
+import { soundPlayer } from '../src/features/sound/sound';
 import { SettingsScreen } from '../src/features/appearance/SettingsScreen';
 
 const json = (body: unknown, status = 200) =>
@@ -38,7 +39,11 @@ function renderScreen() {
 }
 
 beforeEach(() => {
-  useAppearance.setState({ appearance: DEFAULT_APPEARANCE, error: null });
+  useAppearance.setState({
+    appearance: DEFAULT_APPEARANCE,
+    sound: { soundPack: 'off', soundVolume: 30 },
+    error: null,
+  });
 });
 
 afterEach(() => {
@@ -128,5 +133,79 @@ describe('the appearance settings screen', () => {
     renderScreen();
     await userEvent.click(screen.getByRole('link', { name: 'Choose a language' }));
     expect(await screen.findByText('choose a language')).toBeTruthy();
+  });
+});
+
+describe('the key sound settings', () => {
+  const requests: { body: unknown }[] = [];
+
+  beforeEach(() => {
+    requests.length = 0;
+    vi.stubGlobal('fetch', echo(requests));
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    soundPlayer.configure({ pack: 'off', volume: 0 });
+  });
+
+  it('offers the packs and a volume, off and low until chosen', () => {
+    renderScreen();
+    const packs = within(screen.getByRole('group', { name: 'Sound pack' }));
+    expect(packs.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Off',
+      'Mechanical',
+      'Soft',
+      'Beep',
+    ]);
+    expect(packs.getByRole('button', { name: 'Off' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('slider')).toHaveProperty('value', '30');
+  });
+
+  it('keeps the volume and the previews off until a pack is chosen, and says why', () => {
+    renderScreen();
+    expect(screen.getByRole('slider')).toHaveProperty('disabled', true);
+    expect(screen.getByRole('button', { name: 'Hear a hit' })).toHaveProperty('disabled', true);
+    expect(screen.getByRole('button', { name: 'Hear a miss' })).toHaveProperty('disabled', true);
+    expect(screen.getByText('Choose a sound pack to hear it.')).toBeTruthy();
+  });
+
+  it('applies a pack at once, saves it, and plays a first sample from the click', async () => {
+    const configure = vi.spyOn(soundPlayer, 'configure');
+    const play = vi.spyOn(soundPlayer, 'play').mockImplementation(() => undefined);
+    renderScreen();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Soft' }));
+    expect(configure).toHaveBeenCalledWith({ pack: 'soft', volume: 30 });
+    expect(play).toHaveBeenCalledWith('hit');
+    expect(requests.map((request) => request.body)).toEqual([{ soundPack: 'soft' }]);
+    expect(screen.getByRole('button', { name: 'Soft' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('slider')).toHaveProperty('disabled', false);
+    expect(screen.queryByText('Choose a sound pack to hear it.')).toBeNull();
+  });
+
+  it('applies a new volume to the player and saves it', async () => {
+    const configure = vi.spyOn(soundPlayer, 'configure');
+    vi.spyOn(soundPlayer, 'play').mockImplementation(() => undefined);
+    renderScreen();
+    await userEvent.click(screen.getByRole('button', { name: 'Beep' }));
+
+    fireEvent.change(screen.getByRole('slider'), { target: { value: '75' } });
+    expect(configure).toHaveBeenLastCalledWith({ pack: 'beep', volume: 75 });
+    await vi.waitFor(() => {
+      expect(requests.map((request) => request.body)).toContainEqual({ soundVolume: 75 });
+    });
+    expect(screen.getByText('75')).toBeTruthy();
+  });
+
+  it('lets the player hear a hit and a miss', async () => {
+    const play = vi.spyOn(soundPlayer, 'play').mockImplementation(() => undefined);
+    renderScreen();
+    await userEvent.click(screen.getByRole('button', { name: 'Mechanical' }));
+    play.mockClear();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Hear a hit' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Hear a miss' }));
+    expect(play.mock.calls).toEqual([['hit'], ['miss']]);
   });
 });

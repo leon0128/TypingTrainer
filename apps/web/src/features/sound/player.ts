@@ -95,6 +95,22 @@ export class SoundPlayer {
     this.ensureContext();
   }
 
+  /**
+   * Gets ready to sound: starts the context and builds both sounds of the pack, so the first key of
+   * a run has nothing to do but start a note. Measured in a browser, making the context and the
+   * first buffer on the first key took about 30 ms, nearly all of §9.6's 33 ms. Called when the
+   * play screen opens, after the click that started the run. Nothing if the pack is off.
+   */
+  prepare(): void {
+    if (!this.audible()) return;
+    const { pack } = this.settings;
+    if (pack === 'off') return;
+    const context = this.ensureContext();
+    if (context === null) return;
+    this.buffer(context, pack, 'hit');
+    this.buffer(context, pack, 'miss');
+  }
+
   play(kind: SoundKind): void {
     if (!this.audible()) return;
     const { pack } = this.settings;

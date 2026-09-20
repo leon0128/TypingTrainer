@@ -3,6 +3,7 @@ import { RUN_BLOCK_COUNT, type SessionState } from '@typing-trainer/typing-engin
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router';
 
+import { soundPlayer } from '../sound/sound';
 import { CodeView } from './CodeView';
 import { formatSeconds } from './format';
 import { attachKeyboardInput } from './keyboard-input';
@@ -50,12 +51,22 @@ function RunView({ run }: { run: RunStore }) {
     return built;
   };
 
+  // Ready the key sounds before the first key, when the player has already clicked to get here.
+  useEffect(() => {
+    soundPlayer.prepare();
+  }, [run]);
+
   useEffect(() => {
     const input = inputRef.current;
     if (!input) return;
     const detach = attachKeyboardInput(input, {
       onKey(key, timeStamp) {
-        run.press(key, onRunClock(timeStamp));
+        const verdict = run.press(key, onRunClock(timeStamp));
+        // Sounded here, in the key handler, before React has rendered anything, so the sound
+        // follows the key by as little as the browser allows (§8.3, §9.6). Only the player's own
+        // keys sound; keys the engine ignored, or that came after the run ended, are silent.
+        if (verdict === 'CORRECT') soundPlayer.play('hit');
+        else if (verdict === 'MISS') soundPlayer.play('miss');
       },
       onImeChange: setImeActive,
       onBlur(now) {

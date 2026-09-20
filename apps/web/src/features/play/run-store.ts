@@ -12,6 +12,7 @@ import {
   type LoggedKey,
   type OfficialMetrics,
   type SessionState,
+  type SessionVerdict,
 } from '@typing-trainer/typing-engine';
 
 import { createOpponent, type Opponent } from './opponent';
@@ -42,8 +43,11 @@ export interface RunStore {
   // Function properties rather than methods: both are passed unbound to useSyncExternalStore.
   readonly getSnapshot: () => RunSnapshot;
   readonly subscribe: (listener: () => void) => () => void;
-  /** Feeds one engine key. `now` is a `performance.now()` timestamp. */
-  press(key: string, now: number): void;
+  /**
+   * Feeds one engine key. `now` is a `performance.now()` timestamp. Returns how the engine judged it,
+   * which is what decides the key sound; a key after the run has ended is `EXPIRED`.
+   */
+  press(key: string, now: number): SessionVerdict;
   pause(now: number): void;
   resume(now: number): void;
   /** Advances the clock without a keystroke, ending the run when time or the idle limit runs out. */
@@ -153,7 +157,7 @@ export function createRunStore(issued: StartSessionResponse, issuedAt: number): 
     },
 
     press(key, now) {
-      if (snapshot.phase === 'ended') return;
+      if (snapshot.phase === 'ended') return 'EXPIRED';
       if (snapshot.phase === 'ready') startedAt = now;
       if (snapshot.phase === 'paused') pausedTotal += now - pausedAt;
 
@@ -165,7 +169,7 @@ export function createRunStore(issued: StartSessionResponse, issuedAt: number): 
       if (verdict === 'EXPIRED') {
         // The key landed after the run ended; it is not part of the log the server replays.
         end(state, state.endedBy ?? 'time', Math.min(ms, PLAY_DURATION_MS));
-        return;
+        return verdict;
       }
       logged.push({ key, activeMs: ms });
       if (state.endedBy !== null) frozenMs = ms;
@@ -184,6 +188,7 @@ export function createRunStore(issued: StartSessionResponse, issuedAt: number): 
       // The CPU runs on the player's run clock, so it starts with the first key and stops when the
       // player pauses.
       opponent?.advanceTo(elapsedMs(now));
+      return verdict;
     },
 
     pause(now) {

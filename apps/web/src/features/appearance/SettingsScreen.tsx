@@ -2,8 +2,10 @@ import {
   COLOR_PRESETS,
   FONTS,
   FONT_SIZES,
+  SOUND_PACKS,
   THEMES,
   type ColorPreset,
+  type SoundPack,
   type Theme,
   type TypingProgram,
 } from '@typing-trainer/contracts';
@@ -12,6 +14,7 @@ import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router';
 
 import { CodeView } from '../play/CodeView';
+import { soundPlayer } from '../sound/sound';
 import { buildLayout } from '../play/layout';
 import { useAppearance } from './appearance-store';
 import { FONT_LABELS, fontStack, loadFont } from './fonts';
@@ -22,6 +25,13 @@ const THEME_LABELS: Record<Theme, string> = {
   light: 'Light',
   dark: 'Dark',
   'high-contrast': 'High contrast',
+};
+
+const SOUND_LABELS: Record<SoundPack, string> = {
+  off: 'Off',
+  mechanical: 'Mechanical',
+  soft: 'Soft',
+  beep: 'Beep',
 };
 
 const PRESET_LABELS: Record<ColorPreset, string> = {
@@ -63,6 +73,8 @@ function sampleEngine() {
   return state;
 }
 
+const UNSELECTED = 'rounded border border-slate-400 px-3 py-1 disabled:opacity-50';
+
 function choiceClass(active: boolean): string {
   return active
     ? 'rounded bg-slate-800 px-3 py-1 text-white dark:bg-slate-200 dark:text-slate-900'
@@ -72,6 +84,7 @@ function choiceClass(active: boolean): string {
 /** Appearance settings (F-12, §8.2): font, size, theme, and colour set, with a live preview. */
 export function SettingsScreen() {
   const appearance = useAppearance((state) => state.appearance);
+  const sound = useAppearance((state) => state.sound);
   const error = useAppearance((state) => state.error);
   const change = useAppearance((state) => state.change);
 
@@ -200,6 +213,71 @@ export function SettingsScreen() {
               </button>
             );
           })}
+        </div>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-3">
+        <legend className="mb-1 font-medium">Key sounds</legend>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Sound pack">
+          {SOUND_PACKS.map((pack) => (
+            <button
+              key={pack}
+              type="button"
+              aria-pressed={pack === sound.soundPack}
+              className={choiceClass(pack === sound.soundPack)}
+              onClick={() => {
+                void change({ soundPack: pack });
+                // The click is the gesture the browser wants before it lets a page make sound, and
+                // a first sample of the pack just chosen.
+                soundPlayer.play('hit');
+              }}
+            >
+              {SOUND_LABELS[pack]}
+            </button>
+          ))}
+        </div>
+        <label className="flex items-center gap-3">
+          Volume
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={sound.soundVolume}
+            aria-valuetext={`${String(sound.soundVolume)} percent`}
+            disabled={sound.soundPack === 'off'}
+            onChange={(event) => {
+              void change({ soundVolume: Number(event.target.value) });
+            }}
+          />
+          <span className="w-10 tabular-nums">{sound.soundVolume}</span>
+        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className={UNSELECTED}
+            disabled={sound.soundPack === 'off'}
+            onClick={() => {
+              soundPlayer.play('hit');
+            }}
+          >
+            Hear a hit
+          </button>
+          <button
+            type="button"
+            className={UNSELECTED}
+            disabled={sound.soundPack === 'off'}
+            onClick={() => {
+              soundPlayer.play('miss');
+            }}
+          >
+            Hear a miss
+          </button>
+          {sound.soundPack === 'off' && (
+            <span className="text-sm text-slate-600 dark:text-slate-400">
+              Choose a sound pack to hear it.
+            </span>
+          )}
         </div>
       </fieldset>
 

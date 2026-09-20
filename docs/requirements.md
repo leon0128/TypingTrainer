@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.20 |
+| Version | 1.21 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.19 — the dashboard is built; `GET /api/dashboard` takes `from` and `to` (§6.2, §6.3, §9.5, Appendix B) |
+| Supersedes | v1.20 — the CPU opponent model is built and its two spec inconsistencies resolved (§4.3.2, §4.3.3, Appendix B) |
 
 **Legend**
 
@@ -400,7 +400,7 @@ baseKpm(level) = 50 × (800 / 50) ^ ((level - 1) / 99)
 | 20 | 85 | 17 | 85 | Beginner |
 | 30 | 113 | 23 | 113 | 1–2 years of practice |
 | 40 | 149 | 30 | 149 | Lower end of working developers |
-| **48** | **185** | **37** | **185** | **Average professional developer** |
+| **48** | **186** | **37** | **186** | **Average professional developer** |
 | 50 | 197 | 39 | 197 | Slightly above average |
 | 60 | 261 | 52 | 261 | Fast developer |
 | 70 | 345 | 69 | 345 | Fastest on the team |
@@ -418,14 +418,14 @@ The draft's 0.99–1.01 range (±1%) is far smaller than a human's own run-to-ru
 
 ```
 blockMultiplier ~ TruncatedNormal(mu = 1.0, sigma = 0.02, clipped to [0.94, 1.06])
-keyInterval     ~ LogNormal(median = 60000 / targetKpm, sigma = 0.20)
+keyInterval     ~ LogNormal(mean = 60000 / targetKpm, sigma = 0.20)   // mu = ln(mean) - sigma^2 / 2
 ```
 
 | Layer | Distribution | Purpose |
 | --- | --- | --- |
 | Per-block multiplier | Truncated normal, σ = 2%, clipped at ±6% | Gives each match a "form on the day," keeping same-band win rates in the 40–60% range |
 | Per-keystroke jitter | Log-normal, σ = 20% | Avoids a metronome look; leaves mean speed unchanged |
-| Character-class weights | Lowercase/digits 1.0, shifted symbols 1.5, other symbols 1.3, separators 0.8 | Reproduces "slowing down on symbols." Normalized by the block's mean cost so the target KPM still holds |
+| Character-class weights | Lowercase/digits 1.0, anything needing Shift (uppercase letters and shifted symbols) 1.5, other symbols 1.3, separators 0.8 | Reproduces "slowing down on symbols." Normalized by the block's mean cost so the target KPM still holds |
 
 The RNG seed is issued by the server and stored on the session row, so any match can be reproduced for debugging.
 
@@ -1186,3 +1186,9 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.20 | Dashboard query | `GET /api/dashboard?period&language&from&to`, per language (as rankings). `from`/`to` are inclusive local dates. `daily`: `from`–`to`, default today, at most 31 days, raw runs oldest first. `weekly`: the Sunday–Saturday week containing `from` (default this week), always 7 points with `null` for unplayed days, `to` refused. `total`: best score per played day, either bound optional (the 30/90/365/all filter is `from` computed client-side in the profile time zone). "Today" comes from the database clock and profile time zone (§6.2, §6.4) |
 | 1.20 | Dashboard summary | Total runs, cumulative effective keystrokes, and the best score per language, across all languages and periods; `highestCpuLevelBeaten` is `null` until conquest records exist (U13). **Declined for now:** paging of the all-time series — at most one point per played day, so about 365 a year, which the range filter already bounds (§6.2) |
 | 1.20 | Dashboard chart | A hand-written SVG line chart on a category axis, no charting library: three simple views do not justify a dependency to keep updated, and the layout is a small pure function with unit tests (§6.2) |
+| 1.21 | CPU jitter keeps the mean | The v1.x text said `LogNormal(median = 60000 / targetKpm)` and also that jitter "leaves mean speed unchanged"; for a log-normal the two differ (mean = median × e^(σ²/2), about +2% at σ = 0.20). The **mean** is kept, so the median is `exp(−σ²/2)` of the target interval. **Verified:** over 300 runs per level the mean CPU score is within 1% of the level's base KPM, and the variant with median 1 fails that check (§4.3.3) |
+| 1.21 | Level 48 is 186 KPM | The §4.3.2 table printed 185; the formula gives 186.4. The formula is authoritative and the row is corrected. The "even match" cross-check (195 KPM at 95% = 185) is a separate arithmetic and stays as written (§4.3.2) |
+| 1.21 | Uppercase letters cost 1.5 | §4.3.3 listed no weight for uppercase letters; they need Shift, so they take the shifted-symbol weight (§4.3.3) |
+| 1.21 | CPU judged at 120 seconds | The CPU's score counts the keys it types before the 120-second mark, by the same whole-millisecond rounding as a player's (`sessionKey`), even when the player finishes all blocks earlier; a tie is a win (§4.1, §4.3.4) |
+| 1.21 | Two random streams for the opponent | Block multipliers and keystroke jitter come from separate streams derived from the run seed, both distinct from the shuffle that draws the blocks, so a block's "form on the day" does not depend on how many keys it has. The level is not part of the stream: one seed gives the same form at every level. The seed-to-run mapping is pinned by a snapshot test because stored matches are re-judged from their seed (§4.3.3) |
+| 1.21 | Same-band win rate | **Verified** by simulation: a player scoring exactly the level's base KPM beats the CPU in 40–60% of 400 seeded runs (§4.3.3) |

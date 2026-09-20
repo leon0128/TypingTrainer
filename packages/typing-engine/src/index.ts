@@ -36,3 +36,15 @@ export type {
   SessionState,
   SessionVerdict,
 } from './session';
+export {
+  CPU_MAX_LEVEL,
+  CPU_MIN_LEVEL,
+  cpuBaseKpm,
+  cpuBlockMultipliers,
+  cpuEffectiveKeystrokes,
+  cpuKeys,
+  cpuScore,
+  cpuTimeline,
+  judgeMatch,
+  keyCost,
+} from './cpu';

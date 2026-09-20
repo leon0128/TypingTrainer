@@ -72,7 +72,7 @@ describe('dashboard screen', () => {
     renderScreen();
     expect(await screen.findByRole('img', { name: 'Score trend' })).toBeTruthy();
     expect(screen.getByText('Python 90', { exact: false })).toBeTruthy();
-    expect(screen.getByText('700')).toBeTruthy();
+    expect(screen.getByText('Keystrokes: 700')).toBeTruthy();
   });
 
   it('moves the weekly view back by seven days', async () => {

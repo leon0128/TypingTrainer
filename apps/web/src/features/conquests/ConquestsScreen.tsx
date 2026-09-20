@@ -2,19 +2,24 @@ import { CPU_LEVEL_COUNT, type ConquestsResponse, type Language } from '@typing-
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
+import { useTranslation } from '../../i18n';
 import { getConquests } from '../../lib/api/conquests';
 import { describeError } from '../../lib/api/describe-error';
 import { listLanguages } from '../../lib/api/languages';
+
+/** A mark as well as a fill, so a beaten level is not told apart by colour alone (§8.2). */
+const BEATEN_MARK = ' ✓';
 
 /** Levels per row of the grid: ten rows of ten cover 1–100 (§4.3.4). */
 const GRID_COLUMNS = 10;
 
 function LevelGrid({ language, beaten }: { language: string; beaten: ReadonlySet<number> }) {
+  const { t } = useTranslation();
   return (
     <ol
       className="grid gap-1"
       style={{ gridTemplateColumns: `repeat(${String(GRID_COLUMNS)}, minmax(0, 1fr))` }}
-      aria-label={`${language} levels`}
+      aria-label={t('conquests.levels', { language })}
     >
       {Array.from({ length: CPU_LEVEL_COUNT }, (_, index) => {
         const level = index + 1;
@@ -22,7 +27,7 @@ function LevelGrid({ language, beaten }: { language: string; beaten: ReadonlySet
         return (
           <li
             key={level}
-            aria-label={`Level ${String(level)} ${done ? 'beaten' : 'not beaten'}`}
+            aria-label={t(done ? 'conquests.levelBeaten' : 'conquests.levelNotBeaten', { level })}
             className={
               done
                 ? 'rounded border border-slate-800 bg-slate-800 py-1 text-center text-xs text-white dark:border-slate-200 dark:bg-slate-200 dark:text-slate-900'
@@ -31,7 +36,7 @@ function LevelGrid({ language, beaten }: { language: string; beaten: ReadonlySet
           >
             {/* A mark as well as a fill, so the state is not conveyed by color alone. */}
             {level}
-            {done ? ' ✓' : ''}
+            {done ? BEATEN_MARK : ''}
           </li>
         );
       })}
@@ -41,6 +46,7 @@ function LevelGrid({ language, beaten }: { language: string; beaten: ReadonlySet
 
 /** The player's own vs CPU conquest records, per language (§4.3.4). */
 export function ConquestsScreen() {
+  const { t } = useTranslation();
   const [languages, setLanguages] = useState<Language[] | null>(null);
   const [conquests, setConquests] = useState<ConquestsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -63,9 +69,9 @@ export function ConquestsScreen() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
       <header className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-semibold">CPU conquests</h1>
+        <h1 className="text-2xl font-semibold">{t('conquests.title')}</h1>
         <Link className="underline" to="/">
-          Choose a language
+          {t('common.chooseLanguage')}
         </Link>
       </header>
 
@@ -79,25 +85,26 @@ export function ConquestsScreen() {
       )}
 
       {conquests === null || languages === null
-        ? error === null && <p role="status">Loading conquests…</p>
-        : conquests.languages.map((entry) => (
-            <section key={entry.language} className="flex flex-col gap-2">
-              <h2 className="flex flex-wrap items-baseline gap-x-4 text-lg font-medium">
-                {languages.find((language) => language.slug === entry.language)?.displayName ??
-                  entry.language}
-                <span className="text-sm font-normal text-slate-600 dark:text-slate-400">
-                  Highest level beaten: {entry.highestLevel ?? '—'} · Beaten: {entry.totalConquests}{' '}
-                  / {CPU_LEVEL_COUNT}
-                </span>
-              </h2>
-              <LevelGrid language={entry.language} beaten={new Set(entry.beatenLevels)} />
-            </section>
-          ))}
+        ? error === null && <p role="status">{t('conquests.loading')}</p>
+        : conquests.languages.map((entry) => {
+            const name =
+              languages.find((language) => language.slug === entry.language)?.displayName ??
+              entry.language;
+            return (
+              <section key={entry.language} className="flex flex-col gap-2">
+                <h2 className="flex flex-wrap items-baseline gap-x-4 text-lg font-medium">
+                  {name}
+                  <span className="text-sm font-normal text-slate-600 dark:text-slate-400">
+                    {t('conquests.highest', { level: entry.highestLevel ?? '—' })} ·{' '}
+                    {t('conquests.beaten', { count: entry.totalConquests, total: CPU_LEVEL_COUNT })}
+                  </span>
+                </h2>
+                <LevelGrid language={name} beaten={new Set(entry.beatenLevels)} />
+              </section>
+            );
+          })}
 
-      <p className="text-sm text-slate-600 dark:text-slate-400">
-        A level counts once you win against it in vs CPU (a tie is a win). Deleting the run that
-        beat it removes the conquest.
-      </p>
+      <p className="text-sm text-slate-600 dark:text-slate-400">{t('conquests.note')}</p>
     </main>
   );
 }

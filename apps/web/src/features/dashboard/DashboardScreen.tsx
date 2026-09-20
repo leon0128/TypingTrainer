@@ -8,24 +8,25 @@ import type {
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
+import { i18n, useTranslation } from '../../i18n';
 import { getDashboard } from '../../lib/api/dashboard';
 import { describeError } from '../../lib/api/describe-error';
 import { listLanguages } from '../../lib/api/languages';
 import { useAuthStore } from '../auth/auth-store';
 import { CHART_HEIGHT, CHART_PADDING, CHART_WIDTH, plot } from './chart';
 
-const PERIODS: { value: RankingPeriod; label: string }[] = [
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'total', label: 'All time' },
+const PERIODS: { value: RankingPeriod; label: 'periodDaily' | 'periodWeekly' | 'periodTotal' }[] = [
+  { value: 'daily', label: 'periodDaily' },
+  { value: 'weekly', label: 'periodWeekly' },
+  { value: 'total', label: 'periodTotal' },
 ];
 
 /** Range filters for the all-time view (§6.2); null is "all". */
-const RANGES: { days: number | null; label: string }[] = [
-  { days: 30, label: '30 days' },
-  { days: 90, label: '90 days' },
-  { days: 365, label: '365 days' },
-  { days: null, label: 'All' },
+const RANGES: { days: number | null; label: 'range30' | 'range90' | 'range365' | 'rangeAll' }[] = [
+  { days: 30, label: 'range30' },
+  { days: 90, label: 'range90' },
+  { days: 365, label: 'range365' },
+  { days: null, label: 'rangeAll' },
 ];
 
 function addDays(date: string, delta: number): string {
@@ -40,10 +41,11 @@ function todayIn(timeZone: string): string {
 }
 
 function pointLabel(period: RankingPeriod, x: string): string {
-  return period === 'daily' ? new Date(x).toLocaleString() : x;
+  return period === 'daily' ? new Date(x).toLocaleString(i18n.language) : x;
 }
 
 function Chart({ points, period }: { points: DashboardPoint[]; period: RankingPeriod }) {
+  const { t } = useTranslation();
   const { segments, points: plotted, yMax } = plot(points);
   const { left, top, bottom } = CHART_PADDING;
   const baseline = CHART_HEIGHT - bottom;
@@ -54,7 +56,7 @@ function Chart({ points, period }: { points: DashboardPoint[]; period: RankingPe
       viewBox={`0 0 ${String(CHART_WIDTH)} ${String(CHART_HEIGHT)}`}
       className="w-full"
       role="img"
-      aria-label="Score trend"
+      aria-label={t('dashboard.chart')}
     >
       <line x1={left} x2={left} y1={top} y2={baseline} stroke="currentColor" opacity={0.4} />
       <line
@@ -107,6 +109,7 @@ function Chart({ points, period }: { points: DashboardPoint[]; period: RankingPe
 
 /** The player's own score trend by period and language, with a summary strip (§6.2). */
 export function DashboardScreen() {
+  const { t } = useTranslation();
   const timezone = useAuthStore((state) => state.user?.timezone ?? 'UTC');
   const [languages, setLanguages] = useState<Language[] | null>(null);
   const [language, setLanguage] = useState<ContentLanguage | null>(null);
@@ -171,9 +174,9 @@ export function DashboardScreen() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
       <header className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
         <Link className="underline" to="/">
-          Choose a language
+          {t('common.chooseLanguage')}
         </Link>
       </header>
 
@@ -187,19 +190,15 @@ export function DashboardScreen() {
       )}
 
       {languages === null ? (
-        <p role="status">Loading…</p>
+        <p role="status">{t('common.loading')}</p>
       ) : (
         <>
           {shown !== null && (
-            <section aria-label="Summary" className="grid grid-cols-2 gap-3 text-sm">
-              <p>
-                Total runs: <strong>{shown.summary.totalRuns}</strong>
-              </p>
-              <p>
-                Keystrokes: <strong>{shown.summary.totalKeystrokes}</strong>
-              </p>
+            <section aria-label={t('dashboard.summary')} className="grid grid-cols-2 gap-3 text-sm">
+              <p>{t('dashboard.totalRuns', { count: shown.summary.totalRuns })}</p>
+              <p>{t('dashboard.keystrokes', { count: shown.summary.totalKeystrokes })}</p>
               <p className="col-span-2">
-                Best score:{' '}
+                {t('dashboard.bestScore')}{' '}
                 {shown.summary.bestScores.length === 0
                   ? '—'
                   : shown.summary.bestScores
@@ -210,12 +209,12 @@ export function DashboardScreen() {
                       .join(' · ')}
               </p>
               <p className="col-span-2">
-                Highest CPU level beaten: {shown.summary.highestCpuLevelBeaten ?? '—'}
+                {t('dashboard.highestCpu', { level: shown.summary.highestCpuLevelBeaten ?? '—' })}
               </p>
             </section>
           )}
 
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Language">
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t('dashboard.language')}>
             {languages.map((entry) => (
               <button
                 key={entry.slug}
@@ -231,7 +230,7 @@ export function DashboardScreen() {
             ))}
           </div>
 
-          <div className="flex gap-2" role="group" aria-label="Period">
+          <div className="flex gap-2" role="group" aria-label={t('dashboard.period')}>
             {PERIODS.map((entry) => (
               <button
                 key={entry.value}
@@ -243,13 +242,13 @@ export function DashboardScreen() {
                   setAnchor(undefined);
                 }}
               >
-                {entry.label}
+                {t(`dashboard.${entry.label}`)}
               </button>
             ))}
           </div>
 
           {period === 'total' ? (
-            <div className="flex gap-2" role="group" aria-label="Range">
+            <div className="flex gap-2" role="group" aria-label={t('dashboard.range')}>
               {RANGES.map((entry) => (
                 <button
                   key={entry.label}
@@ -260,7 +259,7 @@ export function DashboardScreen() {
                     setRangeDays(entry.days);
                   }}
                 >
-                  {entry.label}
+                  {t(`dashboard.${entry.label}`)}
                 </button>
               ))}
             </div>
@@ -274,7 +273,7 @@ export function DashboardScreen() {
                   move(-1);
                 }}
               >
-                ← Previous
+                {t('dashboard.previous')}
               </button>
               <span>{shown?.from ?? '…'}</span>
               <button
@@ -285,15 +284,15 @@ export function DashboardScreen() {
                   move(1);
                 }}
               >
-                Next →
+                {t('dashboard.next')}
               </button>
             </div>
           )}
 
           {shown === null ? (
-            <p role="status">Loading dashboard…</p>
+            <p role="status">{t('dashboard.loading')}</p>
           ) : shown.points.every((point) => point.score === null) ? (
-            <p role="status">No runs for this period.</p>
+            <p role="status">{t('dashboard.empty')}</p>
           ) : (
             <Chart points={shown.points} period={period} />
           )}

@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.36 |
+| Version | 1.37 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.35 — sign-in, registration, language selection, play, and the result are in Japanese too (§8.4, Appendix B) |
+| Supersedes | v1.36 — every screen is in Japanese, and the language is set on the appearance screen (§8.4, Appendix B) |
 
 **Legend**
 
@@ -1259,3 +1259,7 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.36 | Dates and numbers follow the language | A saved run's day is written by `Intl` in the language ("September 20, 2026", "2026年9月20日"), the countdown and percentages use its number format, and units come from the resources ("12.3 s", "12.3 秒"). The word "(§4.1)" no longer appears in the idle-run message: a section number is not text for a player (§8.4) |
 | 1.36 | No English left over | A test renders each translated screen in Japanese and fails if any sentence of the English resource is still on it; a sentence written in English in place of a key, a status left untranslated, and a description left untranslated each fail it, which was checked. It complements the lint rule, which sees text written straight into a screen but not one returned from a function (§8.4) |
 | 1.36 | Opponents are named by language | "CPU Lv.50", and for the Ghost "自分 · 今日のベスト 88" (its English being "Ghost · today's best 88"), are made when the run starts, so a language change during a run does not rename the opponent until the next (§8.4) |
+| 1.37 | Every screen is translated | Rankings, history, the dashboard, conquests, and the appearance screen read in English or Japanese, so all of them do. The lint allowlist of untranslated files is empty and removed. Language names are shown as each language writes its own; a run's language in history is now its display name ("Python") rather than its slug, and its mode and result are words ("Ghost", "win") rather than codes, which changed the English screens slightly (§8.4) |
+| 1.37 | The language is set on the appearance screen | A Language group at the top offers English and 日本語, applied at once and saved like the other settings, and put back if saving fails. §8.4 says "in-app, applied immediately, persisted per user"; this and the sign-in switch are the two places (§8.4) |
+| 1.37 | Conquests are 対戦記録 | As chosen by the requester. "Highest level beaten" is 勝った最高 Level, the count is 勝った Level 数, and a grid cell reads "Level 12 勝ち" or "Level 3 未勝利" to a screen reader as well as showing a mark. The dashboard's line is 勝った CPU の最高 Level (§4.3.4, §8.4) |
+| 1.37 | Lint now covers attributes | The rule that flags text written into a screen now also flags `aria-label`, `title`, `placeholder` and any attribute not on a short list of ones a machine reads (`to`, `role`, `htmlFor`, SVG geometry, and so on). Turning it on found one: the conquests check mark, now a named constant. The rule sees strings in JSX only; one returned from a function is caught by the Japanese-screen tests instead (§8.4) |

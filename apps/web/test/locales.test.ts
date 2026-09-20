@@ -56,6 +56,13 @@ const SAME_IN_EVERY_LANGUAGE = new Set<string>([
   'result.kpm',
   'common.percent',
   'common.milliseconds',
+  'rankings.rank',
+  'rankings.kpm',
+  'history.kpm',
+  'settings.sizeValue',
+  'settings.presets.okabe-ito',
+  // "30%": a number and a symbol, which Japanese writes the same way.
+  'settings.volumeText',
 ]);
 
 describe('the language resources (§8.4)', () => {

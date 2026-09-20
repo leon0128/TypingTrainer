@@ -110,20 +110,72 @@ export default defineConfig(
     },
   },
 
-  // Every visible string in the web app goes through the translator (§8.4). A file that has not
-  // been translated yet is listed here, and the list only ever shrinks: a screen translated later
-  // comes off it, and nothing new is added to it.
+  // Every visible string in the web app goes through the translator (§8.4): text written into a
+  // screen, and the attributes a reader hears or sees (`aria-label`, `title`, `placeholder`...).
+  // Attributes that are not words for a person are listed, so a new one has to be argued for.
   {
     files: ['apps/web/src/**/*.tsx'],
-    ignores: [
-      // Screens not translated yet (rankings, history, dashboard, conquests, and appearance).
-      'apps/web/src/features/rankings/*.tsx',
-      'apps/web/src/features/history/*.tsx',
-      'apps/web/src/features/dashboard/*.tsx',
-      'apps/web/src/features/conquests/*.tsx',
-      'apps/web/src/features/appearance/*.tsx',
-    ],
     ...i18next.configs['flat/recommended'],
+    rules: {
+      'i18next/no-literal-string': [
+        'error',
+        {
+          mode: 'jsx-only',
+          'jsx-attributes': {
+            exclude: [
+              'className',
+              'styleName',
+              'style',
+              'type',
+              'key',
+              'id',
+              'width',
+              'height',
+              // Routing, form wiring, and state that a machine reads.
+              'to',
+              'path',
+              'name',
+              'role',
+              'htmlFor',
+              'lang',
+              'inputMode',
+              'autoComplete',
+              'autoCapitalize',
+              'spellCheck',
+              'aria-pressed',
+              'aria-invalid',
+              'aria-busy',
+              'aria-live',
+              'aria-hidden',
+              'aria-labelledby',
+              'aria-describedby',
+              'viewBox',
+              'fill',
+              'stroke',
+              'strokeWidth',
+              'textAnchor',
+              'points',
+              'x',
+              'y',
+              'x1',
+              'x2',
+              'y1',
+              'y2',
+              'cx',
+              'cy',
+              'r',
+              'fontSize',
+              'opacity',
+              'gridTemplateColumns',
+              'value',
+              'min',
+              'max',
+              'step',
+            ],
+          },
+        },
+      ],
+    },
   },
 
   prettier,

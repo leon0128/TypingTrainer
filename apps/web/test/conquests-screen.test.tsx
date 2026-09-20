@@ -51,7 +51,7 @@ describe('conquests screen', () => {
     expect(await screen.findByText(/Highest level beaten: 12 · Beaten: 3 \/ 100/)).toBeTruthy();
     expect(screen.getByText(/Highest level beaten: — · Beaten: 0 \/ 100/)).toBeTruthy();
 
-    const python = within(screen.getByLabelText('python levels'));
+    const python = within(screen.getByLabelText('Python levels'));
     expect(python.getAllByRole('listitem')).toHaveLength(100);
     for (const level of [1, 2, 12]) {
       expect(python.getByLabelText(`Level ${String(level)} beaten`).textContent).toContain('✓');

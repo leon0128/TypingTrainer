@@ -9,16 +9,16 @@ import type {
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
+import { i18n, useTranslation } from '../../i18n';
 import { describeError } from '../../lib/api/describe-error';
 import { deleteHistoryEntry, getHistory } from '../../lib/api/history';
 import { listLanguages } from '../../lib/api/languages';
 import { formatPercent } from '../play/format';
 
-const PERIODS: { value: RankingPeriod | ''; label: string }[] = [
-  { value: '', label: 'All time' },
-  { value: 'daily', label: 'Today' },
-  { value: 'weekly', label: 'This week' },
-];
+/** The period filter's choices, all time first, as this screen has always listed them. */
+const PERIODS: (RankingPeriod | '')[] = ['', 'daily', 'weekly'];
+
+const MODES: PlayMode[] = ['single', 'cpu', 'ghost'];
 
 const PAGE_SIZE = 20;
 
@@ -30,6 +30,7 @@ interface Filters {
 
 /** Play history (F-08, §6.3): the player's own runs, filterable, with per-row hard delete. */
 export function HistoryScreen() {
+  const { t } = useTranslation();
   const [languages, setLanguages] = useState<Language[] | null>(null);
   const [filters, setFilters] = useState<Filters>({ period: '', mode: '', language: '' });
   const [page, setPage] = useState(1);
@@ -80,7 +81,7 @@ export function HistoryScreen() {
 
   const remove = (id: string) => {
     // Deletion is irreversible (§6.3): confirm before it happens, not after.
-    if (!window.confirm('Delete this run? This cannot be undone.')) return;
+    if (!window.confirm(t('history.confirmDelete'))) return;
     setDeleting(id);
     deleteHistoryEntry(id)
       .then(() => {
@@ -100,9 +101,9 @@ export function HistoryScreen() {
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-6 p-6">
       <header className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Your history</h1>
+        <h1 className="text-2xl font-semibold">{t('history.title')}</h1>
         <Link className="underline" to="/">
-          Choose a language
+          {t('common.chooseLanguage')}
         </Link>
       </header>
 
@@ -117,7 +118,7 @@ export function HistoryScreen() {
 
       <div className="flex flex-wrap gap-4">
         <label className="flex flex-col gap-1 text-sm">
-          Period
+          {t('history.period')}
           <select
             className="rounded border border-slate-400 px-2 py-1"
             value={filters.period}
@@ -126,15 +127,15 @@ export function HistoryScreen() {
             }}
           >
             {PERIODS.map((entry) => (
-              <option key={entry.value} value={entry.value}>
-                {entry.label}
+              <option key={entry} value={entry}>
+                {entry === '' ? t('periodsShort.total') : t(`periodsShort.${entry}`)}
               </option>
             ))}
           </select>
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          Mode
+          {t('history.mode')}
           <select
             className="rounded border border-slate-400 px-2 py-1"
             value={filters.mode}
@@ -142,15 +143,17 @@ export function HistoryScreen() {
               setFilter('mode', event.target.value as PlayMode | '');
             }}
           >
-            <option value="">All</option>
-            <option value="single">Single play</option>
-            <option value="cpu">vs CPU</option>
-            <option value="ghost">Ghost</option>
+            <option value="">{t('history.all')}</option>
+            {MODES.map((entry) => (
+              <option key={entry} value={entry}>
+                {t(`modes.${entry}`)}
+              </option>
+            ))}
           </select>
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          Language
+          {t('history.language')}
           <select
             className="rounded border border-slate-400 px-2 py-1"
             value={filters.language}
@@ -158,7 +161,7 @@ export function HistoryScreen() {
               setFilter('language', event.target.value as ContentLanguage | '');
             }}
           >
-            <option value="">All</option>
+            <option value="">{t('history.all')}</option>
             {(languages ?? []).map((entry) => (
               <option key={entry.slug} value={entry.slug}>
                 {entry.displayName}
@@ -169,33 +172,40 @@ export function HistoryScreen() {
       </div>
 
       {rows === null ? (
-        <p role="status">Loading…</p>
+        <p role="status">{t('common.loading')}</p>
       ) : rows.length === 0 ? (
-        <p role="status">No runs match these filters.</p>
+        <p role="status">{t('history.empty')}</p>
       ) : (
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b border-slate-400">
-              <th className="py-1 pr-2">When</th>
-              <th className="py-1 pr-2">Mode</th>
-              <th className="py-1 pr-2">Language</th>
-              <th className="py-1 pr-2">KPM</th>
-              <th className="py-1 pr-2">Accuracy</th>
-              <th className="py-1 pr-2">Score</th>
-              <th className="py-1 pr-2">Result</th>
+              <th className="py-1 pr-2">{t('history.when')}</th>
+              <th className="py-1 pr-2">{t('history.mode')}</th>
+              <th className="py-1 pr-2">{t('history.language')}</th>
+              <th className="py-1 pr-2">{t('history.kpm')}</th>
+              <th className="py-1 pr-2">{t('history.accuracy')}</th>
+              <th className="py-1 pr-2">{t('history.score')}</th>
+              <th className="py-1 pr-2">{t('history.result')}</th>
               <th className="py-1"></th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
               <tr key={row.id} className="border-b border-slate-200 dark:border-slate-800">
-                <td className="py-1 pr-2">{new Date(row.startedAt).toLocaleString()}</td>
-                <td className="py-1 pr-2">{row.mode}</td>
-                <td className="py-1 pr-2">{row.language}</td>
+                <td className="py-1 pr-2">
+                  {new Date(row.startedAt).toLocaleString(i18n.language)}
+                </td>
+                <td className="py-1 pr-2">{t(`modes.${row.mode}`)}</td>
+                <td className="py-1 pr-2">
+                  {languages?.find((entry) => entry.slug === row.language)?.displayName ??
+                    row.language}
+                </td>
                 <td className="py-1 pr-2">{row.kpm}</td>
                 <td className="py-1 pr-2">{formatPercent(row.accuracy)}</td>
                 <td className="py-1 pr-2">{row.score}</td>
-                <td className="py-1 pr-2">{row.result ?? '—'}</td>
+                <td className="py-1 pr-2">
+                  {row.result === null ? '—' : t(`history.${row.result}`)}
+                </td>
                 <td className="py-1">
                   <button
                     type="button"
@@ -205,7 +215,7 @@ export function HistoryScreen() {
                       remove(row.id);
                     }}
                   >
-                    {deleting === row.id ? 'Deleting…' : 'Delete'}
+                    {deleting === row.id ? t('history.deleting') : t('history.delete')}
                   </button>
                 </td>
               </tr>
@@ -223,11 +233,9 @@ export function HistoryScreen() {
             setPage((current) => Math.max(1, current - 1));
           }}
         >
-          Previous
+          {t('history.previous')}
         </button>
-        <span>
-          Page {page} of {lastPage}
-        </span>
+        <span>{t('history.page', { page, last: lastPage })}</span>
         <button
           type="button"
           className="rounded border border-slate-400 px-2 py-1 disabled:opacity-60"
@@ -236,7 +244,7 @@ export function HistoryScreen() {
             setPage((current) => current + 1);
           }}
         >
-          Next
+          {t('history.next')}
         </button>
       </div>
     </main>

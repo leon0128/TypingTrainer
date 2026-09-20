@@ -14,7 +14,7 @@ import { LanguageScreen } from '../src/features/languages/LanguageScreen';
 import { PlayScreen } from '../src/features/play/PlayScreen';
 import { useRunSession } from '../src/features/play/run-session';
 import { applyLocale, i18n } from '../src/i18n';
-import en from '../src/i18n/locales/en.json';
+import { expectNoEnglish } from './ja-helpers';
 import { IF_PROGRAM, PADDED_PROGRAM } from './program-fixture';
 
 const json = (body: unknown, status = 200) =>
@@ -26,29 +26,6 @@ const USER = {
   timezone: 'UTC',
   locale: 'en',
 };
-
-/** Every English sentence the app has, so a screen in Japanese can be checked for leftovers. */
-function englishTexts(): string[] {
-  const found: string[] = [];
-  const walk = (value: unknown) => {
-    if (typeof value === 'string') found.push(value);
-    else if (value !== null && typeof value === 'object') Object.values(value).forEach(walk);
-  };
-  walk(en);
-  return (
-    found
-      .filter((text) => !text.includes('{{') && text.length >= 4)
-      // Names that are the same in both languages are not leftovers.
-      .filter((text) => !['TypingTrainer', 'English', 'vs CPU', 'KPM'].includes(text))
-  );
-}
-
-/** Fails if a screen showing Japanese still shows a sentence that is in the English resource. */
-function expectNoEnglish(container: HTMLElement): void {
-  const shown = container.textContent;
-  for (const text of englishTexts())
-    expect(shown, `English left over: "${text}"`).not.toContain(text);
-}
 
 beforeEach(async () => {
   useAuthStore.setState({ status: 'anonymous', user: null, startupError: null });

@@ -4,41 +4,20 @@ import {
   FONT_SIZES,
   SOUND_PACKS,
   THEMES,
-  type ColorPreset,
-  type SoundPack,
-  type Theme,
   type TypingProgram,
 } from '@typing-trainer/contracts';
 import { createEngineState, handleKey } from '@typing-trainer/typing-engine';
 import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router';
 
+import { LOCALES, type Locale } from '@typing-trainer/contracts';
 import { CodeView } from '../play/CodeView';
+import { useTranslation } from '../../i18n';
 import { soundPlayer } from '../sound/sound';
 import { buildLayout } from '../play/layout';
 import { useAppearance } from './appearance-store';
 import { FONT_LABELS, fontStack, loadFont } from './fonts';
 import { PALETTES } from './palettes';
-
-const THEME_LABELS: Record<Theme, string> = {
-  system: 'System',
-  light: 'Light',
-  dark: 'Dark',
-  'high-contrast': 'High contrast',
-};
-
-const SOUND_LABELS: Record<SoundPack, string> = {
-  off: 'Off',
-  mechanical: 'Mechanical',
-  soft: 'Soft',
-  beep: 'Beep',
-};
-
-const PRESET_LABELS: Record<ColorPreset, string> = {
-  standard: 'Standard',
-  'okabe-ito': 'Okabe–Ito',
-  monochrome: 'Monochrome',
-};
 
 /**
  * A block for the preview: typed text, the cursor, text still to type, and auto-inserted text that
@@ -83,6 +62,8 @@ function choiceClass(active: boolean): string {
 
 /** Appearance settings (F-12, §8.2): font, size, theme, and colour set, with a live preview. */
 export function SettingsScreen() {
+  const { t } = useTranslation();
+  const locale = useAppearance((state) => state.locale);
   const appearance = useAppearance((state) => state.appearance);
   const sound = useAppearance((state) => state.sound);
   const error = useAppearance((state) => state.error);
@@ -99,9 +80,9 @@ export function SettingsScreen() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
       <header className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Appearance</h1>
+        <h1 className="text-2xl font-semibold">{t('settings.title')}</h1>
         <Link className="underline" to="/">
-          Choose a language
+          {t('common.chooseLanguage')}
         </Link>
       </header>
 
@@ -114,13 +95,13 @@ export function SettingsScreen() {
         </p>
       )}
 
-      <section aria-label="Preview" className="flex flex-col gap-2">
+      <section aria-label={t('settings.preview')} className="flex flex-col gap-2">
         <div className="code-panel">
           <CodeView layout={layout} engine={engine} missSeq={0} lastMiss={null} />
         </div>
         <p className="flex flex-wrap gap-3 text-sm">
-          <span style={{ color: 'var(--typed)' }}>typed</span>
-          <span style={{ color: 'var(--pending)' }}>to type</span>
+          <span style={{ color: 'var(--typed)' }}>{t('settings.typed')}</span>
+          <span style={{ color: 'var(--pending)' }}>{t('settings.toType')}</span>
           <span
             style={{
               background: 'var(--error)',
@@ -130,13 +111,31 @@ export function SettingsScreen() {
               padding: '0 6px',
             }}
           >
-            miss
+            {t('settings.miss')}
           </span>
         </p>
       </section>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 font-medium">Font</legend>
+        <legend className="mb-1 font-medium">{t('settings.language')}</legend>
+        <div className="flex flex-wrap gap-2">
+          {LOCALES.map((entry: Locale) => (
+            <button
+              key={entry}
+              type="button"
+              lang={entry}
+              aria-pressed={entry === locale}
+              className={choiceClass(entry === locale)}
+              onClick={() => void change({ locale: entry })}
+            >
+              {t(`languageNames.${entry}`)}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1 font-medium">{t('settings.font')}</legend>
         <div className="flex flex-wrap gap-2">
           {FONTS.map((font) => (
             <button
@@ -154,7 +153,7 @@ export function SettingsScreen() {
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 font-medium">Size</legend>
+        <legend className="mb-1 font-medium">{t('settings.size')}</legend>
         <div className="flex flex-wrap gap-2">
           {FONT_SIZES.map((size) => (
             <button
@@ -164,14 +163,14 @@ export function SettingsScreen() {
               className={choiceClass(size === appearance.fontSize)}
               onClick={() => void change({ fontSize: size })}
             >
-              {size} px
+              {t('settings.sizeValue', { size })}
             </button>
           ))}
         </div>
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 font-medium">Theme</legend>
+        <legend className="mb-1 font-medium">{t('settings.theme')}</legend>
         <div className="flex flex-wrap gap-2">
           {THEMES.map((theme) => (
             <button
@@ -181,14 +180,14 @@ export function SettingsScreen() {
               className={choiceClass(theme === appearance.theme)}
               onClick={() => void change({ theme })}
             >
-              {THEME_LABELS[theme]}
+              {t(`settings.themes.${theme}`)}
             </button>
           ))}
         </div>
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 font-medium">Colors</legend>
+        <legend className="mb-1 font-medium">{t('settings.colors')}</legend>
         <div className="flex flex-wrap gap-2">
           {COLOR_PRESETS.map((preset) => {
             const swatch = PALETTES[preset].light;
@@ -209,7 +208,7 @@ export function SettingsScreen() {
                     />
                   ))}
                 </span>
-                {PRESET_LABELS[preset]}
+                {t(`settings.presets.${preset}`)}
               </button>
             );
           })}
@@ -217,8 +216,8 @@ export function SettingsScreen() {
       </fieldset>
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 font-medium">Key sounds</legend>
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Sound pack">
+        <legend className="mb-1 font-medium">{t('settings.sounds')}</legend>
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t('settings.soundPack')}>
           {SOUND_PACKS.map((pack) => (
             <button
               key={pack}
@@ -232,19 +231,19 @@ export function SettingsScreen() {
                 soundPlayer.play('hit');
               }}
             >
-              {SOUND_LABELS[pack]}
+              {t(`settings.packs.${pack}`)}
             </button>
           ))}
         </div>
         <label className="flex items-center gap-3">
-          Volume
+          {t('settings.volume')}
           <input
             type="range"
             min={0}
             max={100}
             step={5}
             value={sound.soundVolume}
-            aria-valuetext={`${String(sound.soundVolume)} percent`}
+            aria-valuetext={t('settings.volumeText', { value: sound.soundVolume })}
             disabled={sound.soundPack === 'off'}
             onChange={(event) => {
               void change({ soundVolume: Number(event.target.value) });
@@ -261,7 +260,7 @@ export function SettingsScreen() {
               soundPlayer.play('hit');
             }}
           >
-            Hear a hit
+            {t('settings.hearHit')}
           </button>
           <button
             type="button"
@@ -271,20 +270,17 @@ export function SettingsScreen() {
               soundPlayer.play('miss');
             }}
           >
-            Hear a miss
+            {t('settings.hearMiss')}
           </button>
           {sound.soundPack === 'off' && (
             <span className="text-sm text-slate-600 dark:text-slate-400">
-              Choose a sound pack to hear it.
+              {t('settings.choosePack')}
             </span>
           )}
         </div>
       </fieldset>
 
-      <p className="text-sm text-slate-600 dark:text-slate-400">
-        Changes apply at once and are saved to your account. Typed, pending, cursor, and miss states
-        also differ by lightness, outline, underline, or weight, so none depends on color alone.
-      </p>
+      <p className="text-sm text-slate-600 dark:text-slate-400">{t('settings.note')}</p>
     </main>
   );
 }

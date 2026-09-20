@@ -7,6 +7,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  UnauthorizedException,
   UnprocessableEntityException,
   type OnModuleDestroy,
   type OnModuleInit,
@@ -191,6 +192,8 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
       contentRevision: run.contentRevision,
       appVersion: this.env.APP_VERSION,
     });
+
+    if (stored === undefined) throw new UnauthorizedException('authentication required');
 
     return {
       id: stored.id,

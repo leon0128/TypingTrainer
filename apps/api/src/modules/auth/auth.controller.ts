@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -11,9 +12,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {
+  DeleteAccountRequestSchema,
   LoginRequestSchema,
   RegisterRequestSchema,
   type AuthResponse,
+  type DeleteAccountRequest,
   type LoginRequest,
   type RegisterRequest,
 } from '@typing-trainer/contracts';
@@ -70,6 +73,19 @@ export class AuthController {
     @Res({ passthrough: true }) reply: FastifyReply,
   ): Promise<void> {
     await this.auth.logout(this.presentedToken(request));
+    void reply.clearCookie(sessionCookieName(this.env), sessionCookieClearOptions(this.env));
+  }
+
+  /** Erases the account and all its data after the password is given again (§7, Q19). */
+  @Delete('me')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteMe(
+    @Body({ schema: DeleteAccountRequestSchema }) body: DeleteAccountRequest,
+    @Req() request: FastifyRequest,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ): Promise<void> {
+    if (request.user === undefined) throw new UnauthorizedException('authentication required');
+    await this.auth.deleteAccount(request.user, body.password);
     void reply.clearCookie(sessionCookieName(this.env), sessionCookieClearOptions(this.env));
   }
 

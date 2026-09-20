@@ -1,4 +1,10 @@
-import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import type { LoginRequest, RegisterRequest, User } from '@typing-trainer/contracts';
 
 import { enforce } from '../../common/rate-limit';
@@ -76,6 +82,29 @@ export class AuthService {
     // Listed explicitly, so a column added to users is never sent by accident.
     const { id, username, timezone, locale } = user;
     return { user: { id, username, timezone, locale }, token };
+  }
+
+  /**
+   * Erases the signed-in user's account and everything of theirs (§7, Q19), after the password is
+   * given again. The check is the sign-in check, with the same per-account backoff shared with it: an
+   * open session must not be a way to guess the password, and a wrong one is a 403, never a 401,
+   * because the client reads a 401 as "your session ended" and would sign the person out.
+   */
+  async deleteAccount(user: User, password: string): Promise<void> {
+    const accountKey = user.username.toLowerCase();
+    enforce(this.limits.loginByAccount.check(accountKey));
+
+    const stored = await this.users.findByUsername(user.username);
+    // The session was valid a moment ago, so a missing account was deleted a moment ago.
+    if (stored === undefined) throw new UnauthorizedException('authentication required');
+    if (!(await this.hasher.verify(stored.passwordHash, password))) {
+      this.limits.loginByAccount.recordFailure(accountKey);
+      throw new ForbiddenException('incorrect password');
+    }
+    this.limits.loginByAccount.recordSuccess(accountKey);
+    if (!(await this.users.deleteById(user.id))) {
+      throw new UnauthorizedException('authentication required');
+    }
   }
 
   logout(token: string | undefined): Promise<void> {

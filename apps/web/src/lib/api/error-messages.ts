@@ -38,6 +38,7 @@ const RULES: readonly Rule[] = [
   { pattern: /^authentication required$/, key: 'errors.authRequired' },
   { pattern: /^username is taken$/, key: 'errors.usernameTaken' },
   { pattern: /^invalid username or password$/, key: 'errors.invalidCredentials' },
+  { pattern: /^incorrect password$/, key: 'errors.incorrectPassword' },
   {
     pattern: /^language "(.*)" is not available$/,
     key: 'errors.languageUnavailable',

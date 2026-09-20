@@ -184,7 +184,7 @@ export class IssuedRunsRepository {
    * run was issued, and the local date and week start are computed here from the player's profile
    * time zone, so day boundaries never depend on the application's clock or locale (§6.4).
    */
-  async storeRun(run: RunToStore): Promise<StoredRun> {
+  async storeRun(run: RunToStore): Promise<StoredRun | undefined> {
     const result: unknown = await this.dataSource.query(
       `WITH run AS (
          SELECT u.id AS user_id, u.timezone,
@@ -227,7 +227,9 @@ export class IssuedRunsRepository {
       ],
     );
     const row = returnedRows<{ id: string; started_at: Date; local_date: string }>(result)[0];
-    if (row === undefined) throw new Error('storing a play session returned no row');
+    // No row means the player's account is gone: it was erased between the run being consumed and
+    // its being stored (§7). That is the same thing as a session that has ended.
+    if (row === undefined) return undefined;
     return { id: row.id, startedAt: row.started_at, localDate: row.local_date };
   }
 

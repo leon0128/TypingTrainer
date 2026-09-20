@@ -45,7 +45,8 @@
     "serverProblem": "The server had a problem. Try again in a moment.",
     "unreachable": "The server could not be reached. Check your connection.",
     "unexpectedResponse": "The server sent an unexpected response.",
-    "generic": "Something went wrong."
+    "generic": "Something went wrong.",
+    "incorrectPassword": "incorrect password"
   },
   "app": {
     "name": "TypingTrainer"

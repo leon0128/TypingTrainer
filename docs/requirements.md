@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.38 |
+| Version | 1.39 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.37 — the Japanese screens are checked in a real browser, and two narrow-screen defects are fixed (§8.4, Appendix B) |
+| Supersedes | v1.38 — the account can be erased through the API (§7, §9.5, Appendix B) |
 
 **Legend**
 
@@ -941,7 +941,7 @@ Design points:
 | POST | `/api/auth/login` | Sign in (issues the session cookie) |
 | POST | `/api/auth/logout` | Sign out |
 | GET | `/api/auth/me` | Current user |
-| DELETE | `/api/auth/me` | Delete the account and all data (P3, with account deletion; §10) |
+| DELETE | `/api/auth/me` | 🟡 (v1.39) Delete the account and all its data. Body `{ password }`; 204 and the session cookie cleared, 403 for a wrong password, 429 while the account's sign-in backoff applies (§7) |
 | GET | `/api/languages` | Available languages |
 | POST | `/api/play/sessions` | **Start a run.** Body `{ language, mode, cpuLevel?, ghostPeriod? }`: `mode` is `single`, `cpu`, or `ghost`; `cpuLevel` (1–100) is required for `cpu` and `ghostPeriod` (`daily`, `weekly`, `total`) for `ghost`, and each is refused for the other modes. Returns 20 compiled blocks, the RNG seed, and the level or the Ghost's period and record score. A Ghost with no record to race answers 409 |
 | POST | `/api/play/sessions/:id/result` | Submit a result; validated server-side |
@@ -1268,3 +1268,8 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.38 | The browser's language order | **Found in that browser:** it reports `["en-US", "ja-US"]`, and the first version of the detection chose Japanese because *any* entry began with `ja`, ignoring that English came first. It now takes the first language the browser lists that the app has (`ja` or `en`, in any regional form), skips others such as `fr`, and falls back to English (§8.4) |
 | 1.38 | Registering in Japanese, end to end | On the real app, registering with the screen switched to Japanese left the account's language saved as `ja` and the app in Japanese with a Japanese navigation, with no flip back to English (§8.4) |
 | 1.38 | Not checked | **No screenshot was seen:** the browser pane was not displaying, so the checks are measurements of the page, not a look at it; how the Japanese text reads visually, its fonts, and its line breaks are unreviewed. The Japanese wording itself has not been reviewed by a native reader, and the requester's own review is what settles it. Only one browser and two widths were tried (§8.4) |
+| 1.39 | Account deletion | `DELETE /api/auth/me` with the password again erases the user and, through `ON DELETE CASCADE`, every session, run, issued run, and setting of theirs in one statement; the rankings, dashboard, and conquest records, which are read from the runs, go with it. The username is free at once and a new account under it starts empty (§7, Q19) |
+| 1.39 | Re-authentication | The password is checked as at sign-in, and shares its per-account backoff (the fifth consecutive failure blocks for 1 s, doubling to 15 minutes): a session left open, or a stolen one, must not be a way to guess the password, and its failures block sign-in as sign-in's block this. **A wrong password is 403, never 401,** because the client treats a 401 as "the session ended" and would sign the person out (§7) |
+| 1.39 | Complete by construction | A test lists from the catalog every foreign key that points at `users` and requires each to cascade, then fills every such table for one account, erases it, and requires all to be empty while a second account's rows are unchanged. **A table added later that refers to users fails it until it is given a row there,** and one without a cascade fails it outright. Checked by removing the cascade from one table, which fails three tests (§9.3) |
+| 1.39 | Verified for the API | Checked by changing: no password check, a wrong password answered 401, failures not counted, the backoff not enforced, the delete aimed at everyone else, and the cookie not cleared — each fails a test. After erasing, the old cookie and a session on another device answer 401, sign-in with the old credentials answers 401, another origin is refused with 403, and a missing or malformed password answers 400 without erasing (§7) |
+| 1.39 | An account erased mid-run | A run being saved for an account erased between the run being consumed and stored used to fail with a server error; it now answers 401, as any session that ended (§7, §9.8) |

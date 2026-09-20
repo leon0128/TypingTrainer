@@ -22,6 +22,7 @@ export { ApiErrorSchema } from './api-error';
 export type { ApiError } from './api-error';
 export {
   AuthResponseSchema,
+  DeleteAccountRequestSchema,
   LoginRequestSchema,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
@@ -35,7 +36,13 @@ export {
   UsernameSchema,
   normalizePassword,
 } from './auth';
-export type { AuthResponse, LoginRequest, RegisterRequest, User } from './auth';
+export type {
+  AuthResponse,
+  DeleteAccountRequest,
+  LoginRequest,
+  RegisterRequest,
+  User,
+} from './auth';
 export { LanguageSchema, LanguagesResponseSchema } from './languages';
 export {
   HISTORY_DEFAULT_PAGE_SIZE,

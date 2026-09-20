@@ -3,6 +3,8 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import type { User } from '@typing-trainer/contracts';
 import { QueryFailedError, type DataSource } from 'typeorm';
 
+import { returnedRows } from '../../database/returned-rows';
+
 const UNIQUE_VIOLATION = '23505';
 
 export interface UserWithPassword extends User {
@@ -45,6 +47,19 @@ export class UsersRepository {
       }
       throw error;
     }
+  }
+
+  /**
+   * Erases the account (§7, Q19). Every table that refers to a user does so with ON DELETE CASCADE,
+   * so this one statement takes the sessions, the runs, the issued runs, and the settings with it;
+   * a test lists the foreign keys from the catalog to keep that true of tables added later.
+   */
+  async deleteById(userId: string): Promise<boolean> {
+    const result: unknown = await this.dataSource.query(
+      'DELETE FROM users WHERE id = $1 RETURNING id',
+      [userId],
+    );
+    return returnedRows<{ id: string }>(result).length === 1;
   }
 
   async updatePasswordHash(userId: string, passwordHash: string): Promise<void> {

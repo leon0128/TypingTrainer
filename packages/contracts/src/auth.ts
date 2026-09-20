@@ -80,6 +80,17 @@ export const LoginRequestSchema = z.object({
     .max(PASSWORD_MAX_LENGTH * 4),
 });
 
+/**
+ * Body of `DELETE /api/auth/me` (§7): the password again, so that a session left open on a shared
+ * machine, or a stolen one, cannot erase an account. Only its length is bounded, as for sign-in.
+ */
+export const DeleteAccountRequestSchema = z.object({
+  password: z
+    .string()
+    .min(1)
+    .max(PASSWORD_MAX_LENGTH * 4),
+});
+
 export const UserSchema = z.object({
   id: z.uuid(),
   username: z.string(),
@@ -94,5 +105,6 @@ export const AuthResponseSchema = z.object({
 
 export type RegisterRequest = z.output<typeof RegisterRequestSchema>;
 export type LoginRequest = z.output<typeof LoginRequestSchema>;
+export type DeleteAccountRequest = z.output<typeof DeleteAccountRequestSchema>;
 export type User = z.infer<typeof UserSchema>;
 export type AuthResponse = z.infer<typeof AuthResponseSchema>;

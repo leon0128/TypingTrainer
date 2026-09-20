@@ -44,7 +44,8 @@
     "serverProblem": "サーバーで問題が発生しました。しばらくしてからもう一度お試しください。",
     "unreachable": "サーバーに接続できません。通信環境を確認してください。",
     "unexpectedResponse": "サーバーから想定外の応答がありました。",
-    "generic": "問題が発生しました。"
+    "generic": "問題が発生しました。",
+    "incorrectPassword": "パスワードが正しくありません"
   },
   "app": {
     "name": "TypingTrainer"

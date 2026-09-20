@@ -4,6 +4,7 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import i18next from 'eslint-plugin-i18next';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -107,6 +108,19 @@ export default defineConfig(
         },
       ],
     },
+  },
+
+  // Every visible string in the web app goes through the translator (§8.4). A file that has not
+  // been translated yet is listed here, and the list only ever shrinks: a screen translated later
+  // comes off it, and nothing new is added to it.
+  {
+    files: ['apps/web/src/**/*.tsx'],
+    ignores: [
+      // No screen is translated yet.
+      'apps/web/src/app.tsx',
+      'apps/web/src/features/**/*.tsx',
+    ],
+    ...i18next.configs['flat/recommended'],
   },
 
   prettier,

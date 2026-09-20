@@ -172,7 +172,9 @@ describe('play screen', () => {
     renderScreen();
     await finishTheRun();
 
-    expect(await screen.findByText('result rejected: speed')).toBeTruthy();
+    expect(
+      await screen.findByText('result rejected: the typing speed was implausibly high'),
+    ).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Send again' })).toBeNull();
   });
 

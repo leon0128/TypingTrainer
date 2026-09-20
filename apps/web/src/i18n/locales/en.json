@@ -1,0 +1,50 @@
+{
+  "fields": {
+    "username": "username",
+    "password": "password",
+    "timezone": "timezone",
+    "language": "language"
+  },
+  "periods": {
+    "daily": "today",
+    "weekly": "this week",
+    "total": "all time"
+  },
+  "validation": {
+    "tooShort": "must be at least {{min}} characters",
+    "tooLong": "must be at most {{max}} characters",
+    "usernamePattern": "may contain only letters, digits, \"_\" and \"-\", starting with a letter or digit",
+    "timezone": "must be an IANA time zone name",
+    "passwordIsUsername": "must not be the username"
+  },
+  "rejection": {
+    "logStart": "the first key did not start the countdown",
+    "keysAfterEnd": "keys were recorded after the run ended",
+    "runTime": "the run lasted longer than the time since it was issued",
+    "idle": "the run was idle for too long",
+    "speed": "the typing speed was implausibly high",
+    "progress": "more was typed than the blocks reached could hold"
+  },
+  "errors": {
+    "authRequired": "authentication required",
+    "usernameTaken": "username is taken",
+    "invalidCredentials": "invalid username or password",
+    "languageUnavailable": "language \"{{language}}\" is not available",
+    "runNotFound": "run not found",
+    "noSuchRun": "no such run",
+    "runTooOld": "this run is too old to submit; play again",
+    "runAlreadySubmitted": "this run was already submitted",
+    "contentChanged": "the content changed since this run was issued; play again",
+    "noRecord": "there is no record for {{period}} to race",
+    "tooManyAttempts": "too many attempts; try again later",
+    "crossOrigin": "cross-origin request refused",
+    "notJson": "request bodies must be application/json",
+    "resultRejected": "result rejected: {{reason}}",
+    "retryIn_one": "{{message}} — try again in {{count}} second.",
+    "retryIn_other": "{{message}} — try again in {{count}} seconds.",
+    "serverProblem": "The server had a problem. Try again in a moment.",
+    "unreachable": "The server could not be reached. Check your connection.",
+    "unexpectedResponse": "The server sent an unexpected response.",
+    "generic": "Something went wrong."
+  }
+}

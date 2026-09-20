@@ -125,7 +125,9 @@ describe('the appearance settings screen', () => {
     );
     renderScreen();
     await userEvent.click(screen.getByRole('button', { name: '14 px' }));
-    expect((await screen.findByRole('alert')).textContent).toBe('try again');
+    expect((await screen.findByRole('alert')).textContent).toBe(
+      'The server had a problem. Try again in a moment.',
+    );
     expect(screen.getByRole('button', { name: '18 px' }).getAttribute('aria-pressed')).toBe('true');
   });
 

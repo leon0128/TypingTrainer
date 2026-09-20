@@ -2,27 +2,33 @@ import {
   DEFAULT_APPEARANCE,
   DEFAULT_SOUND,
   type Appearance,
+  type Locale,
   type Sound,
 } from '@typing-trainer/contracts';
 import { create } from 'zustand';
 
 import { describeError } from '../../lib/api/describe-error';
 import { getPreferences, updatePreferences } from '../../lib/api/preferences';
+import { applyLocale, detectLocale } from '../../i18n';
 import { soundPlayer } from '../sound/sound';
 import { applyAppearance } from './apply';
 
-/** What `PUT /api/preferences` changes that the browser applies: how it looks and how it sounds. */
-export type Settings = Appearance & Sound;
+/** What `PUT /api/preferences` changes that the browser applies: how it looks, sounds, and reads. */
+export type Settings = Appearance & Sound & { readonly locale: Locale };
 
 interface AppearanceState {
   readonly appearance: Appearance;
   readonly sound: Sound;
+  /** The interface language (§8.4). */
+  readonly locale: Locale;
   /** The last failure to load or save, for the settings screen to show; null when there is none. */
   readonly error: string | null;
   /** Fetches the signed-in player's settings and applies them. */
   load: () => Promise<void>;
   /** Applies a change at once and saves it; goes back to what it was if saving fails. */
   change: (patch: Partial<Settings>) => Promise<void>;
+  /** Changes the language for this visit only, for the sign-in and registration screens. */
+  setLocaleLocally: (locale: Locale) => void;
   /** Goes back to the defaults, for when nobody is signed in. */
   reset: () => void;
 }
@@ -46,6 +52,9 @@ function soundOf({ soundPack, soundVolume }: Settings): Sound {
   return { soundPack, soundVolume };
 }
 
+/** The language a visit starts in: the browser's, until an account says otherwise (§8.4). */
+export const browserLocale = (): Locale => detectLocale();
+
 /** Gives the player its pack and volume; the page's colours and fonts are `applyAppearance`'s. */
 function applySound(sound: Sound): void {
   soundPlayer.configure({ pack: sound.soundPack, volume: sound.soundVolume });
@@ -55,7 +64,11 @@ function applySound(sound: Sound): void {
 let queue: Promise<void> = Promise.resolve();
 
 export const useAppearance = create<AppearanceState>()((set, get) => {
-  const current = (): Settings => ({ ...get().appearance, ...get().sound });
+  const current = (): Settings => ({
+    ...get().appearance,
+    ...get().sound,
+    locale: get().locale,
+  });
 
   /** Puts values on screen and in the player, leaving settings changed since untouched. */
   const show = (values: Partial<Settings>, error: string | null = null) => {
@@ -63,15 +76,18 @@ export const useAppearance = create<AppearanceState>()((set, get) => {
     set({
       appearance: appearanceOf(merged),
       sound: soundOf(merged),
+      locale: merged.locale,
       ...(error === null ? {} : { error }),
     });
     applyAppearance(appearanceOf(merged), systemDark());
     applySound(soundOf(merged));
+    void applyLocale(merged.locale);
   };
 
   return {
     appearance: DEFAULT_APPEARANCE,
     sound: DEFAULT_SOUND,
+    locale: browserLocale(),
     error: null,
 
     async load() {
@@ -104,9 +120,14 @@ export const useAppearance = create<AppearanceState>()((set, get) => {
       return saving;
     },
 
+    setLocaleLocally(locale) {
+      set({ locale });
+      void applyLocale(locale);
+    },
+
     reset() {
       set({ error: null });
-      show({ ...DEFAULT_APPEARANCE, ...DEFAULT_SOUND });
+      show({ ...DEFAULT_APPEARANCE, ...DEFAULT_SOUND, locale: browserLocale() });
     },
   };
 });

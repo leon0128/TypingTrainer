@@ -191,7 +191,7 @@ describe('submitting a finished run', () => {
 
     expect(useRunSession.getState().submission).toEqual({
       kind: 'failed',
-      message: 'result rejected: speed',
+      message: 'result rejected: the typing speed was implausibly high',
       canRetry: false,
     });
   });

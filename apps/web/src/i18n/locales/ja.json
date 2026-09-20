@@ -1,0 +1,49 @@
+{
+  "fields": {
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "timezone": "タイムゾーン",
+    "language": "言語"
+  },
+  "periods": {
+    "daily": "今日",
+    "weekly": "今週",
+    "total": "全期間"
+  },
+  "validation": {
+    "tooShort": "{{min}}文字以上にしてください",
+    "tooLong": "{{max}}文字以内にしてください",
+    "usernamePattern": "使えるのは英数字と「_」「-」のみで、先頭は英数字にしてください",
+    "timezone": "IANA のタイムゾーン名で指定してください",
+    "passwordIsUsername": "ユーザー名と同じにはできません"
+  },
+  "rejection": {
+    "logStart": "最初のキー入力でカウントダウンが始まっていません",
+    "keysAfterEnd": "終了後のキー入力が記録されています",
+    "runTime": "開始からの経過時間より長い記録です",
+    "idle": "放置時間が長すぎます",
+    "speed": "入力速度が現実的ではありません",
+    "progress": "到達したブロックで入力できる量を超えています"
+  },
+  "errors": {
+    "authRequired": "ログインが必要です",
+    "usernameTaken": "そのユーザー名は使われています",
+    "invalidCredentials": "ユーザー名またはパスワードが正しくありません",
+    "languageUnavailable": "言語「{{language}}」は利用できません",
+    "runNotFound": "プレイ記録が見つかりません",
+    "noSuchRun": "該当するプレイがありません",
+    "runTooOld": "このプレイは古すぎて送信できません。もう一度プレイしてください",
+    "runAlreadySubmitted": "このプレイは送信済みです",
+    "contentChanged": "プレイの開始後にコンテンツが更新されました。もう一度プレイしてください",
+    "noRecord": "{{period}}の記録がないため、対戦できません",
+    "tooManyAttempts": "試行回数が多すぎます。しばらくしてからお試しください",
+    "crossOrigin": "別のオリジンからのリクエストは拒否されました",
+    "notJson": "リクエストの本文は application/json である必要があります",
+    "resultRejected": "結果が受理されませんでした: {{reason}}",
+    "retryIn_other": "{{message}} — {{count}}秒後にもう一度お試しください。",
+    "serverProblem": "サーバーで問題が発生しました。しばらくしてからもう一度お試しください。",
+    "unreachable": "サーバーに接続できません。通信環境を確認してください。",
+    "unexpectedResponse": "サーバーから想定外の応答がありました。",
+    "generic": "問題が発生しました。"
+  }
+}

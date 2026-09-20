@@ -11,6 +11,7 @@ import { fontStack } from '../src/features/appearance/fonts';
 import { PALETTES } from '../src/features/appearance/palettes';
 import { useAuthStore } from '../src/features/auth/auth-store';
 import { soundPlayer } from '../src/features/sound/sound';
+import { applyLocale, i18n } from '../src/i18n';
 
 const USER = {
   id: '11111111-1111-4111-8111-111111111111',
@@ -27,6 +28,9 @@ const preferences = (appearance: Appearance) => ({
   ...appearance,
 });
 
+/** What a server fault reads as: the API's status text is not shown (§8.4). */
+const SERVER_PROBLEM = 'The server had a problem. Try again in a moment.';
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
@@ -37,6 +41,7 @@ beforeEach(() => {
   useAppearance.setState({
     appearance: DEFAULT_APPEARANCE,
     sound: { soundPack: 'off', soundVolume: 30 },
+    locale: 'en',
     error: null,
   });
   useAuthStore.setState({ status: 'loading', user: null, startupError: null });
@@ -219,7 +224,7 @@ describe('the appearance store', () => {
       ...DEFAULT_APPEARANCE,
       colorPreset: 'monochrome',
     });
-    expect(useAppearance.getState().error).toBe('try again');
+    expect(useAppearance.getState().error).toBe(SERVER_PROBLEM);
   });
 
   it('goes back to what it was, and says why, when saving fails', async () => {
@@ -230,7 +235,7 @@ describe('the appearance store', () => {
     );
     await useAppearance.getState().change({ theme: 'dark' });
     expect(useAppearance.getState().appearance).toEqual(DEFAULT_APPEARANCE);
-    expect(useAppearance.getState().error).toBe('try again');
+    expect(useAppearance.getState().error).toBe(SERVER_PROBLEM);
     expect(root().getAttribute('data-theme')).toBe('light');
   });
 
@@ -332,7 +337,7 @@ describe('key sounds in the store', () => {
     await saving;
     expect(useAppearance.getState().sound).toEqual({ soundPack: 'off', soundVolume: 30 });
     expect(configure).toHaveBeenLastCalledWith({ pack: 'off', volume: 30 });
-    expect(useAppearance.getState().error).toBe('try again');
+    expect(useAppearance.getState().error).toBe(SERVER_PROBLEM);
     vi.restoreAllMocks();
   });
 
@@ -350,5 +355,117 @@ describe('key sounds in the store', () => {
     await useAppearance.getState().change({ theme: 'dark' });
     expect(useAppearance.getState().sound).toEqual({ soundPack: 'soft', soundVolume: 30 });
     vi.restoreAllMocks();
+  });
+});
+
+describe('the language in the store (§8.4)', () => {
+  afterEach(async () => {
+    await applyLocale('en');
+    vi.restoreAllMocks();
+  });
+
+  const stored = (locale: string) => ({
+    timezone: 'UTC',
+    ...DEFAULT_APPEARANCE,
+    soundPack: 'off',
+    soundVolume: 30,
+    locale,
+  });
+
+  it("switches to the account's language on load, and marks the document", async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(json(stored('ja'))));
+    await useAppearance.getState().load();
+    await vi.waitFor(() => {
+      expect(i18n.language).toBe('ja');
+    });
+    expect(useAppearance.getState().locale).toBe('ja');
+    expect(document.documentElement.lang).toBe('ja');
+  });
+
+  it('changes the language at once, and saves it like any other setting', async () => {
+    const bodies: unknown[] = [];
+    vi.stubGlobal('fetch', (_url: string, init: { body?: string }) => {
+      bodies.push(JSON.parse(init.body ?? '{}'));
+      return Promise.resolve(json(stored('ja')));
+    });
+    const saving = useAppearance.getState().change({ locale: 'ja' });
+    await vi.waitFor(() => {
+      expect(i18n.language).toBe('ja');
+    });
+    await saving;
+    expect(bodies).toEqual([{ locale: 'ja' }]);
+    expect(useAppearance.getState().locale).toBe('ja');
+  });
+
+  it('goes back to the old language when saving fails, and says why', async () => {
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve(
+        json({ statusCode: 500, error: 'Internal Server Error', message: 'try again' }, 500),
+      ),
+    );
+    await useAppearance.getState().change({ locale: 'ja' });
+    await vi.waitFor(() => {
+      expect(i18n.language).toBe('en');
+    });
+    expect(useAppearance.getState().locale).toBe('en');
+    expect(useAppearance.getState().error).not.toBeNull();
+  });
+
+  it('can change the language for one visit without an account, sending nothing', async () => {
+    const fetched = vi.fn();
+    vi.stubGlobal('fetch', fetched);
+    useAppearance.getState().setLocaleLocally('ja');
+    await vi.waitFor(() => {
+      expect(i18n.language).toBe('ja');
+    });
+    expect(fetched).not.toHaveBeenCalled();
+  });
+
+  it('returns to the browser language when nobody is signed in', async () => {
+    await applyLocale('ja');
+    useAppearance.setState({ locale: 'ja' });
+    useAppearance.getState().reset();
+    // jsdom's browser language is English.
+    await vi.waitFor(() => {
+      expect(i18n.language).toBe('en');
+    });
+    expect(useAppearance.getState().locale).toBe('en');
+  });
+
+  it('leaves the language alone when only the appearance or the sound changes', async () => {
+    useAppearance.setState({ locale: 'ja' });
+    await applyLocale('ja');
+    vi.stubGlobal('fetch', (_url: string, init: { body?: string }) =>
+      Promise.resolve(json({ ...stored('ja'), ...JSON.parse(init.body ?? '{}') })),
+    );
+    await useAppearance.getState().change({ theme: 'dark' });
+    await useAppearance.getState().change({ soundPack: 'soft' });
+    expect(useAppearance.getState().locale).toBe('ja');
+    expect(i18n.language).toBe('ja');
+  });
+});
+
+describe('switching language quickly', () => {
+  afterEach(async () => {
+    await applyLocale('en');
+  });
+
+  it('ends in the language asked for last, even when an earlier one loads later', async () => {
+    // Japanese is not loaded (earlier tests may have loaded it, so unload it), so asking for it takes
+    // a while; English is instant.
+    i18n.removeResourceBundle('ja', 'translation');
+    const slow = applyLocale('ja');
+    const fast = applyLocale('en');
+    await Promise.all([slow, fast]);
+    expect(i18n.language).toBe('en');
+    expect(document.documentElement.lang).toBe('en');
+    // The slow one still finished loading, so a later switch to Japanese is immediate.
+    expect(i18n.hasResourceBundle('ja', 'translation')).toBe(true);
+  });
+
+  it('ends in the last language whichever way round they are asked', async () => {
+    i18n.removeResourceBundle('ja', 'translation');
+    await Promise.all([applyLocale('en'), applyLocale('ja')]);
+    expect(i18n.language).toBe('ja');
   });
 });

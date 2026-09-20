@@ -1,0 +1,16 @@
+# Runs the production composition on this machine over real TLS, for checking the HTTPS-only
+# behaviour (the __Host- cookie, Origin checks behind the proxy, compression) before a deployment:
+#   docker compose -f compose.yaml -f compose.local-https.yaml --env-file <env> up -d
+# Caddy issues the certificate from its own local CA (`tls internal`); docs/deployment.md shows how
+# to trust it or pass it to curl. Use APP_DOMAIN=localhost and APP_ORIGIN=https://localhost:8443.
+services:
+  caddy:
+    ports: !override
+      - 8080:80
+      - 8443:443
+    environment:
+      # HSTS is per host, not per port: max-age=0 keeps browsers from remembering "localhost is
+      # https-only" and then refusing the plain-http dev server.
+      HSTS_VALUE: max-age=0
+    volumes:
+      - ./caddy/tls-internal.caddy:/etc/caddy/tls/internal.caddy:ro

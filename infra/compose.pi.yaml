@@ -1,0 +1,17 @@
+# Raspberry Pi 3 B+ overrides (§9.7, 1 GB of RAM):
+#   docker compose -f compose.yaml -f compose.pi.yaml up -d
+services:
+  api:
+    environment:
+      NODE_OPTIONS: --max-old-space-size=256
+  db:
+    command:
+      - postgres
+      - -c
+      - shared_buffers=128MB
+      - -c
+      - work_mem=4MB
+      - -c
+      - effective_cache_size=512MB
+      - -c
+      - max_connections=20

@@ -9,6 +9,7 @@ import { Check, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 
   'chk_users_username',
   `char_length("username") BETWEEN 3 AND 24 AND "username" ~ '^[A-Za-z0-9][A-Za-z0-9_-]*$'`,
 )
+@Check('chk_users_locale', `"locale" IN ('en', 'ja')`)
 export class User {
   /** DEFAULT gen_random_uuid(), given uuidExtension 'pgcrypto' in the data source options. */
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
@@ -25,6 +26,7 @@ export class User {
   @Column({ name: 'timezone', type: 'text', default: 'UTC' })
   timezone!: string;
 
+  /** The display language, `en` or `ja` (§8.4). */
   @Column({ name: 'locale', type: 'text', default: 'en' })
   locale!: string;
 

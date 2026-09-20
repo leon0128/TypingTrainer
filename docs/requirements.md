@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.24 |
+| Version | 1.25 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.23 — conquest records are built and derived from `play_sessions` (§4.3.4, §6.3, §9.5, Appendix B) |
+| Supersedes | v1.24 — the preferences endpoint exists for the display language only; the time zone stays as set at registration (§6.4, §8.4, §9.5, Appendix B) |
 
 **Legend**
 
@@ -950,7 +950,7 @@ Design points:
 | GET | `/api/history` | Paged list |
 | DELETE | `/api/history/:id` | Delete one run |
 | GET | `/api/cpu-conquests` | Conquest state of every enabled language: highest level beaten, the levels beaten, and their count (§4.3.4) |
-| GET / PUT | `/api/preferences` | Appearance, sound, locale, time zone |
+| GET / PUT | `/api/preferences` | 🟡 (v1.25) `GET` returns the time zone (read only) and the display language; `PUT` changes the settings sent (at present only `locale`, `en` or `ja`). Appearance and sound settings join it with P3's F-12 and F-13 |
 
 🟡 (v1.13) Every route requires a signed-in session unless it is explicitly public; the public routes are the health checks, `GET /api/languages`, and register, login, and logout. Errors use one body shape, `{ statusCode, error, message }`, and server errors never include their cause.
 
@@ -1204,3 +1204,8 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.24 | "Total conquest count" is levels | The count is the number of distinct levels beaten in the language, which is what the grid shows, not the number of winning runs; a level beaten five times counts once (§4.3.4) |
 | 1.24 | Conquest display | A screen of its own, with per language the highest level beaten, the count out of 100, and a 10×10 grid whose beaten cells carry a mark as well as a fill. There is no "challenge the next level" button: starting a run stays on language selection (§4.3.4) |
 | 1.24 | Verified for conquest records | Integration tests cover wins only (a tie is a win; losses and single play are not), one level counted once however often beaten, languages kept apart, other players excluded, the dashboard summary across languages, and deletion. Removing the win filter, the mode filter, the user filter, the de-duplication, or the summary's win filter each fails a test |
+| 1.25 | Only the display language is editable | The requester scoped U14 to the display language: **the time zone stays as set at registration**, so §6.4's editable profile time zone and its recomputation batch of `local_date` and `local_week_start` are **not built**, and R6 (a time zone change corrupting aggregates) cannot arise because no time zone change exists. `PUT /api/preferences` refuses a `timezone` field with 400 instead of ignoring it, so a client learns that it was not applied (§6.4, §9.5) |
+| 1.25 | Partial update | `PUT` changes only the settings sent and needs at least one, so appearance and sound can be added later without clients resending everything (§9.5) |
+| 1.25 | Language is checked by the database | `users.locale` gains `CHECK (locale IN ('en', 'ja'))`; existing rows were all `en` (§8.4, §9.3) |
+| 1.25 | Known gap, not addressed | **Found while designing U14:** registration canonicalizes the time zone with the JavaScript `Intl` database, but the run insert applies it in PostgreSQL. A name one accepts and the other does not would let an account register and then fail to save any run. The requester chose to leave time zone handling as it was, so this stays open; a browser only sends names `Intl` itself produced, which makes it unlikely in practice (§6.4, §7) |
+| 1.25 | Language selection screen deferred | The setting has an API but no screen yet: with the time zone not editable the settings page would hold only a switch that changes nothing until U18 translates the app, so the switch arrives with U18 (§8.4) |

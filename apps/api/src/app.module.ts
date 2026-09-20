@@ -11,6 +11,7 @@ import { LanguagesModule } from './modules/languages/languages.module';
 import { PlayModule } from './modules/play/play.module';
 import { ConquestsModule } from './modules/conquests/conquests.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { PreferencesModule } from './modules/preferences/preferences.module';
 import { RankingsModule } from './modules/rankings/rankings.module';
 
 @Module({})
@@ -29,6 +30,7 @@ export class AppModule {
         HealthModule,
         LanguagesModule,
         PlayModule,
+        PreferencesModule,
         RankingsModule,
       ],
     };

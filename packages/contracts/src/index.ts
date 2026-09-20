@@ -86,3 +86,10 @@ export type {
 } from './dashboard';
 export { CPU_LEVEL_COUNT, ConquestsResponseSchema, LanguageConquestSchema } from './conquests';
 export type { ConquestsResponse, LanguageConquest } from './conquests';
+export {
+  LOCALES,
+  LocaleSchema,
+  PreferencesSchema,
+  UpdatePreferencesRequestSchema,
+} from './preferences';
+export type { Locale, Preferences, UpdatePreferencesRequest } from './preferences';

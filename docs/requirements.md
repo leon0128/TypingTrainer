@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.19 |
+| Version | 1.20 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.18 — password minimum length lowered from 15 to 8 characters (§7, Appendix B) |
+| Supersedes | v1.19 — the dashboard is built; `GET /api/dashboard` takes `from` and `to` (§6.2, §6.3, §9.5, Appendix B) |
 
 **Legend**
 
@@ -595,12 +595,11 @@ Mode is deliberately *not* a partition key: all modes use the same engine, the s
 🟡 (v1.16) The "updates immediately" claim rests on rankings, dashboard, and conquest records
 being plain queries over `play_sessions` with nothing cached or denormalized in between; deleting
 a row is therefore visible on the next request by construction, not by any synchronization step.
-U9 verified this directly for rankings, the only one of the three built so far, with an
-integration test: create two runs, confirm both appear in the ranking, delete the higher-scoring
-one through `DELETE /api/history/:id`, and confirm the ranking updates to the remaining run. The
-dashboard (P2) and conquest records (P2) are not implemented yet, so the same claim for them is
-unverified until they exist — the structural reasoning carries over unchanged, but it has not been
-exercised.
+U9 verified this directly for rankings with an integration test: create two runs, confirm both
+appear in the ranking, delete the higher-scoring one through `DELETE /api/history/:id`, and
+confirm the ranking updates to the remaining run. U11 does the same for the dashboard (both the
+chart points and the summary). Conquest records (P2) are not implemented yet, so the claim for
+them is unverified until they exist — the structural reasoning carries over unchanged.
 
 ### 6.4 Time Zone Handling 🟡 (Q17)
 
@@ -944,7 +943,7 @@ Design points:
 | POST | `/api/play/sessions` | **Start a run.** Returns 20 compiled blocks, the RNG seed, and CPU or Ghost parameters |
 | POST | `/api/play/sessions/:id/result` | Submit a result; validated server-side |
 | GET | `/api/rankings` | `?period=daily\|weekly\|total&language=` |
-| GET | `/api/dashboard` | `?period=daily\|weekly\|total&from=&to=` |
+| GET | `/api/dashboard` | `?period=daily\|weekly\|total&language=&from=&to=` (`from`/`to` are inclusive local dates; §6.2) |
 | GET | `/api/history` | Paged list |
 | DELETE | `/api/history/:id` | Delete one run |
 | GET | `/api/cpu-conquests` | Conquest state per language |
@@ -1184,3 +1183,6 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.17 | What is and is not verified for deployment | **Verified locally:** both images build for amd64 and arm64; migrations and `citext` run on an amd64 PostgreSQL; the `__Host-` cookie, Origin checks, client address, HTTP/2 and compression over real TLS with Caddy's local CA; `app_version` recorded by a run through the stack; backup, restore, and pruning. **Not verified:** a real browser with a public certificate, GitHub Actions and GHCR, any Raspberry Pi measurement, and Lightsail itself (`docs/deployment.md`, "Not yet verified") |
 | 1.18 | Native deployment for 512 MB | Docker's daemons would take about a quarter of the host, so the small Lightsail plan runs PostgreSQL, Caddy, and the API as systemd services from a release tarball (`infra/native/`). The Caddyfile is shared through `API_UPSTREAM` and `WEB_ROOT`, whose defaults keep the Compose behaviour, checked with `caddy adapt`. `backup.sh` gains `BACKUP_DB_COMMAND`, tested with a passing, a failing and an incomplete dump. **Not yet verified:** the scripts on a real Debian 12 instance, the tarball workflow on GitHub Actions, and every memory figure |
 | 1.19 | Password minimum length | Lowered from 15 to 8 characters (maximum stays 128). This is a **deliberate deviation from NIST SP 800-63B-4**, which sets 15 for single-factor authentication and allows 8 only with multi-factor; the requester decided not to add a second factor. Counting rules, absent composition rules, and sign-in bounds are unchanged, so existing accounts are unaffected (§7; amends 1.13) |
+| 1.20 | Dashboard query | `GET /api/dashboard?period&language&from&to`, per language (as rankings). `from`/`to` are inclusive local dates. `daily`: `from`–`to`, default today, at most 31 days, raw runs oldest first. `weekly`: the Sunday–Saturday week containing `from` (default this week), always 7 points with `null` for unplayed days, `to` refused. `total`: best score per played day, either bound optional (the 30/90/365/all filter is `from` computed client-side in the profile time zone). "Today" comes from the database clock and profile time zone (§6.2, §6.4) |
+| 1.20 | Dashboard summary | Total runs, cumulative effective keystrokes, and the best score per language, across all languages and periods; `highestCpuLevelBeaten` is `null` until conquest records exist (U13). **Declined for now:** paging of the all-time series — at most one point per played day, so about 365 a year, which the range filter already bounds (§6.2) |
+| 1.20 | Dashboard chart | A hand-written SVG line chart on a category axis, no charting library: three simple views do not justify a dependency to keep updated, and the layout is a small pure function with unit tests (§6.2) |

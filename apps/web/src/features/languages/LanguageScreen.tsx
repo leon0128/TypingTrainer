@@ -55,6 +55,9 @@ export function LanguageScreen() {
           <Link className="underline" to="/rankings">
             Rankings
           </Link>
+          <Link className="underline" to="/dashboard">
+            Dashboard
+          </Link>
           <Link className="underline" to="/history">
             History
           </Link>

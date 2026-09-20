@@ -69,3 +69,17 @@ export type {
   SubmitResultResponse,
 } from './play';
 export type { Language, LanguagesResponse } from './languages';
+export {
+  DASHBOARD_MAX_DAILY_DAYS,
+  DashboardPointSchema,
+  DashboardRequestSchema,
+  DashboardResponseSchema,
+  DashboardSummarySchema,
+  LocalDateSchema,
+} from './dashboard';
+export type {
+  DashboardPoint,
+  DashboardRequest,
+  DashboardResponse,
+  DashboardSummary,
+} from './dashboard';

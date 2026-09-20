@@ -9,6 +9,7 @@ import { HistoryModule } from './modules/history/history.module';
 import { HealthModule } from './modules/health/health.module';
 import { LanguagesModule } from './modules/languages/languages.module';
 import { PlayModule } from './modules/play/play.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { RankingsModule } from './modules/rankings/rankings.module';
 
 @Module({})
@@ -21,6 +22,7 @@ export class AppModule {
         DatabaseModule.forRoot(env),
         ContentModule,
         AuthModule,
+        DashboardModule,
         HistoryModule,
         HealthModule,
         LanguagesModule,

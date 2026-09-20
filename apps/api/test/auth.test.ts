@@ -284,10 +284,10 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('authentication (TEST_DATABASE_U
 
     it('answers an invalid registration with 400 without echoing the password', async () => {
       const response = await api.post('register', {
-        payload: { username: 'x', password: 'tiny-secret' },
+        payload: { username: 'x', password: 'tiny-sc' },
       });
       expect(response.statusCode).toBe(400);
-      expect(response.body).not.toContain('tiny-secret');
+      expect(response.body).not.toContain('tiny-sc');
     });
 
     it('answers an unknown username and a wrong password identically', async () => {

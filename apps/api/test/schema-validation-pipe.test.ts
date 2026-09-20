@@ -74,13 +74,13 @@ describe('schema validation pipe', () => {
   });
 
   it('answers invalid input with 400 and path-prefixed messages, never echoing values', async () => {
-    const secret = 'tiny-secret';
+    const secret = 'tiny-sc';
     const response = await post('register', { username: 'a!', password: secret });
     expect(response.statusCode).toBe(400);
     const error = ApiErrorSchema.parse(response.json());
     expect(error.error).toBe('Bad Request');
     expect(error.message).toContain('username: ');
-    expect(error.message).toContain('password: must be at least 15 characters');
+    expect(error.message).toContain('password: must be at least 8 characters');
     expect(response.body).not.toContain(secret);
   });
 

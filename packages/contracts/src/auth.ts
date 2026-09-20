@@ -19,11 +19,11 @@ export const UsernameSchema = z
   );
 
 /**
- * Passwords (§7): NIST SP 800-63B-4 for single-factor authentication. Length is counted in code
- * points after NFKC normalization, which is also what gets hashed; there are no composition rules.
+ * Passwords (§7): 8 to 128 characters, a deliberate relaxation of NIST SP 800-63B-4's 15 for
+ * single-factor authentication (Appendix B, v1.19). Length is counted in code points after NFKC normalization, which is also what gets hashed; there are no composition rules.
  * Messages never include the submitted value.
  */
-export const PASSWORD_MIN_LENGTH = 15;
+export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_MAX_LENGTH = 128;
 
 export function normalizePassword(password: string): string {

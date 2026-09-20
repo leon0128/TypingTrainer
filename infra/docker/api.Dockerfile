@@ -26,7 +26,7 @@ ENV NODE_ENV=production \
     CONTENT_DIR=/app/content/dist
 WORKDIR /app
 COPY --from=builder /deploy/node_modules ./node_modules
-COPY --from=builder /repo/apps/api/dist/main.js /repo/apps/api/dist/main.js.map /repo/apps/api/dist/migrate.js /repo/apps/api/dist/migrate.js.map ./dist/
+COPY --from=builder /repo/apps/api/dist/main.js /repo/apps/api/dist/main.js.map /repo/apps/api/dist/migrate.js /repo/apps/api/dist/migrate.js.map /repo/apps/api/dist/argon2-bench.js ./dist/
 COPY --from=builder /repo/content/dist ./content/dist
 USER node
 EXPOSE 3000

@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.16 |
+| Version | 1.17 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.15 — the web app's final commit: content line-width fix, dev proxy, reload/submission behavior (Appendix B) |
+| Supersedes | v1.16 — deployment: images, Compose, backups, and what was verified (Appendix B) |
 
 **Legend**
 
@@ -973,15 +973,17 @@ Starting a run on the server matters for three reasons: the block sequence and s
 
 Composition: `caddy` (TLS and static file serving) → `api` (NestJS) → `db` (PostgreSQL, named volume). The frontend is a static build served by Caddy; no Node runtime is needed for it.
 
+🟡 (v1.17) **Two images, three containers.** The web build is baked into the Caddy image at build time (`infra/docker/caddy.Dockerfile`), so nothing is copied between containers at start-up and there is no start-order dependency. The API image (`infra/docker/api.Dockerfile`) holds the esbuild bundle, the content bundles, and `dist/migrate.js`: the production image has no TypeORM CLI, so migrations are applied by an explicit `docker compose run --rm api node dist/migrate.js` and never at start-up (§9.2). The database is on an internal network with no published port. Both images are published by `.github/workflows/docker.yml` under the 12-character commit hash. **`APP_VERSION` is that hash**: it is a required build argument, an image without a real value fails to build, and every stored run records it (`play_sessions.app_version`, R7). Procedures, the backup script, and what has and has not been verified are in `docs/deployment.md`.
+
 #### Bandwidth
 
 The concern behind the Pi fallback is Lightsail's monthly transfer allowance. At this scale it is not a binding constraint:
 
 | Traffic | Size |
 | --- | --- |
-| First visit (JS, CSS, two self-hosted fonts, brotli) | ~500 KB |
+| First visit (JS, CSS, two self-hosted fonts, brotli) | ~500 KB; 🟡 (v1.17) Caddy's `encode` has no brotli, so it is gzip: measured 120,537 of 382,501 bytes for the JS bundle |
 | Repeat visit | ~0 — assets are content-hashed and cached immutably |
-| Per run: 20 compiled blocks + result POST | ~30 KB |
+| Per run: 20 compiled blocks + result POST | ~30 KB; 🟡 (v1.17) measured through Caddy: 119,958 bytes plain, 8,280 gzip |
 | Rankings and dashboard view | ~20 KB |
 | **5 users × 20 runs/day × ~50 KB** | **~150 MB / month** |
 
@@ -1001,6 +1003,8 @@ The Pi 3 B+ has **1 GB of RAM** and a modest CPU, which is the real limit — no
 | Exposure | **Cloudflare Tunnel**, which removes the need for port forwarding, a static IP, or dynamic DNS, and greatly reduces exposed surface |
 
 Expected steady-state footprint: PostgreSQL ~200 MB, API ~150 MB, Caddy ~20 MB — comfortable within 1 GB for this user count.
+
+🟡 (v1.17) **Password hashing on the Pi is unmeasured.** Argon2id at the §7 parameters is memory-hard and the Pi 3 B+ has slow memory and in-order cores. No Pi was available; the API image carries `dist/argon2-bench.js`, which times the very `PasswordHasher` sign-in uses, and `docs/deployment.md` gives the command and a decision rule (about 0.5 s or less is fine; over about 1 s, switch to one of OWASP's lower-memory equivalents). The same image measured about 9 ms per hash on Apple silicon under a 1-CPU, 256 MiB limit, which shows the code path works and fits in memory but says nothing about Pi speed.
 
 ---
 
@@ -1048,7 +1052,7 @@ If P0 shows the engine cannot be built to specification or does not feel right, 
 | R2 | Per-keystroke re-rendering stalls input | G1 missed | Per-line memoization, engine state outside React, measured in DevTools before optimizing further |
 | R3 | Authored blocks contain syntax errors, non-ASCII, comments, or framework dependencies | Content quality drops | Automated validation in the content CLI, enforced in CI; review via pull request |
 | R4 | Too few blocks, so runs feel repetitive | Practice value and motivation drop | 20 blocks issued per run and no repeats until the pool cycles; pool target 150 per language |
-| R5 | Raspberry Pi 3 B+ runs out of memory | Service stops | Tuning in §9.7, restart policies, daily backups; Lightsail remains the primary target |
+| R5 | Raspberry Pi 3 B+ runs out of memory, or hashes passwords too slowly | Service stops, or sign-in is slow | Tuning in §9.7, restart policies, daily backups, the Argon2 benchmark and its decision rule (§9.7); Lightsail remains the primary target |
 | R6 | Time zone change corrupts aggregates | Past records display incorrectly | Profile time zone plus a recomputation batch (§6.4) |
 | R7 | Score definition changes later | Old records become incomparable | `app_version` is recorded on every run; a definition change either migrates old rows or starts a separate board — never silently mixes them |
 | R8 | Hard delete means an accidental deletion is unrecoverable | Lost records | Confirmation dialog, plus the daily backup as the only recovery path. Accepted consequence of Q18 |
@@ -1169,3 +1173,10 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.16 | "Today" and "this week" computed at query time | Unlike `storeRun`, which fixes `local_date`/`local_week_start` once at insert time, rankings and history compute the current day and week boundary fresh on every request, from the database clock and the player's profile time zone in the same statement. A stored run's date never changes, but which stored rows count as "today" moves the instant local midnight passes for that profile (§6.1, §6.3, §6.4) |
 | 1.16 | No new index for history | The history list reuses the existing `user_id`-leading composite indexes rather than adding one for `(user_id, started_at)`; at the §9.6 target scale (10,000 rows per user) an in-memory sort after a `user_id` filter is fast enough. Recorded as a considered-and-declined optimization, not an oversight, should it need revisiting (§6.3, §9.6) |
 | 1.16 | Ownership checks return 404, not 403 | Deleting another user's run answers 404, the same as an unknown id, rather than 403 — consistent with `issued_runs` consumption (§9.8) and `auth/me` (§7): a request never reveals whether a resource exists for someone else (§6.3) |
+| 1.17 | Web baked into the Caddy image | The Caddy image is built with the static web build and the Caddyfile inside it, replacing a volume-copy design: no copy step, no start-order dependency, and still three containers (§9.7) |
+| 1.17 | `APP_VERSION` is a required build argument | The API image refuses to build without a real version, since a `dev` default in production would defeat R7; the value is the commit hash from `infra/docker/version.sh`, and CI passes the same 12 characters (§9.7) |
+| 1.17 | Explicit production migration | `dist/migrate.js` in the API image, run on request only; there is no TypeORM CLI or tsx in the image, and migrations stay explicit in every environment (§9.2, §9.7) |
+| 1.17 | Compression is gzip and zstd | Caddy's `encode` has no brotli. **Measured** through Caddy: the run payload 119,958 to 8,280 bytes gzip, the JS bundle 382,501 to 120,537, so §9.7's per-run budget holds (§9.7) |
+| 1.17 | `TRUST_PROXY` is the edge network | Compose gives the Caddy/API network a fixed subnet and `TRUST_PROXY` names exactly that range. **Verified:** the API sees the real client address rather than Caddy's, and a forged `X-Forwarded-For` is ignored (§7) |
+| 1.17 | Backup script must not report a failed dump as good | **Found during testing:** the first version's pipeline status was gzip's, so a dead `pg_dump` left a valid-looking empty archive under the real name. It now uses `pipefail` and requires pg_dump's completion marker before renaming; a failed dump and a stopped database both exit non-zero and leave no file (§9.6) |
+| 1.17 | What is and is not verified for deployment | **Verified locally:** both images build for amd64 and arm64; migrations and `citext` run on an amd64 PostgreSQL; the `__Host-` cookie, Origin checks, client address, HTTP/2 and compression over real TLS with Caddy's local CA; `app_version` recorded by a run through the stack; backup, restore, and pruning. **Not verified:** a real browser with a public certificate, GitHub Actions and GHCR, any Raspberry Pi measurement, and Lightsail itself (`docs/deployment.md`, "Not yet verified") |

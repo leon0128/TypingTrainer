@@ -4,6 +4,7 @@ import { AddIssuedRuns1789823131650 } from './1789823131650-AddIssuedRuns';
 import { AddCpuLevelToIssuedRuns1789900748145 } from './1789900748145-AddCpuLevelToIssuedRuns';
 import { AddLocaleCheck1789902462677 } from './1789902462677-AddLocaleCheck';
 import { AddUserPreferences1789903169290 } from './1789903169290-AddUserPreferences';
+import { AddGhostToIssuedRuns1789905002284 } from './1789905002284-AddGhostToIssuedRuns';
 
 /**
  * Every migration in order, listed explicitly: the production bundle has no migration files for a
@@ -17,4 +18,5 @@ export const MIGRATIONS = [
   AddCpuLevelToIssuedRuns1789900748145,
   AddLocaleCheck1789902462677,
   AddUserPreferences1789903169290,
+  AddGhostToIssuedRuns1789905002284,
 ];

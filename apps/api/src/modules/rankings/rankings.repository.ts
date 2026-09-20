@@ -3,6 +3,8 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import type { RankingPeriod } from '@typing-trainer/contracts';
 import type { DataSource } from 'typeorm';
 
+import { periodCondition } from '../../common/period-sql';
+
 export interface RankingRow {
   readonly id: string;
   readonly mode: string;
@@ -32,13 +34,7 @@ export class RankingsRepository {
        FROM play_sessions r
        JOIN users u ON u.id = r.user_id
        WHERE r.user_id = $1 AND r.language_id = $2
-         AND (
-           $3 = 'total'
-           OR ($3 = 'daily' AND r.local_date = (now() AT TIME ZONE u.timezone)::date)
-           OR ($3 = 'weekly' AND r.local_week_start =
-                 (now() AT TIME ZONE u.timezone)::date
-                   - EXTRACT(DOW FROM now() AT TIME ZONE u.timezone)::int)
-         )
+         AND ${periodCondition('$3')}
        ORDER BY r.score DESC, r.started_at ASC, r.id ASC
        LIMIT 10`,
       [userId, languageId, period],

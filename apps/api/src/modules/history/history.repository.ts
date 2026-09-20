@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import type { HistoryRequest } from '@typing-trainer/contracts';
 import type { DataSource } from 'typeorm';
 
+import { periodCondition } from '../../common/period-sql';
 import { returnedRows } from '../../database/returned-rows';
 
 export interface HistoryRow {
@@ -44,13 +45,7 @@ export class HistoryRepository {
        WHERE r.user_id = $1
          AND ($2::text IS NULL OR r.mode = $2)
          AND ($3::text IS NULL OR l.slug = $3)
-         AND (
-           $4::text IS NULL OR $4 = 'total'
-           OR ($4 = 'daily' AND r.local_date = (now() AT TIME ZONE u.timezone)::date)
-           OR ($4 = 'weekly' AND r.local_week_start =
-                 (now() AT TIME ZONE u.timezone)::date
-                   - EXTRACT(DOW FROM now() AT TIME ZONE u.timezone)::int)
-         )
+         AND ${periodCondition('$4')}
        ORDER BY r.started_at DESC, r.id DESC
        LIMIT $5 OFFSET $6`,
       [userId, mode ?? null, language ?? null, period ?? null, request.pageSize, offset],
@@ -64,13 +59,7 @@ export class HistoryRepository {
        WHERE r.user_id = $1
          AND ($2::text IS NULL OR r.mode = $2)
          AND ($3::text IS NULL OR l.slug = $3)
-         AND (
-           $4::text IS NULL OR $4 = 'total'
-           OR ($4 = 'daily' AND r.local_date = (now() AT TIME ZONE u.timezone)::date)
-           OR ($4 = 'weekly' AND r.local_week_start =
-                 (now() AT TIME ZONE u.timezone)::date
-                   - EXTRACT(DOW FROM now() AT TIME ZONE u.timezone)::int)
-         )`,
+         AND ${periodCondition('$4')}`,
       [userId, mode ?? null, language ?? null, period ?? null],
     );
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import type { ContentLanguage } from '@typing-trainer/contracts';
+import type { ContentLanguage, GhostPeriod } from '@typing-trainer/contracts';
 import type { DataSource } from 'typeorm';
 
 import { returnedRows } from '../../database/returned-rows';
@@ -19,6 +19,9 @@ export interface ConsumedRun {
   readonly mode: string;
   /** The CPU's level for a vs CPU run, else null (§4.3). */
   readonly cpuLevel: number | null;
+  /** For a Ghost run, the period and the record's score as fixed when the run was issued (§4.4). */
+  readonly ghostPeriod: GhostPeriod | null;
+  readonly ghostScore: number | null;
   readonly seed: string;
   readonly contentRevision: string;
   readonly blockIds: string[];
@@ -35,6 +38,8 @@ interface ConsumedRunColumns {
   language: ContentLanguage;
   mode: string;
   cpu_level: number | null;
+  ghost_period: GhostPeriod | null;
+  ghost_score: number | null;
   rng_seed: string;
   content_revision: string;
   block_ids: string[];
@@ -58,6 +63,7 @@ export interface RunToStore {
   readonly mode: string;
   /** vs CPU only: the level, the CPU's score, and the judged result (§4.3.4). */
   readonly cpuLevel: number | null;
+  readonly ghostPeriod: GhostPeriod | null;
   readonly opponentScore: number | null;
   readonly result: 'win' | 'lose' | null;
   readonly durationSec: number;
@@ -95,20 +101,25 @@ export class IssuedRunsRepository {
     languageId: number;
     mode: string;
     cpuLevel: number | null;
+    ghostPeriod: GhostPeriod | null;
+    ghostScore: number | null;
     seed: bigint;
     contentRevision: string;
     blockIds: readonly string[];
   }): Promise<IssuedRunRow> {
     const result: unknown = await this.dataSource.query(
       `INSERT INTO issued_runs
-         (user_id, language_id, mode, cpu_level, rng_seed, content_revision, block_ids)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+         (user_id, language_id, mode, cpu_level, ghost_period, ghost_score, rng_seed,
+          content_revision, block_ids)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING id, issued_at`,
       [
         run.userId,
         run.languageId,
         run.mode,
         run.cpuLevel,
+        run.ghostPeriod,
+        run.ghostScore,
         run.seed.toString(),
         run.contentRevision,
         [...run.blockIds],
@@ -131,7 +142,7 @@ export class IssuedRunsRepository {
        WHERE r.id = $1 AND r.user_id = $2 AND r.submitted_at IS NULL
          AND r.issued_at > now() - make_interval(secs => $3)
          AND l.id = r.language_id
-       RETURNING r.id, r.language_id, l.slug AS language, r.mode, r.cpu_level, r.rng_seed, r.content_revision,
+       RETURNING r.id, r.language_id, l.slug AS language, r.mode, r.cpu_level, r.ghost_period, r.ghost_score, r.rng_seed, r.content_revision,
                  r.block_ids, r.issued_at, r.submitted_at,
                  round(extract(epoch FROM now() - r.issued_at) * 1000) AS wall_elapsed_ms`,
       [id, userId, windowMs / 1000],
@@ -145,6 +156,8 @@ export class IssuedRunsRepository {
           language: row.language,
           mode: row.mode,
           cpuLevel: row.cpu_level,
+          ghostPeriod: row.ghost_period,
+          ghostScore: row.ghost_score,
           seed: row.rng_seed,
           contentRevision: row.content_revision,
           blockIds: row.block_ids,
@@ -181,12 +194,12 @@ export class IssuedRunsRepository {
        INSERT INTO play_sessions (
          user_id, mode, language_id, duration_sec, started_at, timezone, local_date,
          local_week_start, raw_keystrokes, effective_keystrokes, miss_count, kpm, accuracy, score,
-         rng_seed, content_revision, app_version, cpu_level, opponent_score, result)
+         rng_seed, content_revision, app_version, cpu_level, opponent_score, result, ghost_period)
        SELECT run.user_id, $2, $3, $4, run.started_at, run.timezone,
               (run.started_at AT TIME ZONE run.timezone)::date,
               (run.started_at AT TIME ZONE run.timezone)::date
                 - EXTRACT(DOW FROM run.started_at AT TIME ZONE run.timezone)::int,
-              $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+              $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
        FROM run
        -- local_date as text: the driver would turn a date into a Date at the server's midnight.
        RETURNING id, started_at, local_date::text AS local_date`,
@@ -210,6 +223,7 @@ export class IssuedRunsRepository {
         run.cpuLevel,
         run.opponentScore,
         run.result,
+        run.ghostPeriod,
       ],
     );
     const row = returnedRows<{ id: string; started_at: Date; local_date: string }>(result)[0];

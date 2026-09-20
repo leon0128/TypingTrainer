@@ -4,24 +4,39 @@ import { ContentLanguageSchema } from './content-bundle';
 import { SessionLogSchema } from './session-log';
 import { TypingProgramSchema } from './typing-program';
 
-/** Single play and vs CPU; Ghost arrives in P3 (§10). */
-export const PlayModeSchema = z.enum(['single', 'cpu']);
+/** Single play, vs CPU, and Ghost (§4). */
+export const PlayModeSchema = z.enum(['single', 'cpu', 'ghost']);
 
 export const CpuLevelSchema = z.int().min(1).max(100);
 
-/** Body of `POST /api/play/sessions` (§9.5): vs CPU needs a level, single play must not have one. */
+/** Which of the player's own records a Ghost reproduces (§4.4): the best of today, this week, or ever. */
+export const GhostPeriodSchema = z.enum(['daily', 'weekly', 'total']);
+
+/**
+ * Body of `POST /api/play/sessions` (§9.5). vs CPU needs a level, Ghost needs a period, and each
+ * setting is refused for the modes that do not use it.
+ */
 export const StartSessionRequestSchema = z
   .object({
     language: ContentLanguageSchema,
     mode: PlayModeSchema.default('single'),
     cpuLevel: CpuLevelSchema.optional(),
+    ghostPeriod: GhostPeriodSchema.optional(),
   })
   .superRefine((value, context) => {
-    if (value.mode === 'cpu' && value.cpuLevel === undefined) {
+    const needsLevel = value.mode === 'cpu';
+    const needsPeriod = value.mode === 'ghost';
+    if (needsLevel && value.cpuLevel === undefined) {
       context.addIssue({ code: 'custom', path: ['cpuLevel'], message: 'is required for vs CPU' });
     }
-    if (value.mode === 'single' && value.cpuLevel !== undefined) {
+    if (!needsLevel && value.cpuLevel !== undefined) {
       context.addIssue({ code: 'custom', path: ['cpuLevel'], message: 'is only for vs CPU' });
+    }
+    if (needsPeriod && value.ghostPeriod === undefined) {
+      context.addIssue({ code: 'custom', path: ['ghostPeriod'], message: 'is required for Ghost' });
+    }
+    if (!needsPeriod && value.ghostPeriod !== undefined) {
+      context.addIssue({ code: 'custom', path: ['ghostPeriod'], message: 'is only for Ghost' });
     }
   });
 
@@ -33,8 +48,14 @@ export const StartSessionResponseSchema = z.object({
   sessionId: z.uuid(),
   language: ContentLanguageSchema,
   mode: PlayModeSchema,
-  /** The CPU's level for a vs CPU run, null for single play (§4.3). */
+  /** The CPU's level for a vs CPU run, null otherwise (§4.3). */
   cpuLevel: CpuLevelSchema.nullable(),
+  /**
+   * For a Ghost run, the period and the score of the record it reproduces, fixed when the run was
+   * issued (§4.4); null otherwise.
+   */
+  ghostPeriod: GhostPeriodSchema.nullable(),
+  ghostScore: z.int().min(1).nullable(),
   /** The 64-bit draw seed in decimal, since JSON numbers cannot hold it exactly. */
   seed: z.string().regex(/^\d+$/),
   contentRevision: z.string().regex(/^[0-9a-f]{64}$/),
@@ -45,6 +66,7 @@ export const StartSessionResponseSchema = z.object({
 });
 
 export type PlayMode = z.infer<typeof PlayModeSchema>;
+export type GhostPeriod = z.infer<typeof GhostPeriodSchema>;
 export type StartSessionRequest = z.output<typeof StartSessionRequestSchema>;
 export type StartSessionResponse = z.infer<typeof StartSessionResponseSchema>;
 
@@ -69,8 +91,9 @@ export const PlayRunSchema = z.object({
   kpm: z.number().nonnegative(),
   accuracy: z.number().min(0).max(1),
   score: z.int().nonnegative(),
-  /** vs CPU only: the level played, the CPU's score, and whether the player won (tie = win). */
+  /** vs CPU and Ghost only: the opponent's score and whether the player won (a tie is a win). */
   cpuLevel: CpuLevelSchema.nullable(),
+  ghostPeriod: GhostPeriodSchema.nullable(),
   opponentScore: z.int().nonnegative().nullable(),
   result: z.enum(['win', 'lose']).nullable(),
 });

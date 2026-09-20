@@ -29,6 +29,8 @@ const ISSUED = {
   language: 'python',
   mode: 'single',
   cpuLevel: null,
+  ghostPeriod: null,
+  ghostScore: null,
   seed: '7',
   contentRevision: 'b'.repeat(64),
   blocks: [IF_PROGRAM],

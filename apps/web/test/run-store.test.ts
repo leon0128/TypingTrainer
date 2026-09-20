@@ -32,6 +32,8 @@ function issuedRun(overrides: Partial<StartSessionResponse> = {}): StartSessionR
     language: 'python',
     mode: 'single',
     cpuLevel: null,
+    ghostPeriod: null,
+    ghostScore: null,
     seed: '42',
     contentRevision: 'a'.repeat(64),
     blocks: BLOCKS,

@@ -11,13 +11,15 @@ import {
   type OnModuleDestroy,
   type OnModuleInit,
 } from '@nestjs/common';
-import type {
-  PlayRun,
-  StartSessionRequest,
-  StartSessionResponse,
-  SubmitResultRequest,
-  TypingProgram,
-  User,
+import {
+  PlayModeSchema,
+  type PlayMode,
+  type PlayRun,
+  type StartSessionRequest,
+  type StartSessionResponse,
+  type SubmitResultRequest,
+  type TypingProgram,
+  type User,
 } from '@typing-trainer/contracts';
 import {
   IDLE_LIMIT_MS,
@@ -27,6 +29,7 @@ import {
   cpuScore,
   cpuTimeline,
   drawBlockIds,
+  ghostTimeline,
   judgeMatch,
   replaySession,
 } from '@typing-trainer/typing-engine';
@@ -34,6 +37,7 @@ import {
 import { SlidingWindowLimiter, enforce } from '../../common/rate-limit';
 import { ENV, type Env } from '../../config/env';
 import { ContentLibrary } from '../content/content-library';
+import { GhostRecordsRepository } from '../ghost/ghost-records.repository';
 import { IssuedRunsRepository, type ConsumedRun } from './issued-runs.repository';
 import {
   ISSUED_RUN_CLEANUP_INTERVAL_MS,
@@ -42,6 +46,11 @@ import {
 } from './play.constants';
 import { checkPlausibility } from './play-validation';
 import { SUBMISSION_WINDOW_MS } from './plausibility-limits';
+
+/** The mode column as a mode: the database's CHECK allows nothing else. */
+function playMode(mode: string): PlayMode {
+  return PlayModeSchema.parse(mode);
+}
 
 /** A 63-bit seed, so it fits the signed bigint column and typing-engine's range. */
 function newSeed(): bigint {
@@ -60,6 +69,7 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(IssuedRunsRepository) private readonly issuedRuns: IssuedRunsRepository,
     @Inject(ContentLibrary) private readonly content: ContentLibrary,
+    @Inject(GhostRecordsRepository) private readonly records: GhostRecordsRepository,
     @Inject(ENV) private readonly env: Env,
   ) {}
 
@@ -77,6 +87,19 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
       throw new NotFoundException(`language "${request.language}" is not available`);
     }
 
+    // A Ghost reproduces the player's best of the period as it stands now, and that score is kept
+    // with the run: the client cannot name one, and a later change to the records (a new best, a
+    // deleted run) cannot change what this run is judged against (§4.4).
+    const ghostScore =
+      request.mode === 'ghost' && request.ghostPeriod !== undefined
+        ? await this.records.best(user.id, languageId, request.ghostPeriod)
+        : null;
+    if (request.mode === 'ghost' && (ghostScore === null || ghostScore < 1)) {
+      throw new ConflictException(
+        `there is no record for ${request.ghostPeriod ?? 'that period'} to race`,
+      );
+    }
+
     const seed = newSeed();
     const blockIds = drawBlockIds(bundle.blockIds, seed, RUN_BLOCK_COUNT);
     const blocks = blockIds.map((blockId) => this.program(request.language, blockId));
@@ -86,6 +109,8 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
       languageId,
       mode: request.mode,
       cpuLevel: request.cpuLevel ?? null,
+      ghostPeriod: request.ghostPeriod ?? null,
+      ghostScore,
       seed,
       contentRevision: bundle.revision,
       blockIds,
@@ -96,6 +121,8 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
       language: request.language,
       mode: request.mode,
       cpuLevel: request.cpuLevel ?? null,
+      ghostPeriod: request.ghostPeriod ?? null,
+      ghostScore,
       seed: seed.toString(),
       contentRevision: bundle.revision,
       blocks,
@@ -133,18 +160,21 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
     }
 
     const { metrics } = replay;
-    // The opponent is recomputed here from the issued seed and level; nothing the client says about
-    // the match is used (§9.8). Only vs CPU runs have one (§4.3.4).
-    const opponent =
-      run.mode === 'cpu' && run.cpuLevel !== null
-        ? cpuScore(cpuTimeline(programs, run.cpuLevel, BigInt(run.seed)))
-        : null;
+    // The opponent is recomputed here from what was issued — the seed and level for the CPU, the
+    // record's score for the Ghost; nothing the client says about the match is used (§9.8).
+    let opponent: number | null = null;
+    if (run.mode === 'cpu' && run.cpuLevel !== null) {
+      opponent = cpuScore(cpuTimeline(programs, run.cpuLevel, BigInt(run.seed)));
+    } else if (run.mode === 'ghost' && run.ghostScore !== null) {
+      opponent = cpuScore(ghostTimeline(programs, run.ghostScore));
+    }
     const result = opponent === null ? null : judgeMatch(metrics.score, opponent);
     const stored = await this.issuedRuns.storeRun({
       userId: user.id,
       languageId: run.languageId,
       mode: run.mode,
       cpuLevel: run.cpuLevel,
+      ghostPeriod: run.ghostPeriod,
       opponentScore: opponent,
       result,
       durationSec: PLAY_DURATION_MS / 1000,
@@ -165,7 +195,7 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
     return {
       id: stored.id,
       language: run.language,
-      mode: run.mode === 'cpu' ? 'cpu' : 'single',
+      mode: playMode(run.mode),
       startedAt: stored.startedAt.toISOString(),
       localDate: stored.localDate,
       effectiveKeystrokes: metrics.effective,
@@ -175,6 +205,7 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
       accuracy: metrics.accuracy,
       score: metrics.score,
       cpuLevel: run.cpuLevel,
+      ghostPeriod: run.ghostPeriod,
       opponentScore: opponent,
       result,
     };

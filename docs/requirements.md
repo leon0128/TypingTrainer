@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.29 |
+| Version | 1.30 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.28 — the Ghost's pacing is built and its exactness verified (§4.4, Appendix B) |
+| Supersedes | v1.29 — Ghost runs are issued, judged, and stored by the server (§4.4, §9.5, §9.8, Appendix B) |
 
 **Legend**
 
@@ -943,12 +943,13 @@ Design points:
 | GET | `/api/auth/me` | Current user |
 | DELETE | `/api/auth/me` | Delete the account and all data (P3, with account deletion; §10) |
 | GET | `/api/languages` | Available languages |
-| POST | `/api/play/sessions` | **Start a run.** Body `{ language, mode, cpuLevel? }`: `mode` is `single` or `cpu`, and `cpuLevel` (1–100) is required for `cpu` and refused for `single`. Returns 20 compiled blocks, the RNG seed, and the level (Ghost parameters arrive with Ghost) |
+| POST | `/api/play/sessions` | **Start a run.** Body `{ language, mode, cpuLevel?, ghostPeriod? }`: `mode` is `single`, `cpu`, or `ghost`; `cpuLevel` (1–100) is required for `cpu` and `ghostPeriod` (`daily`, `weekly`, `total`) for `ghost`, and each is refused for the other modes. Returns 20 compiled blocks, the RNG seed, and the level or the Ghost's period and record score. A Ghost with no record to race answers 409 |
 | POST | `/api/play/sessions/:id/result` | Submit a result; validated server-side |
 | GET | `/api/rankings` | `?period=daily\|weekly\|total&language=` |
 | GET | `/api/dashboard` | `?period=daily\|weekly\|total&language=&from=&to=` (`from`/`to` are inclusive local dates; §6.2) |
 | GET | `/api/history` | Paged list |
 | DELETE | `/api/history/:id` | Delete one run |
+| GET | `/api/ghost-records` | 🟡 (v1.30) The player's best score per language in each period (null where there is none), which decides which Ghost options can be chosen (§4.4) |
 | GET | `/api/cpu-conquests` | Conquest state of every enabled language: highest level beaten, the levels beaten, and their count (§4.3.4) |
 | GET / PUT | `/api/preferences` | 🟡 (v1.25, v1.26) `GET` returns the time zone (read only), the display language, and the appearance (`font`, `fontSize`, `theme`, `colorPreset`); `PUT` changes the settings sent (`locale`, and those four) and refuses anything else with 400. Sound settings join it with F-13 |
 
@@ -1225,3 +1226,8 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.29 | Ghost timeline | The Ghost types the same canonical keys as the CPU, one every `60000 / record` milliseconds starting one interval after the player's first key, with no variation; its score is counted by the same rule as the CPU's, so the two share one judging function and a tie is a win (§4.4, Q16) |
 | 1.29 | The Ghost scores exactly the record | **Verified for every record from 1 to 2,400** (the fastest the server accepts, §9.8): `2 × record − 1` keys fall before the 120-second mark and the half rounds up to the record. A wrong interval, a doubled or halved pace, and a shifted key each fail a test; a first key at time 0 gives the same score but not the same pacing and is caught by the timing test (§4.4, Q32) |
 | 1.29 | A short block pool | If the issued blocks hold fewer keys than the pace would type (a record above about 1,500 with short blocks), the Ghost stops when they run out and scores what it typed, below the record. The server judges by the timeline it computes, so the stored opponent score is what the Ghost really did; §4.4's "exactly the record" holds whenever the blocks last (§4.4, §9.8) |
+| 1.30 | The server names the Ghost's record | A Ghost run is issued with a period only. The server takes the player's best score of that language and period at that moment, from every mode as the rankings do (§6.1), and stores it on the issued run (`ghost_period`, `ghost_score`); the client cannot name a record (an attempt is ignored, and a test sends one), and a later new best or deleted run cannot change what the run is judged against, which a test checks by deleting the record and adding a far better run before the result arrives. A period with no record, or with a best of 0 that cannot set a pace, answers 409 (§4.4, §9.8) |
+| 1.30 | The Ghost's score is the record | **Verified through the API** with real blocks: a Ghost issued against a record of 60 stores an opponent score of exactly 60; a tie is a win and one point short is a loss, each set up by drawing runs until a log lands on the score. The opponent is recomputed on the server from the issued score, and a client-claimed result, opponent score, record, and period are ignored (§4.4, Q16, Q32) |
+| 1.30 | One definition of a period | "Today" and "this week" (profile time zone, Sunday weeks) were written out twice, in rankings and in history; they now live in one function that rankings, history, and Ghost records all use, so the Ghost's record and the ranking's top entry cannot disagree. The existing rankings and history tests passed unchanged (§6.1, §6.4) |
+| 1.30 | Mode consistency in `issued_runs` | The CPU-level constraint became `chk_issued_runs_opponent`, in the same form as `play_sessions`' own: each mode carries exactly its own fields, every nullable comparison paired with `IS NOT NULL`. Eight invalid combinations are refused by the database, whatever wrote them (§9.3) |
+| 1.30 | Verified for the Ghost's server side | Nine changes each fail a test: weekly read as daily, daily by UTC instead of the profile zone, the record without the user filter (in both queries), the record from single play only, the pace off by one, the period ignored, a record of 0 accepted, and judging by the record at submission instead of at issue (§4.4, §9.8) |

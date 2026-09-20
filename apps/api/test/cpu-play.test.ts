@@ -145,7 +145,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('vs CPU (TEST_DATABASE_URL)', ()
            FROM issued_runs WHERE id = $1`,
           [probe.sessionId, mode, level],
         ),
-      ).rejects.toThrow(/chk_issued_runs_cpu_level/);
+      ).rejects.toThrow(/chk_issued_runs_opponent/);
     });
   });
 

@@ -54,6 +54,7 @@ export {
 export type { RankingEntry, RankingPeriod, RankingsRequest, RankingsResponse } from './rankings';
 export {
   CpuLevelSchema,
+  GhostPeriodSchema,
   PlayModeSchema,
   PlayRunSchema,
   StartSessionRequestSchema,
@@ -62,6 +63,7 @@ export {
   SubmitResultResponseSchema,
 } from './play';
 export type {
+  GhostPeriod,
   PlayMode,
   PlayRun,
   StartSessionRequest,
@@ -112,3 +114,5 @@ export type {
   Theme,
   UpdatePreferencesRequest,
 } from './preferences';
+export { GhostRecordsResponseSchema, LanguageGhostRecordsSchema } from './ghost-records';
+export type { GhostRecordsResponse, LanguageGhostRecords } from './ghost-records';

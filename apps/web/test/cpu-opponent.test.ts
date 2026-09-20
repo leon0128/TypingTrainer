@@ -19,6 +19,8 @@ const CPU_RUN: StartSessionResponse = {
   language: 'python',
   mode: 'cpu',
   cpuLevel: 60,
+  ghostPeriod: null,
+  ghostScore: null,
   seed: '42',
   contentRevision: 'a'.repeat(64),
   blocks: BLOCKS,

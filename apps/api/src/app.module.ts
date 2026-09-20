@@ -6,6 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ContentModule } from './modules/content/content.module';
 import { HistoryModule } from './modules/history/history.module';
+import { GhostModule } from './modules/ghost/ghost.module';
 import { HealthModule } from './modules/health/health.module';
 import { LanguagesModule } from './modules/languages/languages.module';
 import { PlayModule } from './modules/play/play.module';
@@ -27,6 +28,7 @@ export class AppModule {
         ConquestsModule,
         DashboardModule,
         HistoryModule,
+        GhostModule,
         HealthModule,
         LanguagesModule,
         PlayModule,

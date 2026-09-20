@@ -1,13 +1,19 @@
 import type { SessionLog, TypingProgram } from '@typing-trainer/contracts';
-import { ENTER_KEY, SPACE_KEY, buildSessionLog } from '@typing-trainer/typing-engine';
+import {
+  ENTER_KEY,
+  SPACE_KEY,
+  buildSessionLog,
+  withTypedClosers,
+} from '@typing-trainer/typing-engine';
 
 /**
- * The keys a player types for a block: every literal character and every required separator. Auto
- * and padding atoms are inserted by the engine, and optional separators may be skipped.
+ * The keys a player types for a block: every literal character and every required separator. Closing
+ * brackets are typed too; only indentation and padding are inserted by the engine, and optional
+ * separators may be skipped.
  */
 export function canonicalKeys(program: TypingProgram): string[] {
   const keys: string[] = [];
-  for (const atom of program.atoms) {
+  for (const atom of withTypedClosers(program).atoms) {
     if (atom.kind === 'literal') keys.push(...Array.from(atom.text));
     else if (atom.kind === 'separator' && atom.required) {
       keys.push(atom.canonical === '\n' ? ENTER_KEY : SPACE_KEY);

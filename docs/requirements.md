@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.28 |
+| Version | 1.29 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.27 — the appearance screen exists and the caret follows the cursor (§8.1, §8.2, Appendix B) |
+| Supersedes | v1.28 — the Ghost's pacing is built and its exactness verified (§4.4, Appendix B) |
 
 **Legend**
 
@@ -1222,3 +1222,6 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.28 | A found and fixed defect | Reading the caret's and panel's `DOMRect` by spreading it copied nothing in a browser, since a rectangle's fields live on its prototype, and passed every test that used a plain object as a stand-in. The reading is now field by field and the test double is a class with prototype getters; the original form fails that test (§8.1) |
 | 1.28 | Saving appearance changes | Changes are saved one at a time in order, and an answer settles only the settings its request carried. **Found by a test:** with the first version, a slow answer to one change put the previous value of another back on screen, and two unlucky answers could end in the wrong state (§8.2) |
 | 1.28 | Appearance screen | `/settings` offers the five fonts (each shown in itself), the five sizes, the four themes, and the three colour sets, with a live preview showing typed, cursor, pending, and unfilled auto text and the miss flash; the language switch waits for U18 (§8.2) |
+| 1.29 | Ghost timeline | The Ghost types the same canonical keys as the CPU, one every `60000 / record` milliseconds starting one interval after the player's first key, with no variation; its score is counted by the same rule as the CPU's, so the two share one judging function and a tie is a win (§4.4, Q16) |
+| 1.29 | The Ghost scores exactly the record | **Verified for every record from 1 to 2,400** (the fastest the server accepts, §9.8): `2 × record − 1` keys fall before the 120-second mark and the half rounds up to the record. A wrong interval, a doubled or halved pace, and a shifted key each fail a test; a first key at time 0 gives the same score but not the same pacing and is caught by the timing test (§4.4, Q32) |
+| 1.29 | A short block pool | If the issued blocks hold fewer keys than the pace would type (a record above about 1,500 with short blocks), the Ghost stops when they run out and scores what it typed, below the record. The server judges by the timeline it computes, so the stored opponent score is what the Ghost really did; §4.4's "exactly the record" holds whenever the blocks last (§4.4, §9.8) |

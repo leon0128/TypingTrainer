@@ -48,3 +48,4 @@ export {
   judgeMatch,
   keyCost,
 } from './cpu';
+export { ghostTimeline } from './ghost';

@@ -11,6 +11,8 @@ export interface PreferencesRow {
   readonly font_size: number | null;
   readonly theme: string | null;
   readonly color_preset: string | null;
+  readonly sound_pack: string | null;
+  readonly sound_volume: number | null;
 }
 
 @Injectable()
@@ -31,8 +33,9 @@ export class PreferencesRepository {
       if (patch.locale !== undefined) {
         await manager.query(`UPDATE users SET locale = $2 WHERE id = $1`, [userId, patch.locale]);
       }
-      const { font, fontSize, theme, colorPreset } = patch;
-      if ([font, fontSize, theme, colorPreset].some((setting) => setting !== undefined)) {
+      const { font, fontSize, theme, colorPreset, soundPack, soundVolume } = patch;
+      const stored = [font, fontSize, theme, colorPreset, soundPack, soundVolume];
+      if (stored.some((setting) => setting !== undefined)) {
         await manager.query(
           `INSERT INTO user_preferences (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING`,
           [userId],
@@ -42,9 +45,19 @@ export class PreferencesRepository {
              font = COALESCE($2, font),
              font_size = COALESCE($3, font_size),
              theme = COALESCE($4, theme),
-             color_preset = COALESCE($5, color_preset)
+             color_preset = COALESCE($5, color_preset),
+             sound_pack = COALESCE($6, sound_pack),
+             sound_volume = COALESCE($7, sound_volume)
            WHERE user_id = $1`,
-          [userId, font ?? null, fontSize ?? null, theme ?? null, colorPreset ?? null],
+          [
+            userId,
+            font ?? null,
+            fontSize ?? null,
+            theme ?? null,
+            colorPreset ?? null,
+            soundPack ?? null,
+            soundVolume ?? null,
+          ],
         );
       }
       return this.select(manager, userId);
@@ -56,7 +69,8 @@ export class PreferencesRepository {
     userId: string,
   ): Promise<PreferencesRow | undefined> {
     const rows = await manager.query<PreferencesRow[]>(
-      `SELECT u.timezone, u.locale, p.font, p.font_size, p.theme, p.color_preset
+      `SELECT u.timezone, u.locale, p.font, p.font_size, p.theme, p.color_preset, p.sound_pack,
+              p.sound_volume
        FROM users u LEFT JOIN user_preferences p ON p.user_id = u.id
        WHERE u.id = $1`,
       [userId],

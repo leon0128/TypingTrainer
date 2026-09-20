@@ -34,6 +34,24 @@ export const DEFAULT_APPEARANCE = {
   colorPreset: 'standard',
 } as const;
 
+/** Key sound packs (§8.3): three, plus off. */
+export const SOUND_PACKS = ['off', 'mechanical', 'soft', 'beep'] as const;
+export const SoundPackSchema = z.enum(SOUND_PACKS);
+
+/** Key sound volume, 0 to 100 (§8.3). */
+export const SoundVolumeSchema = z.int().min(0).max(100);
+
+/** Off, and low when turned on: nothing is heard until the player asks for it (§8.3). */
+export const DEFAULT_SOUND = {
+  soundPack: 'off',
+  soundVolume: 30,
+} as const;
+
+export const SoundSchema = z.object({
+  soundPack: SoundPackSchema,
+  soundVolume: SoundVolumeSchema,
+});
+
 export const AppearanceSchema = z.object({
   font: FontSchema,
   fontSize: FontSizeSchema,
@@ -45,7 +63,7 @@ export const AppearanceSchema = z.object({
  * What `GET /api/preferences` returns (§9.5). The time zone is shown but not editable: it is fixed
  * when the account is created (§6.4).
  */
-export const PreferencesSchema = AppearanceSchema.extend({
+export const PreferencesSchema = AppearanceSchema.extend(SoundSchema.shape).extend({
   timezone: z.string(),
   locale: LocaleSchema,
 });
@@ -62,6 +80,8 @@ export const UpdatePreferencesRequestSchema = z
     fontSize: FontSizeSchema.optional(),
     theme: ThemeSchema.optional(),
     colorPreset: ColorPresetSchema.optional(),
+    soundPack: SoundPackSchema.optional(),
+    soundVolume: SoundVolumeSchema.optional(),
   })
   .strict()
   .refine((value) => Object.values(value).some((setting) => setting !== undefined), {
@@ -74,5 +94,7 @@ export type FontSize = z.infer<typeof FontSizeSchema>;
 export type Theme = z.infer<typeof ThemeSchema>;
 export type ColorPreset = z.infer<typeof ColorPresetSchema>;
 export type Appearance = z.infer<typeof AppearanceSchema>;
+export type SoundPack = z.infer<typeof SoundPackSchema>;
+export type Sound = z.infer<typeof SoundSchema>;
 export type Preferences = z.infer<typeof PreferencesSchema>;
 export type UpdatePreferencesRequest = z.output<typeof UpdatePreferencesRequestSchema>;

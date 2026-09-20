@@ -14,7 +14,16 @@ const json = (body: unknown, status = 200) =>
 const echo = (requests: { body: unknown }[]) => (_url: string, init: { body?: string }) => {
   const patch = JSON.parse(init.body ?? '{}') as Partial<Appearance>;
   requests.push({ body: patch });
-  return Promise.resolve(json({ timezone: 'UTC', locale: 'en', ...DEFAULT_APPEARANCE, ...patch }));
+  return Promise.resolve(
+    json({
+      timezone: 'UTC',
+      locale: 'en',
+      soundPack: 'off',
+      soundVolume: 30,
+      ...DEFAULT_APPEARANCE,
+      ...patch,
+    }),
+  );
 };
 
 function renderScreen() {

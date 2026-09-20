@@ -21,6 +21,8 @@ const USER = {
 const preferences = (appearance: Appearance) => ({
   timezone: 'UTC',
   locale: 'en',
+  soundPack: 'off',
+  soundVolume: 30,
   ...appearance,
 });
 

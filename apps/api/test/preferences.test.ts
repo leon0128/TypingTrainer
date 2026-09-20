@@ -6,6 +6,7 @@ import {
   FONTS,
   FONT_SIZES,
   PreferencesSchema,
+  SOUND_PACKS,
   THEMES,
 } from '@typing-trainer/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -23,6 +24,9 @@ const APPEARANCE_DEFAULTS = {
   theme: 'system',
   colorPreset: 'standard',
 };
+
+/** Silent until chosen, and low when it is (§8.3). */
+const SOUND_DEFAULTS = { soundPack: 'off', soundVolume: 30 };
 
 let counter = 0;
 const nextUsername = () => `chooser${String((counter += 1))}`;
@@ -76,6 +80,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
       timezone: 'Asia/Tokyo',
       locale: 'en',
       ...APPEARANCE_DEFAULTS,
+      ...SOUND_DEFAULTS,
     });
   });
 
@@ -87,6 +92,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
       timezone: 'America/New_York',
       locale: 'ja',
       ...APPEARANCE_DEFAULTS,
+      ...SOUND_DEFAULTS,
     });
 
     expect(PreferencesSchema.parse((await call(me.token, 'GET')).json()).locale).toBe('ja');
@@ -120,6 +126,11 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
     ['a size sent as text', { fontSize: '18' }],
     ['an unknown theme', { theme: 'sepia' }],
     ['an unknown color preset', { colorPreset: 'neon' }],
+    ['an unknown sound pack', { soundPack: 'thunder' }],
+    ['a volume above 100', { soundVolume: 101 }],
+    ['a negative volume', { soundVolume: -1 }],
+    ['a fractional volume', { soundVolume: 30.5 }],
+    ['a volume sent as text', { soundVolume: '30' }],
   ])('refuses %s', async (_name, payload) => {
     const me = await signedIn('Europe/Paris');
     const response = await call(me.token, 'PUT', payload);
@@ -130,6 +141,73 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
       timezone: 'Europe/Paris',
       locale: 'en',
       ...APPEARANCE_DEFAULTS,
+      ...SOUND_DEFAULTS,
+    });
+  });
+
+  describe('sound', () => {
+    const sound = async (token: string) => {
+      const { soundPack, soundVolume } = PreferencesSchema.parse((await call(token, 'GET')).json());
+      return { soundPack, soundVolume };
+    };
+
+    it('is off and low until chosen', async () => {
+      const me = await signedIn('UTC');
+      expect(await sound(me.token)).toEqual({ soundPack: 'off', soundVolume: 30 });
+    });
+
+    it('stores the pack and the volume, each on its own and both at once', async () => {
+      const me = await signedIn('UTC');
+      await call(me.token, 'PUT', { soundPack: 'soft' });
+      expect(await sound(me.token)).toEqual({ soundPack: 'soft', soundVolume: 30 });
+      await call(me.token, 'PUT', { soundVolume: 75 });
+      expect(await sound(me.token)).toEqual({ soundPack: 'soft', soundVolume: 75 });
+      await call(me.token, 'PUT', { soundPack: 'beep', soundVolume: 0 });
+      expect(await sound(me.token)).toEqual({ soundPack: 'beep', soundVolume: 0 });
+    });
+
+    it('accepts every pack and the ends of the volume range', async () => {
+      const me = await signedIn('UTC');
+      for (const body of [
+        ...SOUND_PACKS.map((soundPack) => ({ soundPack })),
+        { soundVolume: 0 },
+        { soundVolume: 100 },
+      ]) {
+        expect((await call(me.token, 'PUT', body)).statusCode, JSON.stringify(body)).toBe(200);
+      }
+    });
+
+    it('leaves the appearance alone, and the sound alone when the appearance changes', async () => {
+      const me = await signedIn('UTC');
+      await call(me.token, 'PUT', { soundPack: 'mechanical', soundVolume: 60 });
+      await call(me.token, 'PUT', { theme: 'dark', fontSize: 24 });
+      expect(await sound(me.token)).toEqual({ soundPack: 'mechanical', soundVolume: 60 });
+      expect(PreferencesSchema.parse((await call(me.token, 'GET')).json())).toMatchObject({
+        theme: 'dark',
+        fontSize: 24,
+      });
+    });
+
+    it("keeps one player's sound from another's", async () => {
+      const me = await signedIn('UTC');
+      const other = await signedIn('UTC');
+      await call(me.token, 'PUT', { soundPack: 'mechanical', soundVolume: 90 });
+      expect(await sound(other.token)).toEqual({ soundPack: 'off', soundVolume: 30 });
+    });
+
+    it.each([
+      ['sound_pack', 'thunder'],
+      ['sound_volume', 101],
+      ['sound_volume', -1],
+    ])('refuses %s = %s in the database, whatever wrote it', async (column, value) => {
+      const me = await signedIn('UTC');
+      await call(me.token, 'PUT', { soundPack: 'soft' });
+      await expect(
+        database.dataSource.query(`UPDATE user_preferences SET ${column} = $2 WHERE user_id = $1`, [
+          me.id,
+          value,
+        ]),
+      ).rejects.toThrow(/chk_user_preferences_/);
     });
   });
 

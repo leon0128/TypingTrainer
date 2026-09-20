@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.31 |
+| Version | 1.32 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.30 — the Ghost can be played, and history filters by mode (§4.4, §6.3, §8.1, Appendix B) |
+| Supersedes | v1.31 — key sound settings are stored and served (§8.3, §9.3, §9.5, Appendix B) |
 
 **Legend**
 
@@ -951,7 +951,7 @@ Design points:
 | DELETE | `/api/history/:id` | Delete one run |
 | GET | `/api/ghost-records` | 🟡 (v1.30) The player's best score per language in each period (null where there is none), which decides which Ghost options can be chosen (§4.4) |
 | GET | `/api/cpu-conquests` | Conquest state of every enabled language: highest level beaten, the levels beaten, and their count (§4.3.4) |
-| GET / PUT | `/api/preferences` | 🟡 (v1.25, v1.26) `GET` returns the time zone (read only), the display language, and the appearance (`font`, `fontSize`, `theme`, `colorPreset`); `PUT` changes the settings sent (`locale`, and those four) and refuses anything else with 400. Sound settings join it with F-13 |
+| GET / PUT | `/api/preferences` | 🟡 (v1.25, v1.26) `GET` returns the time zone (read only), the display language, and the appearance (`font`, `fontSize`, `theme`, `colorPreset`); `PUT` changes the settings sent (`locale`, those four, and 🟡 (v1.32) `soundPack` and `soundVolume`) and refuses anything else with 400 |
 
 🟡 (v1.13) Every route requires a signed-in session unless it is explicitly public; the public routes are the health checks, `GET /api/languages`, and register, login, and logout. Errors use one body shape, `{ statusCode, error, message }`, and server errors never include their cause.
 
@@ -1235,3 +1235,5 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.31 | One opponent for both | The CPU and the Ghost are the same kind of opponent on the play screen: the same column, the same engine replay on the player's run clock, the same result line. The column is named by what it is — "CPU Lv.50", or "Ghost · today's best 88" — and its accessible name is "Opponent" (§8.1) |
 | 1.31 | History filters by mode | §6.3 lists period, mode, and language as filters, and the screen had no mode filter (found while adding Ghost, which would otherwise have been indistinguishable from other runs); it now offers All, Single play, vs CPU, and Ghost (§6.3) |
 | 1.31 | Not checked in a browser | The Ghost screens are covered by unit tests against a stubbed server; the whole path from a real API through the play screen was not driven in a browser this time, and the side-by-side layout was not measured for the Ghost either (§8.1) |
+| 1.32 | Sound settings | `user_preferences` gains `sound_pack` (`off`, `mechanical`, `soft`, `beep`) and `sound_volume` (0 to 100), each with a CHECK, served and changed through `GET / PUT /api/preferences` as `soundPack` and `soundVolume` like the appearance (§8.3, §9.3) |
+| 1.32 | Silent until chosen | The defaults are **pack `off`, volume 30**: nothing is heard until the player asks for it, and it is low when they do. §8.3 said "three plus off" and "defaulting low" but not which pack is the default; the requester confirmed off (§8.3) |

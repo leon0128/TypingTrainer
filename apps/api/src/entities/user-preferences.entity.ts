@@ -3,8 +3,8 @@ import { Check, Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'type
 import { User } from './user.entity';
 
 /**
- * Appearance settings (§8.2, §9.3), one row per user, created by the first change; an account with
- * no row has the defaults. Sound settings will add columns here with F-13.
+ * Appearance and sound settings (§8.2, §8.3, §9.3), one row per user, created by the first change;
+ * an account with no row has the defaults.
  */
 @Entity({ name: 'user_preferences' })
 @Check(
@@ -17,6 +17,8 @@ import { User } from './user.entity';
   'chk_user_preferences_color_preset',
   `"color_preset" IN ('standard', 'okabe-ito', 'monochrome')`,
 )
+@Check('chk_user_preferences_sound_pack', `"sound_pack" IN ('off', 'mechanical', 'soft', 'beep')`)
+@Check('chk_user_preferences_sound_volume', `"sound_volume" BETWEEN 0 AND 100`)
 export class UserPreferences {
   @PrimaryColumn({ name: 'user_id', type: 'uuid' })
   userId!: string;
@@ -36,4 +38,12 @@ export class UserPreferences {
 
   @Column({ name: 'color_preset', type: 'text', default: 'standard' })
   colorPreset!: string;
+
+  /** Key sound pack, `off` until chosen (§8.3). */
+  @Column({ name: 'sound_pack', type: 'text', default: 'off' })
+  soundPack!: string;
+
+  /** Key sound volume, 0 to 100 (§8.3). */
+  @Column({ name: 'sound_volume', type: 'smallint', default: 30 })
+  soundVolume!: number;
 }

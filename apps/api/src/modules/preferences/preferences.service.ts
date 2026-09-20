@@ -2,6 +2,8 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import {
   AppearanceSchema,
   DEFAULT_APPEARANCE,
+  DEFAULT_SOUND,
+  SoundSchema,
   LocaleSchema,
   type Preferences,
   type UpdatePreferencesRequest,
@@ -35,6 +37,10 @@ export class PreferencesService {
         fontSize: row.font_size ?? DEFAULT_APPEARANCE.fontSize,
         theme: row.theme ?? DEFAULT_APPEARANCE.theme,
         colorPreset: row.color_preset ?? DEFAULT_APPEARANCE.colorPreset,
+      }),
+      ...SoundSchema.parse({
+        soundPack: row.sound_pack ?? DEFAULT_SOUND.soundPack,
+        soundVolume: row.sound_volume ?? DEFAULT_SOUND.soundVolume,
       }),
     };
   }

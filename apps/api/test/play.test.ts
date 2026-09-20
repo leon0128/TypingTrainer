@@ -133,10 +133,10 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       expect(second.sessionId).not.toBe(first.sessionId);
     });
 
-    it('refuses a language that is unknown, disabled, or a mode P1 does not play', async () => {
+    it('refuses a language that is unknown, disabled, or a mode that is not played yet', async () => {
       const token = await signedIn();
       expect((await startRun(token, { language: 'rust' })).statusCode).toBe(400);
-      expect((await startRun(token, { language: 'python', mode: 'cpu' })).statusCode).toBe(400);
+      expect((await startRun(token, { language: 'python', mode: 'ghost' })).statusCode).toBe(400);
 
       await query(`UPDATE programming_languages SET enabled = false WHERE slug = 'go'`);
       const disabled = await startRun(token, { language: 'go' });

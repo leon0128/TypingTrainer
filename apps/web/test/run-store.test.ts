@@ -31,6 +31,7 @@ function issuedRun(overrides: Partial<StartSessionResponse> = {}): StartSessionR
     sessionId: '11111111-1111-4111-8111-111111111111',
     language: 'python',
     mode: 'single',
+    cpuLevel: null,
     seed: '42',
     contentRevision: 'a'.repeat(64),
     blocks: BLOCKS,

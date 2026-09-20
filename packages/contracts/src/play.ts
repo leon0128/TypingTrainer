@@ -4,14 +4,26 @@ import { ContentLanguageSchema } from './content-bundle';
 import { SessionLogSchema } from './session-log';
 import { TypingProgramSchema } from './typing-program';
 
-/** P1 plays solo; vs CPU arrives in P2 and Ghost in P3 (§10). */
-export const PlayModeSchema = z.literal('single');
+/** Single play and vs CPU; Ghost arrives in P3 (§10). */
+export const PlayModeSchema = z.enum(['single', 'cpu']);
 
-/** Body of `POST /api/play/sessions` (§9.5). */
-export const StartSessionRequestSchema = z.object({
-  language: ContentLanguageSchema,
-  mode: PlayModeSchema.default('single'),
-});
+export const CpuLevelSchema = z.int().min(1).max(100);
+
+/** Body of `POST /api/play/sessions` (§9.5): vs CPU needs a level, single play must not have one. */
+export const StartSessionRequestSchema = z
+  .object({
+    language: ContentLanguageSchema,
+    mode: PlayModeSchema.default('single'),
+    cpuLevel: CpuLevelSchema.optional(),
+  })
+  .superRefine((value, context) => {
+    if (value.mode === 'cpu' && value.cpuLevel === undefined) {
+      context.addIssue({ code: 'custom', path: ['cpuLevel'], message: 'is required for vs CPU' });
+    }
+    if (value.mode === 'single' && value.cpuLevel !== undefined) {
+      context.addIssue({ code: 'custom', path: ['cpuLevel'], message: 'is only for vs CPU' });
+    }
+  });
 
 /**
  * The issued run: the blocks to type, and the seed and content revision that identify them. The
@@ -21,6 +33,8 @@ export const StartSessionResponseSchema = z.object({
   sessionId: z.uuid(),
   language: ContentLanguageSchema,
   mode: PlayModeSchema,
+  /** The CPU's level for a vs CPU run, null for single play (§4.3). */
+  cpuLevel: CpuLevelSchema.nullable(),
   /** The 64-bit draw seed in decimal, since JSON numbers cannot hold it exactly. */
   seed: z.string().regex(/^\d+$/),
   contentRevision: z.string().regex(/^[0-9a-f]{64}$/),
@@ -55,6 +69,10 @@ export const PlayRunSchema = z.object({
   kpm: z.number().nonnegative(),
   accuracy: z.number().min(0).max(1),
   score: z.int().nonnegative(),
+  /** vs CPU only: the level played, the CPU's score, and whether the player won (tie = win). */
+  cpuLevel: CpuLevelSchema.nullable(),
+  opponentScore: z.int().nonnegative().nullable(),
+  result: z.enum(['win', 'lose']).nullable(),
 });
 
 /** Body of a stored result; an empty run answers 204 with no body instead. */

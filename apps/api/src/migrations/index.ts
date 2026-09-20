@@ -1,6 +1,7 @@
 import { InitialSchema1789646863673 } from './1789646863673-InitialSchema';
 import { AddUsernameCheck1789648873477 } from './1789648873477-AddUsernameCheck';
 import { AddIssuedRuns1789823131650 } from './1789823131650-AddIssuedRuns';
+import { AddCpuLevelToIssuedRuns1789900748145 } from './1789900748145-AddCpuLevelToIssuedRuns';
 
 /**
  * Every migration in order, listed explicitly: the production bundle has no migration files for a
@@ -11,4 +12,5 @@ export const MIGRATIONS = [
   InitialSchema1789646863673,
   AddUsernameCheck1789648873477,
   AddIssuedRuns1789823131650,
+  AddCpuLevelToIssuedRuns1789900748145,
 ];

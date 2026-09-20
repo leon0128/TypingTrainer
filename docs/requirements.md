@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.21 |
+| Version | 1.22 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.20 — the CPU opponent model is built and its two spec inconsistencies resolved (§4.3.2, §4.3.3, Appendix B) |
+| Supersedes | v1.21 — vs CPU runs are issued, judged, and stored by the server (§9.5, §9.8, Appendix B) |
 
 **Legend**
 
@@ -940,7 +940,7 @@ Design points:
 | GET | `/api/auth/me` | Current user |
 | DELETE | `/api/auth/me` | Delete the account and all data (P3, with account deletion; §10) |
 | GET | `/api/languages` | Available languages |
-| POST | `/api/play/sessions` | **Start a run.** Returns 20 compiled blocks, the RNG seed, and CPU or Ghost parameters |
+| POST | `/api/play/sessions` | **Start a run.** Body `{ language, mode, cpuLevel? }`: `mode` is `single` or `cpu`, and `cpuLevel` (1–100) is required for `cpu` and refused for `single`. Returns 20 compiled blocks, the RNG seed, and the level (Ghost parameters arrive with Ghost) |
 | POST | `/api/play/sessions/:id/result` | Submit a result; validated server-side |
 | GET | `/api/rankings` | `?period=daily\|weekly\|total&language=` |
 | GET | `/api/dashboard` | `?period=daily\|weekly\|total&language=&from=&to=` (`from`/`to` are inclusive local dates; §6.2) |
@@ -1192,3 +1192,6 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.21 | CPU judged at 120 seconds | The CPU's score counts the keys it types before the 120-second mark, by the same whole-millisecond rounding as a player's (`sessionKey`), even when the player finishes all blocks earlier; a tie is a win (§4.1, §4.3.4) |
 | 1.21 | Two random streams for the opponent | Block multipliers and keystroke jitter come from separate streams derived from the run seed, both distinct from the shuffle that draws the blocks, so a block's "form on the day" does not depend on how many keys it has. The level is not part of the stream: one seed gives the same form at every level. The seed-to-run mapping is pinned by a snapshot test because stored matches are re-judged from their seed (§4.3.3) |
 | 1.21 | Same-band win rate | **Verified** by simulation: a player scoring exactly the level's base KPM beats the CPU in 40–60% of 400 seeded runs (§4.3.3) |
+| 1.22 | The server judges vs CPU | A `cpu` run is issued with a level (`issued_runs.cpu_level`, with a CHECK that it is set exactly for `cpu` and within 1–100) and the same block draw as single play. On submission the server recomputes the CPU's score from the issued blocks, level, and seed with `typing-engine`, judges it against the replayed score (a tie is a win), and stores `cpu_level`, `opponent_score`, and `result`. The request body carries only the log, so a client cannot claim a result; a test sends a forged `result`, `opponentScore`, and `cpuLevel` and confirms all three are ignored (§4.3.4, §9.8) |
+| 1.22 | Verified for the server-side judging | Integration tests cover a win, a loss, a tie at exactly the CPU's score, and one point short. Ties and shortfalls are set up by drawing fresh runs until a log's score lands on the CPU's, because the engine's own insertions make a score skip values for some blocks. Replacing the seed, the level, the comparison, the stored values, or the tie rule each fails a test |
+| 1.22 | CHECK constraints must test for NULL explicitly | **Found by the first constraint test:** `"cpu_level" BETWEEN 1 AND 100` is NULL, not false, for a NULL level, and a CHECK accepts NULL, so a `cpu` run with no level passed `chk_issued_runs_cpu_level` as first written. The constraint now states `IS NOT NULL`, as the `play_sessions` one already does (§9.3) |

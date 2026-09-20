@@ -28,6 +28,7 @@ const ISSUED = {
   sessionId: '22222222-2222-4222-8222-222222222222',
   language: 'python',
   mode: 'single',
+  cpuLevel: null,
   seed: '7',
   contentRevision: 'b'.repeat(64),
   blocks: [IF_PROGRAM],

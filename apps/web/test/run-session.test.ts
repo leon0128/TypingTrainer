@@ -9,6 +9,7 @@ const ISSUED: StartSessionResponse = {
   sessionId: '22222222-2222-4222-8222-222222222222',
   language: 'python',
   mode: 'single',
+  cpuLevel: null,
   seed: '7',
   contentRevision: 'b'.repeat(64),
   blocks: [IF_PROGRAM],
@@ -20,6 +21,7 @@ const STORED = {
   id: '33333333-3333-4333-8333-333333333333',
   language: 'python',
   mode: 'single',
+  cpuLevel: null,
   startedAt: '2026-09-20T01:00:00.000Z',
   localDate: '2026-09-20',
   effectiveKeystrokes: 10,
@@ -28,6 +30,8 @@ const STORED = {
   kpm: 5,
   accuracy: 1,
   score: 5,
+  opponentScore: null,
+  result: null,
 };
 
 const json = (body: unknown, status = 200) =>

@@ -17,6 +17,8 @@ export interface ConsumedRun {
   readonly languageId: number;
   readonly language: ContentLanguage;
   readonly mode: string;
+  /** The CPU's level for a vs CPU run, else null (§4.3). */
+  readonly cpuLevel: number | null;
   readonly seed: string;
   readonly contentRevision: string;
   readonly blockIds: string[];
@@ -32,6 +34,7 @@ interface ConsumedRunColumns {
   language_id: number;
   language: ContentLanguage;
   mode: string;
+  cpu_level: number | null;
   rng_seed: string;
   content_revision: string;
   block_ids: string[];
@@ -53,6 +56,10 @@ export interface RunToStore {
   readonly userId: string;
   readonly languageId: number;
   readonly mode: string;
+  /** vs CPU only: the level, the CPU's score, and the judged result (§4.3.4). */
+  readonly cpuLevel: number | null;
+  readonly opponentScore: number | null;
+  readonly result: 'win' | 'lose' | null;
   readonly durationSec: number;
   readonly issuedAt: Date;
   readonly submittedAt: Date;
@@ -87,18 +94,21 @@ export class IssuedRunsRepository {
     userId: string;
     languageId: number;
     mode: string;
+    cpuLevel: number | null;
     seed: bigint;
     contentRevision: string;
     blockIds: readonly string[];
   }): Promise<IssuedRunRow> {
     const result: unknown = await this.dataSource.query(
-      `INSERT INTO issued_runs (user_id, language_id, mode, rng_seed, content_revision, block_ids)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO issued_runs
+         (user_id, language_id, mode, cpu_level, rng_seed, content_revision, block_ids)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, issued_at`,
       [
         run.userId,
         run.languageId,
         run.mode,
+        run.cpuLevel,
         run.seed.toString(),
         run.contentRevision,
         [...run.blockIds],
@@ -121,7 +131,7 @@ export class IssuedRunsRepository {
        WHERE r.id = $1 AND r.user_id = $2 AND r.submitted_at IS NULL
          AND r.issued_at > now() - make_interval(secs => $3)
          AND l.id = r.language_id
-       RETURNING r.id, r.language_id, l.slug AS language, r.mode, r.rng_seed, r.content_revision,
+       RETURNING r.id, r.language_id, l.slug AS language, r.mode, r.cpu_level, r.rng_seed, r.content_revision,
                  r.block_ids, r.issued_at, r.submitted_at,
                  round(extract(epoch FROM now() - r.issued_at) * 1000) AS wall_elapsed_ms`,
       [id, userId, windowMs / 1000],
@@ -134,6 +144,7 @@ export class IssuedRunsRepository {
           languageId: row.language_id,
           language: row.language,
           mode: row.mode,
+          cpuLevel: row.cpu_level,
           seed: row.rng_seed,
           contentRevision: row.content_revision,
           blockIds: row.block_ids,
@@ -170,12 +181,12 @@ export class IssuedRunsRepository {
        INSERT INTO play_sessions (
          user_id, mode, language_id, duration_sec, started_at, timezone, local_date,
          local_week_start, raw_keystrokes, effective_keystrokes, miss_count, kpm, accuracy, score,
-         rng_seed, content_revision, app_version)
+         rng_seed, content_revision, app_version, cpu_level, opponent_score, result)
        SELECT run.user_id, $2, $3, $4, run.started_at, run.timezone,
               (run.started_at AT TIME ZONE run.timezone)::date,
               (run.started_at AT TIME ZONE run.timezone)::date
                 - EXTRACT(DOW FROM run.started_at AT TIME ZONE run.timezone)::int,
-              $8, $9, $10, $11, $12, $13, $14, $15, $16
+              $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
        FROM run
        -- local_date as text: the driver would turn a date into a Date at the server's midnight.
        RETURNING id, started_at, local_date::text AS local_date`,
@@ -196,6 +207,9 @@ export class IssuedRunsRepository {
         run.rngSeed,
         run.contentRevision,
         run.appVersion,
+        run.cpuLevel,
+        run.opponentScore,
+        run.result,
       ],
     );
     const row = returnedRows<{ id: string; started_at: Date; local_date: string }>(result)[0];

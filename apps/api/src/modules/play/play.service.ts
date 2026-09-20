@@ -24,7 +24,10 @@ import {
   MAX_SEED,
   PLAY_DURATION_MS,
   RUN_BLOCK_COUNT,
+  cpuScore,
+  cpuTimeline,
   drawBlockIds,
+  judgeMatch,
   replaySession,
 } from '@typing-trainer/typing-engine';
 
@@ -82,6 +85,7 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
       userId: user.id,
       languageId,
       mode: request.mode,
+      cpuLevel: request.cpuLevel ?? null,
       seed,
       contentRevision: bundle.revision,
       blockIds,
@@ -91,6 +95,7 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
       sessionId: issued.id,
       language: request.language,
       mode: request.mode,
+      cpuLevel: request.cpuLevel ?? null,
       seed: seed.toString(),
       contentRevision: bundle.revision,
       blocks,
@@ -128,10 +133,20 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
     }
 
     const { metrics } = replay;
+    // The opponent is recomputed here from the issued seed and level; nothing the client says about
+    // the match is used (§9.8). Only vs CPU runs have one (§4.3.4).
+    const opponent =
+      run.mode === 'cpu' && run.cpuLevel !== null
+        ? cpuScore(cpuTimeline(programs, run.cpuLevel, BigInt(run.seed)))
+        : null;
+    const result = opponent === null ? null : judgeMatch(metrics.score, opponent);
     const stored = await this.issuedRuns.storeRun({
       userId: user.id,
       languageId: run.languageId,
       mode: run.mode,
+      cpuLevel: run.cpuLevel,
+      opponentScore: opponent,
+      result,
       durationSec: PLAY_DURATION_MS / 1000,
       issuedAt: run.issuedAt,
       submittedAt: run.submittedAt,
@@ -150,7 +165,7 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
     return {
       id: stored.id,
       language: run.language,
-      mode: 'single',
+      mode: run.mode === 'cpu' ? 'cpu' : 'single',
       startedAt: stored.startedAt.toISOString(),
       localDate: stored.localDate,
       effectiveKeystrokes: metrics.effective,
@@ -159,6 +174,9 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
       kpm: metrics.kpm,
       accuracy: metrics.accuracy,
       score: metrics.score,
+      cpuLevel: run.cpuLevel,
+      opponentScore: opponent,
+      result,
     };
   }
 

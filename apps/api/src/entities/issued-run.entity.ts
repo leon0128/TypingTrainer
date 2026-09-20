@@ -19,6 +19,10 @@ import { User } from './user.entity';
 @Entity({ name: 'issued_runs' })
 @Index('idx_issued_runs_user', ['userId', 'issuedAt'])
 @Check('chk_issued_runs_mode', `"mode" IN ('single', 'cpu', 'ghost')`)
+@Check(
+  'chk_issued_runs_cpu_level',
+  `("mode" = 'cpu' AND "cpu_level" IS NOT NULL AND "cpu_level" BETWEEN 1 AND 100) OR ("mode" <> 'cpu' AND "cpu_level" IS NULL)`,
+)
 @Check('chk_issued_runs_blocks', `cardinality("block_ids") = 20`)
 @Check('chk_issued_runs_submitted', `"submitted_at" IS NULL OR "submitted_at" >= "issued_at"`)
 export class IssuedRun {
@@ -39,9 +43,13 @@ export class IssuedRun {
   @JoinColumn({ name: 'language_id', foreignKeyConstraintName: 'fk_issued_runs_language' })
   language?: ProgrammingLanguage;
 
-  /** 'single' | 'cpu' | 'ghost'; P1 issues single play only (§10). */
+  /** 'single' | 'cpu' | 'ghost'; Ghost is not issued yet (§10). */
   @Column({ name: 'mode', type: 'text' })
   mode!: string;
+
+  /** The CPU's level; set exactly when the mode is 'cpu' (§4.3). */
+  @Column({ name: 'cpu_level', type: 'smallint', nullable: true })
+  cpuLevel!: number | null;
 
   /** Seed of the block draw, as the pg driver returns bigint: a string. */
   @Column({ name: 'rng_seed', type: 'bigint' })

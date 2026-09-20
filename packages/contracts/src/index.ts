@@ -53,6 +53,7 @@ export {
 } from './rankings';
 export type { RankingEntry, RankingPeriod, RankingsRequest, RankingsResponse } from './rankings';
 export {
+  CpuLevelSchema,
   PlayModeSchema,
   PlayRunSchema,
   StartSessionRequestSchema,

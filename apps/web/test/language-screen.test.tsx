@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { PLAY_DURATION_MS, IDLE_LIMIT_MS } from '@typing-trainer/typing-engine';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -138,7 +138,7 @@ describe('vs CPU', () => {
       mode: 'cpu',
       cpuLevel: 1,
     });
-    expect(useRunSession.getState().run?.opponent?.level).toBe(48);
+    expect(useRunSession.getState().run?.opponent?.label).toBe('CPU Lv.48');
   });
 
   it('sends the level that was typed and shows its speed', async () => {
@@ -178,5 +178,114 @@ describe('vs CPU', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Go' }));
     await screen.findByText('playing');
     expect(JSON.parse(requests[1]?.body ?? '{}')).toEqual({ language: 'go', mode: 'single' });
+  });
+});
+
+describe('Ghost', () => {
+  const RECORDS = {
+    languages: [
+      { language: 'python', daily: 88, weekly: 88, total: 120 },
+      { language: 'go', daily: null, weekly: 61, total: 61 },
+    ],
+  };
+
+  function stubServer(records: unknown = RECORDS) {
+    const requests: { url: string; body?: string }[] = [];
+    vi.stubGlobal('fetch', (url: string, init: { body?: string } = {}) => {
+      requests.push({ url, ...(init.body === undefined ? {} : { body: init.body }) });
+      if (url.endsWith('/languages')) return Promise.resolve(json(LANGUAGES));
+      if (url.endsWith('/ghost-records')) return Promise.resolve(json(records));
+      return Promise.resolve(
+        json({ ...ISSUED, mode: 'ghost', ghostPeriod: 'weekly', ghostScore: 61 }, 201),
+      );
+    });
+    return requests;
+  }
+
+  it('offers the three periods to race, defaulting to today', async () => {
+    stubServer();
+    renderScreen();
+    await userEvent.click(await screen.findByRole('button', { name: 'Ghost' }));
+
+    const periods = within(screen.getByRole('group', { name: 'Record' }));
+    expect(periods.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Today',
+      'This week',
+      'All time',
+    ]);
+    expect(periods.getByRole('button', { name: 'Today' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+  });
+
+  it('shows the record of each language for the period, and disables a language with none', async () => {
+    stubServer();
+    renderScreen();
+    await userEvent.click(await screen.findByRole('button', { name: 'Ghost' }));
+
+    // Today: Python has 88, Go has nothing.
+    expect(await screen.findByRole('button', { name: /Python.*best 88/ })).toHaveProperty(
+      'disabled',
+      false,
+    );
+    const go = screen.getByRole('button', { name: /Go.*No record yet/ });
+    expect(go).toHaveProperty('disabled', true);
+
+    // This week and all time give Go a record.
+    await userEvent.click(screen.getByRole('button', { name: 'This week' }));
+    expect(screen.getByRole('button', { name: /Go.*best 61/ })).toHaveProperty('disabled', false);
+    await userEvent.click(screen.getByRole('button', { name: 'All time' }));
+    expect(screen.getByRole('button', { name: /Python.*best 120/ })).toBeTruthy();
+  });
+
+  it('starts a Ghost run for the language and period chosen, and names no record itself', async () => {
+    const requests = stubServer();
+    renderScreen();
+    await userEvent.click(await screen.findByRole('button', { name: 'Ghost' }));
+    await userEvent.click(screen.getByRole('button', { name: 'This week' }));
+    await userEvent.click(await screen.findByRole('button', { name: /Go.*best 61/ }));
+
+    await screen.findByText('playing');
+    const started = requests.find((request) => request.url.endsWith('/play/sessions'));
+    expect(JSON.parse(started?.body ?? '{}')).toEqual({
+      language: 'go',
+      mode: 'ghost',
+      ghostPeriod: 'weekly',
+    });
+    expect(useRunSession.getState().run?.opponent?.label).toBe("Ghost · this week's best 61");
+  });
+
+  it('treats a record of zero like no record', async () => {
+    stubServer({
+      languages: [{ language: 'python', daily: 0, weekly: 0, total: 0 }],
+    });
+    renderScreen();
+    await userEvent.click(await screen.findByRole('button', { name: 'Ghost' }));
+    expect(await screen.findByRole('button', { name: /Python.*No record yet/ })).toHaveProperty(
+      'disabled',
+      true,
+    );
+  });
+
+  it('reads the records again each time Ghost is chosen', async () => {
+    const requests = stubServer();
+    renderScreen();
+    const ghostRequests = () =>
+      requests.filter((request) => request.url.endsWith('/ghost-records'));
+    await userEvent.click(await screen.findByRole('button', { name: 'Ghost' }));
+    await screen.findByRole('button', { name: /Python.*best 88/ });
+    await userEvent.click(screen.getByRole('button', { name: 'Single play' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ghost' }));
+    await vi.waitFor(() => {
+      expect(ghostRequests()).toHaveLength(2);
+    });
+  });
+
+  it('asks for no records outside Ghost mode, and shows no record hints there', async () => {
+    const requests = stubServer();
+    renderScreen();
+    await screen.findByRole('button', { name: 'Python' });
+    expect(requests.some((request) => request.url.endsWith('/ghost-records'))).toBe(false);
+    expect(screen.queryByText(/best \d+/)).toBeNull();
   });
 });

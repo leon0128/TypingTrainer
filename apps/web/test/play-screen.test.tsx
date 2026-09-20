@@ -205,14 +205,14 @@ describe('vs CPU', () => {
     expect(screen.getByRole('heading', { name: 'You' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /CPU Lv\.50 · SCORE 0/ })).toBeTruthy();
     expect(screen.getAllByLabelText('Code to type')).toHaveLength(4);
-    const cpu = screen.getByLabelText('CPU');
+    const cpu = screen.getByLabelText('Opponent');
     expect(cpu.querySelector('.cell-cursor')).not.toBeNull();
   });
 
   it('shows no opponent in single play', () => {
     beginRun();
     renderScreen();
-    expect(screen.queryByLabelText('CPU')).toBeNull();
+    expect(screen.queryByLabelText('Opponent')).toBeNull();
     expect(screen.getAllByLabelText('Code to type')).toHaveLength(2);
   });
 
@@ -240,6 +240,57 @@ describe('vs CPU', () => {
       ),
     );
     useRunSession.getState().begin(CPU_ISSUED, performance.now());
+    renderScreen();
+    await finishTheRun();
+
+    expect(await screen.findByRole('heading', { name: heading })).toBeTruthy();
+    const text = document.querySelector('.match-result')?.textContent ?? '';
+    expect(text).toMatch(line);
+    if (result === 'lose') expect(text).not.toMatch(/tie/);
+  });
+});
+
+describe('a Ghost run', () => {
+  const GHOST_ISSUED = {
+    ...ISSUED,
+    mode: 'ghost' as const,
+    cpuLevel: null,
+    ghostPeriod: 'daily' as const,
+    ghostScore: 88,
+  };
+
+  it('shows the Ghost beside the player, named for its record', () => {
+    useRunSession.getState().begin(GHOST_ISSUED, performance.now());
+    renderScreen();
+
+    expect(screen.getByText(/vs Ghost · today's best 88/)).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Ghost · today's best 88 · SCORE 0/ })).toBeTruthy();
+    expect(screen.getAllByLabelText('Code to type')).toHaveLength(4);
+  });
+
+  it.each([
+    ['win', 'You won', /Ghost \(today's best\) scored 88; you scored 91\. A tie counts as a win\./],
+    ['lose', 'You lost', /Ghost \(today's best\) scored 88; you scored 91\./],
+  ] as const)('shows the server-judged result: %s', async (result, heading, line) => {
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve(
+        json(
+          {
+            run: {
+              ...STORED,
+              mode: 'ghost',
+              cpuLevel: null,
+              ghostPeriod: 'daily',
+              opponentScore: 88,
+              score: 91,
+              result,
+            },
+          },
+          201,
+        ),
+      ),
+    );
+    useRunSession.getState().begin(GHOST_ISSUED, performance.now());
     renderScreen();
     await finishTheRun();
 

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -62,6 +62,27 @@ describe('history screen', () => {
     );
     renderScreen();
     expect(await screen.findByText('88')).toBeTruthy();
+  });
+
+  it('filters by mode, and offers Ghost beside single play and vs CPU', async () => {
+    const urls: string[] = [];
+    vi.stubGlobal('fetch', (url: string) => {
+      urls.push(url);
+      return Promise.resolve(url.endsWith('/languages') ? json(LANGUAGES) : json(ONE_ROW));
+    });
+    renderScreen();
+    await screen.findByText('88');
+    const mode = screen.getByLabelText('Mode');
+    expect(
+      within(mode)
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['All', 'Single play', 'vs CPU', 'Ghost']);
+
+    await userEvent.selectOptions(mode, 'ghost');
+    await vi.waitFor(() => {
+      expect(urls.some((url) => url.includes('/history') && url.includes('mode=ghost'))).toBe(true);
+    });
   });
 
   it('shows an empty state when there are no matching runs', async () => {

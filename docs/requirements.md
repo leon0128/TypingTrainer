@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.30 |
+| Version | 1.31 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.29 — Ghost runs are issued, judged, and stored by the server (§4.4, §9.5, §9.8, Appendix B) |
+| Supersedes | v1.30 — the Ghost can be played, and history filters by mode (§4.4, §6.3, §8.1, Appendix B) |
 
 **Legend**
 
@@ -1231,3 +1231,7 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.30 | One definition of a period | "Today" and "this week" (profile time zone, Sunday weeks) were written out twice, in rankings and in history; they now live in one function that rankings, history, and Ghost records all use, so the Ghost's record and the ranking's top entry cannot disagree. The existing rankings and history tests passed unchanged (§6.1, §6.4) |
 | 1.30 | Mode consistency in `issued_runs` | The CPU-level constraint became `chk_issued_runs_opponent`, in the same form as `play_sessions`' own: each mode carries exactly its own fields, every nullable comparison paired with `IS NOT NULL`. Eight invalid combinations are refused by the database, whatever wrote them (§9.3) |
 | 1.30 | Verified for the Ghost's server side | Nine changes each fail a test: weekly read as daily, daily by UTC instead of the profile zone, the record without the user filter (in both queries), the record from single play only, the pace off by one, the period ignored, a record of 0 accepted, and judging by the record at submission instead of at issue (§4.4, §9.8) |
+| 1.31 | Choosing a Ghost | Language selection has a third mode, Ghost, with a three-way choice of the record to race: **Today, This week, All time**. The records are read from `GET /api/ghost-records` each time Ghost is chosen, since every run can change them; a language with no record for the period (or a best of 0) is disabled and says "No record yet", the others show their best, and the server still names the record itself when the run is issued (§4.4) |
+| 1.31 | One opponent for both | The CPU and the Ghost are the same kind of opponent on the play screen: the same column, the same engine replay on the player's run clock, the same result line. The column is named by what it is — "CPU Lv.50", or "Ghost · today's best 88" — and its accessible name is "Opponent" (§8.1) |
+| 1.31 | History filters by mode | §6.3 lists period, mode, and language as filters, and the screen had no mode filter (found while adding Ghost, which would otherwise have been indistinguishable from other runs); it now offers All, Single play, vs CPU, and Ghost (§6.3) |
+| 1.31 | Not checked in a browser | The Ghost screens are covered by unit tests against a stubbed server; the whole path from a real API through the play screen was not driven in a browser this time, and the side-by-side layout was not measured for the Ghost either (§8.1) |

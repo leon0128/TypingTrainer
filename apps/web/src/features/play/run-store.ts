@@ -14,7 +14,7 @@ import {
   type SessionState,
 } from '@typing-trainer/typing-engine';
 
-import { createCpuOpponent, type CpuOpponent } from './cpu-opponent';
+import { createOpponent, type Opponent } from './opponent';
 
 /** `ready` until the first keystroke starts the countdown (§4.1). */
 export type RunPhase = 'ready' | 'playing' | 'paused' | 'ended';
@@ -37,8 +37,8 @@ export interface RunSnapshot {
 
 export interface RunStore {
   readonly issued: StartSessionResponse;
-  /** The CPU of a vs CPU run, advanced by this store's own run clock; null for single play. */
-  readonly opponent: CpuOpponent | null;
+  /** The CPU or Ghost of a versus run, advanced by this store's own run clock; null otherwise. */
+  readonly opponent: Opponent | null;
   // Function properties rather than methods: both are passed unbound to useSyncExternalStore.
   readonly getSnapshot: () => RunSnapshot;
   readonly subscribe: (listener: () => void) => () => void;
@@ -98,10 +98,7 @@ export function createRunStore(issued: StartSessionResponse, issuedAt: number): 
   const problem = issuedRunProblem(issued);
   if (problem !== null) throw new RangeError(problem);
 
-  const opponent =
-    issued.mode === 'cpu' && issued.cpuLevel !== null
-      ? createCpuOpponent(issued, issued.cpuLevel)
-      : null;
+  const opponent = createOpponent(issued);
   const listeners = new Set<() => void>();
   const logged: LoggedKey[] = [];
   let startedAt = 0;

@@ -112,7 +112,7 @@ function RunView({ run }: { run: RunStore }) {
         <h1>TypingTrainer</h1>
         <span className="block-name">
           {run.issued.language}
-          {opponent !== null && ` · vs CPU Lv.${String(opponent.level)}`} · block{' '}
+          {opponent !== null && ` · vs ${opponent.label}`} · block{' '}
           {Math.min(session.blockIndex + 1, RUN_BLOCK_COUNT)} / {session.programs.length}
         </span>
         <span className="live-metrics">
@@ -151,9 +151,9 @@ function RunView({ run }: { run: RunStore }) {
             />
           </section>
           {opponent !== null && opponentSession !== null && (
-            <section className="column opponent-column" aria-label="CPU">
+            <section className="column opponent-column" aria-label="Opponent">
               <h2 className="column-title">
-                CPU Lv.{opponent.level} · SCORE {opponent.liveMetrics().score}
+                {opponent.label} · SCORE {opponent.liveMetrics().score}
               </h2>
               <BlockColumn
                 session={opponentSession}

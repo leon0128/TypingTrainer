@@ -134,6 +134,22 @@ export function HistoryScreen() {
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
+          Mode
+          <select
+            className="rounded border border-slate-400 px-2 py-1"
+            value={filters.mode}
+            onChange={(event) => {
+              setFilter('mode', event.target.value as PlayMode | '');
+            }}
+          >
+            <option value="">All</option>
+            <option value="single">Single play</option>
+            <option value="cpu">vs CPU</option>
+            <option value="ghost">Ghost</option>
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
           Language
           <select
             className="rounded border border-slate-400 px-2 py-1"

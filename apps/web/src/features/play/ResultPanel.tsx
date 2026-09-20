@@ -1,6 +1,8 @@
+import type { PlayRun } from '@typing-trainer/contracts';
 import type { OfficialMetrics } from '@typing-trainer/typing-engine';
 
 import { formatPercent } from './format';
+import { GHOST_PERIOD_LABELS } from './opponent';
 import type { Submission } from './run-session';
 
 export interface ResultPanelProps {
@@ -30,7 +32,7 @@ export function ResultPanel({ metrics, submission, onRetry, onPlayAgain }: Resul
       </p>
       {stored?.result != null && (
         <p className="match-result">
-          CPU Lv.{stored.cpuLevel} scored {stored.opponentScore}; you scored {stored.score}.{' '}
+          {opponentName(stored)} scored {stored.opponentScore}; you scored {stored.score}.{' '}
           {stored.result === 'win' ? 'A tie counts as a win.' : ''}
         </p>
       )}
@@ -70,6 +72,14 @@ export function ResultPanel({ metrics, submission, onRetry, onPlayAgain }: Resul
       </p>
     </section>
   );
+}
+
+/** Who the player raced, as the stored run names them. */
+function opponentName(run: PlayRun): string {
+  if (run.cpuLevel !== null) return `CPU Lv.${String(run.cpuLevel)}`;
+  return run.ghostPeriod === null
+    ? 'The opponent'
+    : `Ghost (${GHOST_PERIOD_LABELS[run.ghostPeriod]})`;
 }
 
 function title(submission: Submission): string {

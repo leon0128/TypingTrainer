@@ -1,13 +1,37 @@
-import type { ContentLanguage, Language } from '@typing-trainer/contracts';
+import type {
+  ContentLanguage,
+  GhostPeriod,
+  GhostRecordsResponse,
+  Language,
+} from '@typing-trainer/contracts';
 import { CPU_MAX_LEVEL, CPU_MIN_LEVEL, cpuBaseKpm } from '@typing-trainer/typing-engine';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 
 import { useAuthStore } from '../auth/auth-store';
 import { describeError } from '../../lib/api/describe-error';
+import { getGhostRecords } from '../../lib/api/ghost-records';
 import { listLanguages } from '../../lib/api/languages';
-import { startSession } from '../../lib/api/play';
+import { startSession, type Opponent } from '../../lib/api/play';
 import { useRunSession } from '../play/run-session';
+
+type Mode = 'single' | 'cpu' | 'ghost';
+
+const MODES: { value: Mode; label: string }[] = [
+  { value: 'single', label: 'Single play' },
+  { value: 'cpu', label: 'vs CPU' },
+  { value: 'ghost', label: 'Ghost' },
+];
+
+/** The record a Ghost reproduces, by period (§4.4). */
+const GHOST_PERIODS: { value: GhostPeriod; label: string }[] = [
+  { value: 'daily', label: 'Today' },
+  { value: 'weekly', label: 'This week' },
+  { value: 'total', label: 'All time' },
+];
+
+const SELECTED = 'rounded bg-slate-800 px-3 py-1 text-white dark:bg-slate-200 dark:text-slate-900';
+const UNSELECTED = 'rounded border border-slate-400 px-3 py-1';
 
 /** Language selection (F-03): pick a language and the server issues a run of 20 blocks. */
 export function LanguageScreen() {
@@ -19,11 +43,34 @@ export function LanguageScreen() {
   const [languages, setLanguages] = useState<Language[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState<ContentLanguage | null>(null);
-  const [versusCpu, setVersusCpu] = useState(false);
+  const [mode, setMode] = useState<Mode>('single');
   const [levelText, setLevelText] = useState('1');
+  const [ghostPeriod, setGhostPeriod] = useState<GhostPeriod>('daily');
+  const [records, setRecords] = useState<GhostRecordsResponse | null>(null);
   const level = /^\d{1,3}$/.test(levelText) ? Number(levelText) : NaN;
   const levelValid = level >= CPU_MIN_LEVEL && level <= CPU_MAX_LEVEL;
-  const canStart = starting === null && (!versusCpu || levelValid);
+  const canStart = starting === null && (mode !== 'cpu' || levelValid);
+
+  /** The score of the record a Ghost would reproduce, or null when there is none to race (§4.4). */
+  const recordFor = (language: ContentLanguage): number | null => {
+    const entry = records?.languages.find((candidate) => candidate.language === language);
+    const score = entry?.[ghostPeriod] ?? null;
+    return score !== null && score >= 1 ? score : null;
+  };
+
+  // The records change with every run, so they are read each time Ghost is chosen.
+  useEffect(() => {
+    if (mode !== 'ghost') return;
+    const controller = new AbortController();
+    getGhostRecords(controller.signal)
+      .then(setRecords)
+      .catch((cause: unknown) => {
+        if (!controller.signal.aborted) setError(describeError(cause));
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [mode]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -39,9 +86,15 @@ export function LanguageScreen() {
 
   const start = (language: ContentLanguage) => {
     if (!canStart) return;
+    const opponent: Opponent =
+      mode === 'cpu'
+        ? { mode: 'cpu', cpuLevel: level }
+        : mode === 'ghost'
+          ? { mode: 'ghost', ghostPeriod }
+          : { mode: 'single' };
     setStarting(language);
     setError(null);
-    startSession(language, versusCpu ? level : undefined)
+    startSession(language, opponent)
       .then((issued) => {
         // The run time is measured from here: idle counts from the moment the run was issued.
         begin(issued, performance.now());
@@ -85,35 +138,22 @@ export function LanguageScreen() {
       </header>
 
       <div className="flex flex-wrap items-center gap-3" role="group" aria-label="Mode">
-        <button
-          type="button"
-          aria-pressed={!versusCpu}
-          className={
-            !versusCpu
-              ? 'rounded bg-slate-800 px-3 py-1 text-white dark:bg-slate-200 dark:text-slate-900'
-              : 'rounded border border-slate-400 px-3 py-1'
-          }
-          onClick={() => {
-            setVersusCpu(false);
-          }}
-        >
-          Single play
-        </button>
-        <button
-          type="button"
-          aria-pressed={versusCpu}
-          className={
-            versusCpu
-              ? 'rounded bg-slate-800 px-3 py-1 text-white dark:bg-slate-200 dark:text-slate-900'
-              : 'rounded border border-slate-400 px-3 py-1'
-          }
-          onClick={() => {
-            setVersusCpu(true);
-          }}
-        >
-          vs CPU
-        </button>
-        {versusCpu && (
+        {MODES.map((entry) => (
+          <button
+            key={entry.value}
+            type="button"
+            aria-pressed={mode === entry.value}
+            className={mode === entry.value ? SELECTED : UNSELECTED}
+            onClick={() => {
+              setMode(entry.value);
+              // Forget the last look at the records, so a stale one is never shown while the new loads.
+              if (entry.value === 'ghost') setRecords(null);
+            }}
+          >
+            {entry.label}
+          </button>
+        ))}
+        {mode === 'cpu' && (
           <label className="flex items-center gap-2 text-sm">
             CPU level ({CPU_MIN_LEVEL}–{CPU_MAX_LEVEL})
             <input
@@ -134,6 +174,31 @@ export function LanguageScreen() {
         )}
       </div>
 
+      {mode === 'ghost' && (
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-3" role="group" aria-label="Record">
+            <span className="text-sm">Race your best of</span>
+            {GHOST_PERIODS.map((entry) => (
+              <button
+                key={entry.value}
+                type="button"
+                aria-pressed={ghostPeriod === entry.value}
+                className={ghostPeriod === entry.value ? SELECTED : UNSELECTED}
+                onClick={() => {
+                  setGhostPeriod(entry.value);
+                }}
+              >
+                {entry.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            The Ghost types at the pace that scores exactly that record, and never misses. Beat it,
+            and you have a new record.
+          </p>
+        </div>
+      )}
+
       <h2 className="text-lg">Choose a language</h2>
 
       {error !== null && (
@@ -153,16 +218,27 @@ export function LanguageScreen() {
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {languages.map((language) => (
             <li key={language.slug}>
-              <button
-                className="w-full rounded border border-slate-400 px-3 py-4 disabled:opacity-60 hover:bg-slate-200 dark:hover:bg-slate-800"
-                type="button"
-                disabled={!canStart}
-                onClick={() => {
-                  start(language.slug);
-                }}
-              >
-                {starting === language.slug ? 'Starting…' : language.displayName}
-              </button>
+              {(() => {
+                const record = mode === 'ghost' ? recordFor(language.slug) : null;
+                const noRecord = mode === 'ghost' && records !== null && record === null;
+                return (
+                  <button
+                    className="w-full rounded border border-slate-400 px-3 py-4 disabled:opacity-60 hover:bg-slate-200 dark:hover:bg-slate-800"
+                    type="button"
+                    disabled={!canStart || (mode === 'ghost' && record === null)}
+                    onClick={() => {
+                      start(language.slug);
+                    }}
+                  >
+                    {starting === language.slug ? 'Starting…' : language.displayName}
+                    {mode === 'ghost' && records !== null && (
+                      <span className="block text-xs text-slate-600 dark:text-slate-400">
+                        {noRecord ? 'No record yet' : `best ${String(record)}`}
+                      </span>
+                    )}
+                  </button>
+                );
+              })()}
             </li>
           ))}
         </ul>

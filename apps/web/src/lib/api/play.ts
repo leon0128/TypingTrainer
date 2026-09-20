@@ -2,6 +2,7 @@ import {
   StartSessionResponseSchema,
   SubmitResultResponseSchema,
   type ContentLanguage,
+  type GhostPeriod,
   type PlayRun,
   type SessionLog,
   type StartSessionResponse,
@@ -9,18 +10,20 @@ import {
 
 import { request, requestMaybe } from './client';
 
-/**
- * Asks for a run: 20 blocks, the seed that drew them, and the run length (§5.3, §9.5). With a
- * `cpuLevel` it is a vs CPU run against that level (§4.3); without one it is single play.
- */
+/** What to race in a run: nobody, the CPU at a level (§4.3), or a record of one's own (§4.4). */
+export type Opponent =
+  | { readonly mode: 'single' }
+  | { readonly mode: 'cpu'; readonly cpuLevel: number }
+  | { readonly mode: 'ghost'; readonly ghostPeriod: GhostPeriod };
+
+/** Asks for a run: 20 blocks, the seed that drew them, and the run length (§5.3, §9.5). */
 export function startSession(
   language: ContentLanguage,
-  cpuLevel?: number,
+  opponent: Opponent = { mode: 'single' },
 ): Promise<StartSessionResponse> {
   return request('/play/sessions', {
     method: 'POST',
-    body:
-      cpuLevel === undefined ? { language, mode: 'single' } : { language, mode: 'cpu', cpuLevel },
+    body: { language, ...opponent },
     schema: StartSessionResponseSchema,
   });
 }

@@ -68,6 +68,13 @@ database with `gunzip -c <dump> | docker compose exec -T db psql -U typing_train
 **Verified:** a dump restores into a fresh database with the same rows, old dumps are pruned by age,
 and a stopped database or a failed `pg_dump` fails the script without leaving a file.
 
+**Erased accounts and backups.** A player who deletes their account (Account screen, §7) is erased
+from the database at once, but every dump taken before that still holds their data until it is pruned,
+**up to 7 days** (and longer for any copy handed to `BACKUP_COPY_COMMAND`); the screen says so. There is
+no purge. Restoring a dump also **restores the accounts erased since it was taken**, complete with
+their runs. After a restore, ask the people concerned, or erase the accounts again from the record you
+keep of who asked, before letting anyone in.
+
 ## Lightsail 512 MB (native, no Docker)
 
 On the $5 plan (512 MB) Docker's daemons alone take roughly 100–150 MB, so PostgreSQL, Caddy and the

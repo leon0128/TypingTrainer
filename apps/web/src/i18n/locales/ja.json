@@ -65,7 +65,8 @@
     "appearance": "外観",
     "conquests": "対戦記録",
     "dashboard": "ダッシュボード",
-    "history": "履歴"
+    "history": "履歴",
+    "account": "アカウント"
   },
   "auth": {
     "signIn": "ログイン",
@@ -265,5 +266,17 @@
       "soft": "ソフト",
       "beep": "ビープ"
     }
+  },
+  "account": {
+    "title": "アカウント",
+    "username": "ユーザー名",
+    "timezone": "タイムゾーン",
+    "deleteHeading": "アカウントを削除",
+    "warning": "アカウントと、その中のすべて(プレイ記録、ランキング、対戦記録、設定)が削除されます。元に戻せません。バックアップには最大 7 日間、コピーが残ることがあります。",
+    "password": "パスワード",
+    "acknowledge": "元に戻せないことを理解しました",
+    "delete": "アカウントを削除する",
+    "deleting": "削除中…",
+    "deletedNotice": "アカウントを削除しました。"
   }
 }

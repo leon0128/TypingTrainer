@@ -9,11 +9,14 @@ import { LanguageToggle } from './LanguageToggle';
 export function LoginScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  // Set when the account screen has just erased the account (F-15).
+  const erased = useAuthStore((state) => state.accountErased);
   const signedIn = useAuthStore((state) => state.signedIn);
 
   return (
     <main className="mx-auto flex max-w-sm flex-col gap-6 p-6">
       <LanguageToggle />
+      {erased && <p role="status">{t('account.deletedNotice')}</p>}
       <h1 className="text-2xl font-semibold">{t('auth.signIn')}</h1>
       <CredentialsForm
         submitLabel={t('auth.signIn')}

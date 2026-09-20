@@ -5,6 +5,7 @@ import { SettingsScreen } from './features/appearance/SettingsScreen';
 import { followSystemTheme, useAppearance } from './features/appearance/appearance-store';
 import { useAuthStore } from './features/auth/auth-store';
 import { LoginScreen } from './features/auth/LoginScreen';
+import { AccountScreen } from './features/auth/AccountScreen';
 import { RegisterScreen } from './features/auth/RegisterScreen';
 import { StartupScreen } from './features/auth/StartupScreen';
 import { LanguageScreen } from './features/languages/LanguageScreen';
@@ -84,6 +85,14 @@ export function App() {
         element={
           <RequireAuth>
             <RankingsScreen />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/account"
+        element={
+          <RequireAuth>
+            <AccountScreen />
           </RequireAuth>
         }
       />

@@ -108,6 +108,9 @@ export function LanguageScreen() {
           <Link className="underline" to="/rankings">
             {t('nav.rankings')}
           </Link>
+          <Link className="underline" to="/account">
+            {t('nav.account')}
+          </Link>
           <Link className="underline" to="/settings">
             {t('nav.appearance')}
           </Link>

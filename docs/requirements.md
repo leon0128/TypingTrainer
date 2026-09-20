@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.39 |
+| Version | 1.40 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.38 — the account can be erased through the API (§7, §9.5, Appendix B) |
+| Supersedes | v1.39 — the account can be erased from the Account screen (§7, §10, Appendix B) |
 
 **Legend**
 
@@ -1042,7 +1042,7 @@ Ordered to retire the largest technical risk (the typing engine) first.
 | **P0 — Engine PoC** ✅ Complete (v1.8) | As agreed at kickoff: `typing-engine` and `block-compiler` with adapters for all four languages (TypeScript, Go, Java, Python), each verified by hand-checked fixtures and golden data from the language's reference implementation; `apps/web` plays a single TypeScript demo block with reference (non-official) KPM and accuracy; no database, no auth | Auto-closing, auto-indentation, space flexibility, and miss deduplication verified for all four languages by compiling every fixture and replaying it through the engine; Python validated. The play screen's layout, rendering, and input handling are language-neutral, so the no-perceptible-lag check is done on real hardware with the TypeScript demo block |
 | **P1 — MVP** | Auth, score persistence, three rankings, history with delete, Docker image, first deployment. Also moved from the original P0 scope (v1.8): the 120-second run with the official KPM and score formulas (F-04, §3.6); language selection and play for all four languages (F-03); the `tools/content-cli` pipeline including tree-sitter syntax checks (§5.2); and initial content of 50 blocks per language (the Q22 launch target), compiled through that pipeline | Usable daily by one person, with 50 blocks per language |
 | **P2 — Visibility and competition** | Dashboard, vs CPU with conquest records | G3 and G4 met |
-| **P3 — Polish** | Ghost, appearance settings, key sounds, en/ja localization, account deletion | Presentable to others |
+| **P3 — Polish** ✅ Complete (v1.40) | Ghost, appearance settings, key sounds, en/ja localization, account deletion | Presentable to others |
 | **P4 — Content** | Grow from the P1 initial content to 150+ blocks per language; add languages | Pool target of 150+ per language met (Q22) |
 
 If P0 shows the engine cannot be built to specification or does not feel right, §3 is narrowed — most likely the space flexibility and the scope of automatic insertion. Leaving that ambiguous past P0 would propagate rework into the score definition, the schema, and CPU balance simultaneously.
@@ -1273,3 +1273,8 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.39 | Complete by construction | A test lists from the catalog every foreign key that points at `users` and requires each to cascade, then fills every such table for one account, erases it, and requires all to be empty while a second account's rows are unchanged. **A table added later that refers to users fails it until it is given a row there,** and one without a cascade fails it outright. Checked by removing the cascade from one table, which fails three tests (§9.3) |
 | 1.39 | Verified for the API | Checked by changing: no password check, a wrong password answered 401, failures not counted, the backoff not enforced, the delete aimed at everyone else, and the cookie not cleared — each fails a test. After erasing, the old cookie and a session on another device answer 401, sign-in with the old credentials answers 401, another origin is refused with 403, and a missing or malformed password answers 400 without erasing (§7) |
 | 1.39 | An account erased mid-run | A run being saved for an account erased between the run being consumed and stored used to fail with a server error; it now answers 401, as any session that ended (§7, §9.8) |
+| 1.40 | The Account screen | A new `/account` screen, linked from the home navigation, shows the username and the time zone (read only) and a Delete account section: what is lost (every run, ranking, conquest record, and setting), that it cannot be undone, that **backups may keep a copy for up to 7 days**, a password field, and an acknowledgement checkbox. The button stays off until both are given, and the form refuses to send otherwise even if submitted some other way. A wrong password shows its message and leaves the person signed in; too many show when to try again (§7, F-15) |
+| 1.40 | Backups keep an erased account for up to 7 days | Accepted, as the requester confirmed, in the manner of R8: deleting removes the account from the database at once but not from dumps already taken (7 days, longer for any offsite copy), and there is **no purge**. A restore brings erased accounts back, so `docs/deployment.md` says to erase them again from a record of who asked before letting anyone in. The screen states the 7 days (§9.6, R8) |
+| 1.40 | Checked end to end | In a real browser against a real API and database: a wrong password showed "incorrect password" and stayed on the screen signed in; the right one sent the person to sign-in and left the erased account's sessions, runs, issued runs, and settings gone, **0 orphan rows** in any table, and a second account's runs and settings unchanged; afterwards `me` and sign-in with the old credentials answered 401 (§7) |
+| 1.40 | A found and fixed defect | **Found in that browser:** the "Your account was deleted." notice never appeared. Clearing the session makes the route guard send an anonymous visitor to sign-in before the account screen's own navigation, and that redirect carries no router state. The notice is now kept in the auth store, and the first test, which used a router without the guard, could not have seen it; a test through the whole app now fails with the old behaviour (§7) |
+| 1.40 | Not covered | Deleting while another tab has the account open leaves that tab signed in until its next request, which then answers 401; the player's own record of what they asked for is not kept, so the restore procedure above depends on the operator's own log (§7, §9.6) |

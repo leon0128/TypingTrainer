@@ -66,7 +66,8 @@
     "appearance": "Appearance",
     "conquests": "Conquests",
     "dashboard": "Dashboard",
-    "history": "History"
+    "history": "History",
+    "account": "Account"
   },
   "auth": {
     "signIn": "Sign in",
@@ -266,5 +267,17 @@
       "soft": "Soft",
       "beep": "Beep"
     }
+  },
+  "account": {
+    "title": "Account",
+    "username": "Username",
+    "timezone": "Time zone",
+    "deleteHeading": "Delete account",
+    "warning": "This erases your account and everything in it: every run, ranking, conquest record, and setting. It cannot be undone. Backups may keep a copy for up to 7 days.",
+    "password": "Your password",
+    "acknowledge": "I understand this cannot be undone",
+    "delete": "Delete my account",
+    "deleting": "Deleting…",
+    "deletedNotice": "Your account was deleted."
   }
 }

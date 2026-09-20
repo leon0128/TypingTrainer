@@ -13,12 +13,20 @@ interface AuthState {
   readonly user: User | null;
   /** Why the first `me` request failed, so the startup screen can offer to retry. */
   readonly startupError: string | null;
+  /**
+   * Whether the account was just erased, so the sign-in screen can say so. It is kept here and not
+   * in the router's state: clearing the session makes the route guard redirect to sign-in first,
+   * and that redirect carries no state.
+   */
+  readonly accountErased: boolean;
   /** Asks the API who is signed in. Safe to call twice (React StrictMode mounts twice). */
   load: () => Promise<void>;
   /** Records the user a register or login response returned. */
   signedIn: (user: User) => void;
   /** Ends the session on the server, then locally even if that request failed. */
   signOut: () => Promise<void>;
+  /** Drops the session after the account has been erased on the server, and remembers it was. */
+  accountDeleted: () => void;
   /** Drops the local session only, for a session the server no longer accepts. */
   clear: () => void;
 }
@@ -27,6 +35,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
   status: 'loading',
   user: null,
   startupError: null,
+  accountErased: false,
 
   async load() {
     set({ startupError: null });
@@ -41,7 +50,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
   },
 
   signedIn(user) {
-    set({ status: 'signed-in', user, startupError: null });
+    set({ status: 'signed-in', user, startupError: null, accountErased: false });
   },
 
   async signOut() {
@@ -50,6 +59,10 @@ export const useAuthStore = create<AuthState>()((set) => ({
     } finally {
       set({ status: 'anonymous', user: null });
     }
+  },
+
+  accountDeleted() {
+    set({ status: 'anonymous', user: null, accountErased: true });
   },
 
   clear() {

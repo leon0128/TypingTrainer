@@ -30,6 +30,15 @@ export async function logout(): Promise<void> {
   await request('/auth/logout', { method: 'POST', schema: null });
 }
 
+/**
+ * Erases the account and everything of theirs, after the password is given again (§7, Q19). A wrong
+ * password is a 403, which is thrown like any other refusal: it is not a 401, so it does not sign
+ * the person out.
+ */
+export async function deleteAccount(password: string): Promise<void> {
+  await request('/auth/me', { method: 'DELETE', body: { password }, schema: null });
+}
+
 /** The signed-in user, or null when there is no session; every other failure is thrown. */
 export async function me(signal?: AbortSignal): Promise<User | null> {
   try {

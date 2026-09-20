@@ -1,6 +1,7 @@
 import { useEffect, type ReactElement } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 
+import { followSystemTheme, useAppearance } from './features/appearance/appearance-store';
 import { useAuthStore } from './features/auth/auth-store';
 import { LoginScreen } from './features/auth/LoginScreen';
 import { RegisterScreen } from './features/auth/RegisterScreen';
@@ -30,9 +31,18 @@ function RequireAnonymous({ children }: { children: ReactElement }): ReactElemen
 
 export function App() {
   const load = useAuthStore((state) => state.load);
+  const status = useAuthStore((state) => state.status);
+  const loadAppearance = useAppearance((state) => state.load);
+  const resetAppearance = useAppearance((state) => state.reset);
   useEffect(() => {
     void load();
   }, [load]);
+  // Each account has its own look: fetched on sign-in, dropped on sign-out (§8.2).
+  useEffect(() => {
+    if (status === 'signed-in') void loadAppearance();
+    else if (status === 'anonymous') resetAppearance();
+  }, [status, loadAppearance, resetAppearance]);
+  useEffect(() => followSystemTheme(), []);
 
   return (
     <Routes>

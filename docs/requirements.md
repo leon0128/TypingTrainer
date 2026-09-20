@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.26 |
+| Version | 1.27 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.25 — appearance settings are stored and served (§8.2, §9.3, §9.5, Appendix B) |
+| Supersedes | v1.26 — appearance is applied: colour sets, fonts, theme, and their accessibility checks (§8.2, Appendix B) |
 
 **Legend**
 
@@ -1211,3 +1211,8 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.25 | Language selection screen deferred | The setting has an API but no screen yet: with the time zone not editable the settings page would hold only a switch that changes nothing until U18 translates the app, so the switch arrives with U18 (§8.4) |
 | 1.26 | `user_preferences` | One row per user (`user_id` primary key, cascading delete) holding `font`, `font_size`, `theme`, and `color_preset`, each with a CHECK for the offered values. The row is created by the first appearance change and an account without one has the defaults (JetBrains Mono, 18 px, System, Standard), so registration is untouched. The language stays on `users`; a change of both is one transaction. F-13 adds its columns here (§9.3) |
 | 1.26 | Theme default is System | §8.2 listed three themes. The play screen already followed the operating system's light or dark setting, so a fourth option, System, is the default and an account that never chooses sees no change (§8.2) |
+| 1.27 | Colour sets are checked, not asserted | "Designed for colour-vision accessibility" is held by tests over all 9 combinations (3 sets × light, dark, high contrast), for normal vision and for the Machado (2009) models of protanopia, deuteranopia, and tritanopia: typed text 7:1 on the panel, pending text 4.5:1, unfilled auto text 3:1, typed and pending at least 1.5:1 apart by lightness, the cursor cell 1.2:1 from the panel, the character on the cursor 4.5:1, the caret 3:1 on the cursor, the miss flash 3:1 from the panel and its text 4.5:1. **436 checks; the first palettes failed 13 of them** — the original pending grey was about 3.0:1, below AA — and were adjusted until all passed. The thresholds are this project's own reading of WCAG 2.x and are not a certified audit (§8.2, §9.6) |
+| 1.27 | Colour is never the only cue | The miss flash also draws an outline, so a miss is a boxed cell as well as a red one; unfilled auto text keeps its dotted underline; the caret is a bar; and Monochrome makes typed text bold as well as lighter (§8.2, §9.6) |
+| 1.27 | Cursor and flash colours are palette entries | `cursorFg` (the character under the cursor) and `errorFg` (text on the miss flash) are separate from `typed`, because high contrast needs dark text on a bright cursor and the dark themes need dark text on the flash; the earlier fixed white text on the flash was 3.6:1 on the dark theme's red (§8.2) |
+| 1.27 | Fonts | JetBrains Mono, Fira Code, Source Code Pro, IBM Plex Mono, and Noto Sans Mono, from the `@fontsource` packages (all SIL OFL 1.1), Latin 400 only, imported on demand and served from this origin. **Measured in the build:** each is one woff2 file of 11 to 23 KB, so a player downloads one, and the bundle carries none. Bold is not bundled: Monochrome's bold falls back to the browser's synthetic bold, which keeps a monospace font's advance width (§8.2, §9.7) |
+| 1.27 | Applying an appearance | The palette becomes custom properties on `<html>`, with the font and size as `--code-font` and `--code-size`, and `data-theme` / `data-preset` for Tailwind's `dark:` variant (now keyed on `data-theme`, with high contrast counted as dark) and the preset rules. A change is applied before the server answers and undone if saving fails; what the server returns is what is kept; an account's look is fetched on sign-in and dropped on sign-out; and `system` follows the operating system while the page is open (§8.2) |

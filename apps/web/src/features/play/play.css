@@ -10,7 +10,9 @@
   --auto-pending: #afb8c1;
   --cursor-bg: #fff1a8;
   --caret: #9a6700;
-  --error: #cf222e;
+  --error: #c21e2b;
+  --error-fg: #ffffff;
+  --cursor-fg: #1f2328;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,7 +27,9 @@
     --auto-pending: #484f58;
     --cursor-bg: #4d3800;
     --caret: #d29922;
-    --error: #f85149;
+    --error: #ff7b72;
+    --error-fg: #0d1117;
+    --cursor-fg: #e6edf3;
   }
 }
 
@@ -101,8 +105,16 @@ body {
 
 .code {
   margin: 0;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 18px;
+  font-family: var(
+    --code-font,
+    'JetBrains Mono',
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace
+  );
+  font-size: var(--code-size, 18px);
   line-height: 1.6;
   white-space: pre;
   /* Ligatures would break the character-to-caret correspondence (§8.2). */
@@ -145,21 +157,32 @@ body {
   border-radius: 2px;
   background: var(--cursor-bg);
   box-shadow: inset 2px 0 0 var(--caret);
-  color: var(--typed);
+  color: var(--cursor-fg);
 }
 
 .miss-flash {
   animation: miss-flash 150ms ease-out;
 }
 
+/* The outline is the cue that is not a colour: a miss is a boxed cell as well as a red one. */
 @keyframes miss-flash {
   from {
     background: var(--error);
-    color: #ffffff;
+    color: var(--error-fg);
+    outline: 2px solid var(--fg);
+    outline-offset: -2px;
   }
   to {
     background: var(--cursor-bg);
+    outline: 2px solid transparent;
+    outline-offset: -2px;
   }
+}
+
+/* Monochrome carries the typed/pending difference in weight as well as lightness (§8.2). */
+[data-preset='monochrome'] .cell-typed,
+[data-preset='monochrome'] .cell-auto-filled {
+  font-weight: 700;
 }
 
 .overlay {

@@ -260,7 +260,7 @@ describe('the language screen in Japanese', () => {
       'vs CPU',
       'vs 自分',
     ]);
-    expect(screen.getByRole('heading', { name: '言語' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '言語を選択' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'ログアウト' })).toBeTruthy();
     expectNoEnglish(container);
   });

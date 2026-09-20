@@ -154,7 +154,7 @@ describe('play screen', () => {
     expect(counted?.score).not.toBe(STORED.score);
     expect(panel).not.toContain(`Score${String(counted?.score)}`);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Choose a language' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Home' }));
     expect(await screen.findByText('choose a language')).toBeTruthy();
     expect(useRunSession.getState().run).toBeNull();
   });

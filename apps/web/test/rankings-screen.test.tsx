@@ -81,7 +81,7 @@ describe('rankings screen', () => {
   it('links back to language selection', async () => {
     renderScreen();
     await screen.findByText('88');
-    await userEvent.click(screen.getByRole('link', { name: 'Choose a language' }));
+    await userEvent.click(screen.getByRole('link', { name: 'Home' }));
     expect(await screen.findByText('choose a language')).toBeTruthy();
   });
 });

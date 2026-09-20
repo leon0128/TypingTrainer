@@ -136,7 +136,7 @@ describe('history screen', () => {
     );
     renderScreen();
     await screen.findByText('No runs match these filters.');
-    await userEvent.click(screen.getByRole('link', { name: 'Choose a language' }));
+    await userEvent.click(screen.getByRole('link', { name: 'Home' }));
     expect(await screen.findByText('choose a language')).toBeTruthy();
   });
 });

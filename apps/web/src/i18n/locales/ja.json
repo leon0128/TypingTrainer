@@ -54,7 +54,7 @@
     "loading": "読み込み中…",
     "tryAgain": "再試行",
     "working": "処理中…",
-    "chooseLanguage": "言語",
+    "chooseLanguage": "ホーム",
     "signOut": "ログアウト",
     "seconds": "{{value}} 秒",
     "percent": "{{value}} %",
@@ -88,6 +88,7 @@
     "ghost": "vs 自分"
   },
   "home": {
+    "heading": "言語を選択",
     "cpuLevel": "CPU の Level({{min}}–{{max}})",
     "aboutKpm": "約 {{kpm}} KPM",
     "levelInvalid": "{{min}}〜{{max}} の整数を入力してください",
@@ -99,8 +100,7 @@
     "best": "ベスト {{score}}",
     "noRecord": "記録なし",
     "modeGroup": "モード",
-    "recordGroup": "記録",
-    "footer": "1 回のプレイは 20 ブロック・120 秒です。最初のキー入力でカウントダウンが始まります。CPU はミスをしません。同点は勝ちです。"
+    "recordGroup": "記録"
   },
   "periodsShort": {
     "daily": "今日",

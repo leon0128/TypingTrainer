@@ -157,7 +157,7 @@ body {
   border-radius: 2px;
   background: var(--cursor-bg);
   box-shadow: inset 2px 0 0 var(--caret);
-  color: var(--cursor-fg);
+  color: var(--pending);
 }
 
 .miss-flash {

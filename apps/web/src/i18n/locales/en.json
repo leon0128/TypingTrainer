@@ -55,7 +55,7 @@
     "loading": "Loading…",
     "tryAgain": "Try again",
     "working": "Working…",
-    "chooseLanguage": "Choose a language",
+    "chooseLanguage": "Home",
     "signOut": "Sign out",
     "seconds": "{{value}} s",
     "percent": "{{value}} %",
@@ -89,6 +89,7 @@
     "ghost": "Ghost"
   },
   "home": {
+    "heading": "Choose a language",
     "cpuLevel": "CPU level ({{min}}–{{max}})",
     "aboutKpm": "about {{kpm}} KPM",
     "levelInvalid": "enter a whole number from {{min}} to {{max}}",
@@ -100,8 +101,7 @@
     "best": "best {{score}}",
     "noRecord": "No record yet",
     "modeGroup": "Mode",
-    "recordGroup": "Record",
-    "footer": "A run lasts 120 seconds over 20 blocks. The countdown starts with your first keystroke. The CPU never misses; a tie with it counts as a win."
+    "recordGroup": "Record"
   },
   "periodsShort": {
     "daily": "Today",

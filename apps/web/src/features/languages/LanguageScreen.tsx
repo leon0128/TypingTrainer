@@ -201,7 +201,7 @@ export function LanguageScreen() {
         </div>
       )}
 
-      <h2 className="text-lg">{t('common.chooseLanguage')}</h2>
+      <h2 className="text-lg">{t('home.heading')}</h2>
 
       {error !== null && (
         <p
@@ -245,8 +245,6 @@ export function LanguageScreen() {
           ))}
         </ul>
       )}
-
-      <p className="text-sm text-slate-600 dark:text-slate-400">{t('home.footer')}</p>
     </main>
   );
 }

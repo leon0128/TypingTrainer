@@ -1,29 +1,41 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import {
+  AppearanceSchema,
+  DEFAULT_APPEARANCE,
   LocaleSchema,
   type Preferences,
   type UpdatePreferencesRequest,
   type User,
 } from '@typing-trainer/contracts';
 
-import { PreferencesRepository } from './preferences.repository';
+import { PreferencesRepository, type PreferencesRow } from './preferences.repository';
 
-export type PreferencesStore = Pick<PreferencesRepository, 'updateLocale'>;
+export type PreferencesStore = Pick<PreferencesRepository, 'find' | 'update'>;
 
 @Injectable()
 export class PreferencesService {
   constructor(@Inject(PreferencesRepository) private readonly preferences: PreferencesStore) {}
 
-  /** The user as the session lookup just read them, so this needs no query of its own. */
-  get(user: User): Preferences {
-    return { timezone: user.timezone, locale: LocaleSchema.parse(user.locale) };
+  async get(user: User): Promise<Preferences> {
+    return this.present(await this.preferences.find(user.id));
   }
 
   async update(user: User, request: UpdatePreferencesRequest): Promise<Preferences> {
-    if (request.locale === undefined) return this.get(user);
-    const row = await this.preferences.updateLocale(user.id, request.locale);
-    // The session was valid a moment ago, so a missing row means the account was just deleted.
+    return this.present(await this.preferences.update(user.id, request));
+  }
+
+  /** A missing user row means the account was just deleted, so the session is no longer valid. */
+  private present(row: PreferencesRow | undefined): Preferences {
     if (row === undefined) throw new UnauthorizedException('authentication required');
-    return { timezone: row.timezone, locale: LocaleSchema.parse(row.locale) };
+    return {
+      timezone: row.timezone,
+      locale: LocaleSchema.parse(row.locale),
+      ...AppearanceSchema.parse({
+        font: row.font ?? DEFAULT_APPEARANCE.font,
+        fontSize: row.font_size ?? DEFAULT_APPEARANCE.fontSize,
+        theme: row.theme ?? DEFAULT_APPEARANCE.theme,
+        colorPreset: row.color_preset ?? DEFAULT_APPEARANCE.colorPreset,
+      }),
+    };
   }
 }

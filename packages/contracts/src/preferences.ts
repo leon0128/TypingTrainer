@@ -4,11 +4,48 @@ import { z } from 'zod';
 export const LOCALES = ['en', 'ja'] as const;
 export const LocaleSchema = z.enum(LOCALES);
 
+/** Code fonts (§8.2): all open source, self-hosted. */
+export const FONTS = [
+  'jetbrains-mono',
+  'fira-code',
+  'source-code-pro',
+  'ibm-plex-mono',
+  'noto-sans-mono',
+] as const;
+export const FontSchema = z.enum(FONTS);
+
+/** Code sizes in pixels (§8.2). */
+export const FONT_SIZES = [14, 16, 18, 20, 24] as const;
+export const FontSizeSchema = z.union(FONT_SIZES.map((size) => z.literal(size)));
+
+/** `system` follows the operating system's light or dark setting (§8.2, v1.26). */
+export const THEMES = ['system', 'light', 'dark', 'high-contrast'] as const;
+export const ThemeSchema = z.enum(THEMES);
+
+/** Color sets for typed, pending, cursor, and error text (§8.2). */
+export const COLOR_PRESETS = ['standard', 'okabe-ito', 'monochrome'] as const;
+export const ColorPresetSchema = z.enum(COLOR_PRESETS);
+
+/** What an account has until it chooses otherwise. */
+export const DEFAULT_APPEARANCE = {
+  font: 'jetbrains-mono',
+  fontSize: 18,
+  theme: 'system',
+  colorPreset: 'standard',
+} as const;
+
+export const AppearanceSchema = z.object({
+  font: FontSchema,
+  fontSize: FontSizeSchema,
+  theme: ThemeSchema,
+  colorPreset: ColorPresetSchema,
+});
+
 /**
  * What `GET /api/preferences` returns (§9.5). The time zone is shown but not editable: it is fixed
  * when the account is created (§6.4).
  */
-export const PreferencesSchema = z.object({
+export const PreferencesSchema = AppearanceSchema.extend({
   timezone: z.string(),
   locale: LocaleSchema,
 });
@@ -19,10 +56,23 @@ export const PreferencesSchema = z.object({
  * learns that it was not applied.
  */
 export const UpdatePreferencesRequestSchema = z
-  .object({ locale: LocaleSchema.optional() })
+  .object({
+    locale: LocaleSchema.optional(),
+    font: FontSchema.optional(),
+    fontSize: FontSizeSchema.optional(),
+    theme: ThemeSchema.optional(),
+    colorPreset: ColorPresetSchema.optional(),
+  })
   .strict()
-  .refine((value) => value.locale !== undefined, { message: 'send at least one setting' });
+  .refine((value) => Object.values(value).some((setting) => setting !== undefined), {
+    message: 'send at least one setting',
+  });
 
 export type Locale = z.infer<typeof LocaleSchema>;
+export type Font = z.infer<typeof FontSchema>;
+export type FontSize = z.infer<typeof FontSizeSchema>;
+export type Theme = z.infer<typeof ThemeSchema>;
+export type ColorPreset = z.infer<typeof ColorPresetSchema>;
+export type Appearance = z.infer<typeof AppearanceSchema>;
 export type Preferences = z.infer<typeof PreferencesSchema>;
 export type UpdatePreferencesRequest = z.output<typeof UpdatePreferencesRequestSchema>;

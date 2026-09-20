@@ -87,9 +87,28 @@ export type {
 export { CPU_LEVEL_COUNT, ConquestsResponseSchema, LanguageConquestSchema } from './conquests';
 export type { ConquestsResponse, LanguageConquest } from './conquests';
 export {
+  AppearanceSchema,
+  COLOR_PRESETS,
+  ColorPresetSchema,
+  DEFAULT_APPEARANCE,
+  FONTS,
+  FONT_SIZES,
+  FontSchema,
+  FontSizeSchema,
   LOCALES,
   LocaleSchema,
   PreferencesSchema,
+  THEMES,
+  ThemeSchema,
   UpdatePreferencesRequestSchema,
 } from './preferences';
-export type { Locale, Preferences, UpdatePreferencesRequest } from './preferences';
+export type {
+  Appearance,
+  ColorPreset,
+  Font,
+  FontSize,
+  Locale,
+  Preferences,
+  Theme,
+  UpdatePreferencesRequest,
+} from './preferences';

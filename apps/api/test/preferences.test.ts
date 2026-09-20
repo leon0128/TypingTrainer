@@ -1,5 +1,13 @@
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
-import { ApiErrorSchema, AuthResponseSchema, PreferencesSchema } from '@typing-trainer/contracts';
+import {
+  ApiErrorSchema,
+  AuthResponseSchema,
+  COLOR_PRESETS,
+  FONTS,
+  FONT_SIZES,
+  PreferencesSchema,
+  THEMES,
+} from '@typing-trainer/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createApp } from '../src/app';
@@ -8,6 +16,13 @@ import { TEST_DATABASE_URL, createTestDatabase, type TestDatabase } from './supp
 
 const PASSWORD = 'correct horse battery staple';
 const COOKIE = 'tt_session';
+
+const APPEARANCE_DEFAULTS = {
+  font: 'jetbrains-mono',
+  fontSize: 18,
+  theme: 'system',
+  colorPreset: 'standard',
+};
 
 let counter = 0;
 const nextUsername = () => `chooser${String((counter += 1))}`;
@@ -60,6 +75,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
     expect(PreferencesSchema.parse(response.json())).toEqual({
       timezone: 'Asia/Tokyo',
       locale: 'en',
+      ...APPEARANCE_DEFAULTS,
     });
   });
 
@@ -70,6 +86,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
     expect(PreferencesSchema.parse(put.json())).toEqual({
       timezone: 'America/New_York',
       locale: 'ja',
+      ...APPEARANCE_DEFAULTS,
     });
 
     expect(PreferencesSchema.parse((await call(me.token, 'GET')).json()).locale).toBe('ja');
@@ -97,7 +114,12 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
     ['nothing at all', {}],
     ['a time zone, which is not editable', { timezone: 'Asia/Tokyo' }],
     ['a language together with a time zone', { locale: 'ja', timezone: 'Asia/Tokyo' }],
-    ['an unknown setting', { locale: 'ja', theme: 'dark' }],
+    ['an unknown setting', { locale: 'ja', sound: 'beep' }],
+    ['an unknown font', { font: 'comic-sans' }],
+    ['a size that is not offered', { fontSize: 17 }],
+    ['a size sent as text', { fontSize: '18' }],
+    ['an unknown theme', { theme: 'sepia' }],
+    ['an unknown color preset', { colorPreset: 'neon' }],
   ])('refuses %s', async (_name, payload) => {
     const me = await signedIn('Europe/Paris');
     const response = await call(me.token, 'PUT', payload);
@@ -107,6 +129,108 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
     expect(PreferencesSchema.parse((await call(me.token, 'GET')).json())).toEqual({
       timezone: 'Europe/Paris',
       locale: 'en',
+      ...APPEARANCE_DEFAULTS,
+    });
+  });
+
+  describe('appearance', () => {
+    const appearance = async (token: string) => {
+      const { font, fontSize, theme, colorPreset } = PreferencesSchema.parse(
+        (await call(token, 'GET')).json(),
+      );
+      return { font, fontSize, theme, colorPreset };
+    };
+
+    it('stores each setting and keeps the ones not sent', async () => {
+      const me = await signedIn('UTC');
+      const first = await call(me.token, 'PUT', { font: 'fira-code', fontSize: 24 });
+      expect(first.statusCode).toBe(200);
+      expect(PreferencesSchema.parse(first.json())).toMatchObject({
+        font: 'fira-code',
+        fontSize: 24,
+        theme: 'system',
+        colorPreset: 'standard',
+      });
+
+      await call(me.token, 'PUT', { theme: 'high-contrast', colorPreset: 'okabe-ito' });
+      expect(await appearance(me.token)).toEqual({
+        font: 'fira-code',
+        fontSize: 24,
+        theme: 'high-contrast',
+        colorPreset: 'okabe-ito',
+      });
+    });
+
+    it('accepts every offered value', async () => {
+      const me = await signedIn('UTC');
+      for (const body of [
+        ...FONTS.map((font) => ({ font })),
+        ...FONT_SIZES.map((fontSize) => ({ fontSize })),
+        ...THEMES.map((theme) => ({ theme })),
+        ...COLOR_PRESETS.map((colorPreset) => ({ colorPreset })),
+      ]) {
+        expect((await call(me.token, 'PUT', body)).statusCode, JSON.stringify(body)).toBe(200);
+      }
+    });
+
+    it('changes the language and the appearance together, or neither', async () => {
+      const me = await signedIn('UTC');
+      const both = await call(me.token, 'PUT', { locale: 'ja', theme: 'dark' });
+      expect(PreferencesSchema.parse(both.json())).toMatchObject({ locale: 'ja', theme: 'dark' });
+    });
+
+    it("keeps one player's appearance from another's", async () => {
+      const me = await signedIn('UTC');
+      const other = await signedIn('UTC');
+      await call(me.token, 'PUT', { font: 'ibm-plex-mono', fontSize: 14, theme: 'light' });
+      expect(await appearance(other.token)).toEqual({
+        font: 'jetbrains-mono',
+        fontSize: 18,
+        theme: 'system',
+        colorPreset: 'standard',
+      });
+    });
+
+    it('creates a row only when something is changed', async () => {
+      const me = await signedIn('UTC');
+      const count = () =>
+        database.dataSource
+          .query<{ n: string }[]>('SELECT count(*) AS n FROM user_preferences WHERE user_id = $1', [
+            me.id,
+          ])
+          .then((rows) => Number(rows[0]?.n));
+      await call(me.token, 'GET');
+      await call(me.token, 'PUT', { locale: 'ja' });
+      expect(await count()).toBe(0);
+      await call(me.token, 'PUT', { theme: 'dark' });
+      expect(await count()).toBe(1);
+    });
+
+    it('is deleted with the account', async () => {
+      const me = await signedIn('UTC');
+      await call(me.token, 'PUT', { theme: 'dark' });
+      await database.dataSource.query('DELETE FROM users WHERE id = $1', [me.id]);
+      const rows = await database.dataSource.query<unknown[]>(
+        'SELECT 1 FROM user_preferences WHERE user_id = $1',
+        [me.id],
+      );
+      expect(rows).toHaveLength(0);
+    });
+
+    it.each([
+      ['font', 'comic-sans'],
+      ['font_size', 17],
+      ['theme', 'sepia'],
+      ['color_preset', 'neon'],
+    ])('refuses %s = %s in the database, whatever wrote it', async (column, value) => {
+      const me = await signedIn('UTC');
+      await call(me.token, 'PUT', { theme: 'dark' });
+      await expect(
+        database.dataSource.query(`UPDATE user_preferences SET ${column} = $2 WHERE user_id = $1`, [
+          me.id,
+          value,
+        ]),
+      ).rejects.toThrow(/chk_user_preferences_/);
     });
   });
 

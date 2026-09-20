@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.25 |
+| Version | 1.26 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.24 — the preferences endpoint exists for the display language only; the time zone stays as set at registration (§6.4, §8.4, §9.5, Appendix B) |
+| Supersedes | v1.25 — appearance settings are stored and served (§8.2, §9.3, §9.5, Appendix B) |
 
 **Legend**
 
@@ -687,8 +687,8 @@ limit for existing and future content, not an aspiration.
 | --- | --- |
 | Font | JetBrains Mono, Fira Code, Source Code Pro, IBM Plex Mono, Noto Sans Mono — all open source and **self-hosted**, so there is no CDN dependency and the app works on an offline LAN |
 | Size | 14 / 16 / 18 / 20 / 24 px |
-| Theme | Dark, light, high contrast |
-| Color preset | 3–4 sets covering typed / pending / cursor / error. Designed for color-vision accessibility: state is never conveyed by color alone |
+| Theme | 🟡 (v1.26) System (follows the operating system; the default), light, dark, high contrast |
+| Color preset | 🟡 (v1.26) Three sets — Standard, Okabe–Ito, Monochrome — covering typed / pending / cursor / error. Designed for color-vision accessibility: state is never conveyed by color alone |
 
 🟡 **Ligatures are disabled.** Rendering `=>` as one glyph breaks the correspondence between character count and pixel position, which misplaces the caret.
 
@@ -950,7 +950,7 @@ Design points:
 | GET | `/api/history` | Paged list |
 | DELETE | `/api/history/:id` | Delete one run |
 | GET | `/api/cpu-conquests` | Conquest state of every enabled language: highest level beaten, the levels beaten, and their count (§4.3.4) |
-| GET / PUT | `/api/preferences` | 🟡 (v1.25) `GET` returns the time zone (read only) and the display language; `PUT` changes the settings sent (at present only `locale`, `en` or `ja`). Appearance and sound settings join it with P3's F-12 and F-13 |
+| GET / PUT | `/api/preferences` | 🟡 (v1.25, v1.26) `GET` returns the time zone (read only), the display language, and the appearance (`font`, `fontSize`, `theme`, `colorPreset`); `PUT` changes the settings sent (`locale`, and those four) and refuses anything else with 400. Sound settings join it with F-13 |
 
 🟡 (v1.13) Every route requires a signed-in session unless it is explicitly public; the public routes are the health checks, `GET /api/languages`, and register, login, and logout. Errors use one body shape, `{ statusCode, error, message }`, and server errors never include their cause.
 
@@ -1209,3 +1209,5 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.25 | Language is checked by the database | `users.locale` gains `CHECK (locale IN ('en', 'ja'))`; existing rows were all `en` (§8.4, §9.3) |
 | 1.25 | Known gap, not addressed | **Found while designing U14:** registration canonicalizes the time zone with the JavaScript `Intl` database, but the run insert applies it in PostgreSQL. A name one accepts and the other does not would let an account register and then fail to save any run. The requester chose to leave time zone handling as it was, so this stays open; a browser only sends names `Intl` itself produced, which makes it unlikely in practice (§6.4, §7) |
 | 1.25 | Language selection screen deferred | The setting has an API but no screen yet: with the time zone not editable the settings page would hold only a switch that changes nothing until U18 translates the app, so the switch arrives with U18 (§8.4) |
+| 1.26 | `user_preferences` | One row per user (`user_id` primary key, cascading delete) holding `font`, `font_size`, `theme`, and `color_preset`, each with a CHECK for the offered values. The row is created by the first appearance change and an account without one has the defaults (JetBrains Mono, 18 px, System, Standard), so registration is untouched. The language stays on `users`; a change of both is one transaction. F-13 adds its columns here (§9.3) |
+| 1.26 | Theme default is System | §8.2 listed three themes. The play screen already followed the operating system's light or dark setting, so a fourth option, System, is the default and an account that never chooses sees no change (§8.2) |

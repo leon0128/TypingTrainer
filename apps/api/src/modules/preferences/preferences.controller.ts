@@ -13,7 +13,7 @@ export class PreferencesController {
   constructor(@Inject(PreferencesService) private readonly preferences: PreferencesService) {}
 
   @Get()
-  get(@Req() request: FastifyRequest): Preferences {
+  get(@Req() request: FastifyRequest): Promise<Preferences> {
     return this.preferences.get(this.user(request));
   }
 

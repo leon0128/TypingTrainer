@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.22 |
+| Version | 1.23 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.21 — vs CPU runs are issued, judged, and stored by the server (§9.5, §9.8, Appendix B) |
+| Supersedes | v1.22 — vs CPU can be played: level selection, the CPU column, and the result (§4.3, §8.1, Appendix B) |
 
 **Legend**
 
@@ -668,6 +668,8 @@ are the official formulas (§3.6) computed from the run so far, not an estimate:
 fixed, so they already hold before the run ends. What the server stores once the run is submitted
 is what is shown on the result screen (§9.8), not the client's own count.
 
+🟡 (v1.23) **vs CPU layout.** The player's column keeps the 992 px that 88 columns need at 18 px (below), so the two columns sit side by side only where the window is at least 1740 px wide; on a narrower window the CPU's column goes **below** the player's instead of squeezing it. The CPU's column uses a 12 px font and shows the same current and next block, its caret, and its live SCORE (its KPM equals its score and its accuracy is 100%, so the two figures the diagram lists beside it add nothing). The CPU is driven by the player's run clock: it starts with the player's first keystroke, stands still while the player is paused, and stops when the player finishes all blocks early, while the match is still judged at 120 seconds (§4.3.4). Its keys go through the same session engine as the player's, on the timeline the server computes from the issued seed. **Not measured in a browser:** the widths above are from the character width of the monospace font, and the caret-visibility check of v1.15 has not been repeated for this layout.
+
 🟡 (v1.15) **Line width is a hard constraint, not just a guideline.** The code panel scrolls
 horizontally (`overflow-x: auto`) when a line is wider than it, but nothing scrolls it to follow
 the caret, so a line wider than the panel leaves the caret off the visible area for however many
@@ -1195,3 +1197,5 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.22 | The server judges vs CPU | A `cpu` run is issued with a level (`issued_runs.cpu_level`, with a CHECK that it is set exactly for `cpu` and within 1–100) and the same block draw as single play. On submission the server recomputes the CPU's score from the issued blocks, level, and seed with `typing-engine`, judges it against the replayed score (a tie is a win), and stores `cpu_level`, `opponent_score`, and `result`. The request body carries only the log, so a client cannot claim a result; a test sends a forged `result`, `opponentScore`, and `cpuLevel` and confirms all three are ignored (§4.3.4, §9.8) |
 | 1.22 | Verified for the server-side judging | Integration tests cover a win, a loss, a tie at exactly the CPU's score, and one point short. Ties and shortfalls are set up by drawing fresh runs until a log's score lands on the CPU's, because the engine's own insertions make a score skip values for some blocks. Replacing the seed, the level, the comparison, the stored values, or the tie rule each fails a test |
 | 1.22 | CHECK constraints must test for NULL explicitly | **Found by the first constraint test:** `"cpu_level" BETWEEN 1 AND 100` is NULL, not false, for a NULL level, and a CHECK accepts NULL, so a `cpu` run with no level passed `chk_issued_runs_cpu_level` as first written. The constraint now states `IS NOT NULL`, as the `play_sessions` one already does (§9.3) |
+| 1.23 | vs CPU selection | Language selection has a Single play / vs CPU switch; vs CPU shows a level field, **initially 1** (§4.3), with the level's speed beside it, and refuses anything but a whole number from 1 to 100 before a request is made. The level is not remembered between runs, since nothing about play is kept in browser storage (§9.8) |
+| 1.23 | Result screen for vs CPU | Titled "You won" or "You lost" from the server's judgment, with the CPU's level and score and, on a win, a reminder that a tie counts as one. The client never computes the result itself (§9.8) |

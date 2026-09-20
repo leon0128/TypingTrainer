@@ -108,3 +108,73 @@ describe('language screen', () => {
     expect((await screen.findByRole('alert')).textContent).toMatch(/could not be reached/);
   });
 });
+
+describe('vs CPU', () => {
+  const stubServer = () => {
+    const requests: { url: string; body?: string }[] = [];
+    vi.stubGlobal('fetch', (url: string, init: { body?: string } = {}) => {
+      requests.push({ url, ...(init.body === undefined ? {} : { body: init.body }) });
+      return Promise.resolve(
+        url.endsWith('/languages')
+          ? json(LANGUAGES)
+          : json({ ...ISSUED, mode: 'cpu', cpuLevel: 48 }, 201),
+      );
+    });
+    return requests;
+  };
+
+  it('starts a run against level 1 by default', async () => {
+    const requests = stubServer();
+    renderScreen();
+    await userEvent.click(await screen.findByRole('button', { name: 'vs CPU' }));
+    expect(screen.getByLabelText(/CPU level/)).toHaveProperty('value', '1');
+    await userEvent.click(screen.getByRole('button', { name: 'Go' }));
+
+    await screen.findByText('playing');
+    expect(JSON.parse(requests[1]?.body ?? '{}')).toEqual({
+      language: 'go',
+      mode: 'cpu',
+      cpuLevel: 1,
+    });
+    expect(useRunSession.getState().run?.opponent?.level).toBe(48);
+  });
+
+  it('sends the level that was typed and shows its speed', async () => {
+    const requests = stubServer();
+    renderScreen();
+    await userEvent.click(await screen.findByRole('button', { name: 'vs CPU' }));
+    const input = screen.getByLabelText(/CPU level/);
+    await userEvent.clear(input);
+    await userEvent.type(input, '48');
+    expect(screen.getByText('about 186 KPM')).toBeTruthy();
+    await userEvent.click(screen.getByRole('button', { name: 'Python' }));
+    await screen.findByText('playing');
+    expect(JSON.parse(requests[1]?.body ?? '{}')).toMatchObject({ mode: 'cpu', cpuLevel: 48 });
+  });
+
+  it.each(['', '0', '101', '1.5', 'abc', '-3'])(
+    'will not start with the level "%s"',
+    async (text) => {
+      const requests = stubServer();
+      renderScreen();
+      await userEvent.click(await screen.findByRole('button', { name: 'vs CPU' }));
+      const input = screen.getByLabelText(/CPU level/);
+      await userEvent.clear(input);
+      if (text !== '') await userEvent.type(input, text);
+      const button = screen.getByRole('button', { name: 'Python' });
+      expect(button).toHaveProperty('disabled', true);
+      await userEvent.click(button);
+      expect(requests).toHaveLength(1);
+    },
+  );
+
+  it('goes back to single play without a level', async () => {
+    const requests = stubServer();
+    renderScreen();
+    await userEvent.click(await screen.findByRole('button', { name: 'vs CPU' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Single play' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Go' }));
+    await screen.findByText('playing');
+    expect(JSON.parse(requests[1]?.body ?? '{}')).toEqual({ language: 'go', mode: 'single' });
+  });
+});

@@ -9,11 +9,18 @@ import {
 
 import { request, requestMaybe } from './client';
 
-/** Asks for a run: 20 blocks, the seed that drew them, and the run length (§5.3, §9.5). */
-export function startSession(language: ContentLanguage): Promise<StartSessionResponse> {
+/**
+ * Asks for a run: 20 blocks, the seed that drew them, and the run length (§5.3, §9.5). With a
+ * `cpuLevel` it is a vs CPU run against that level (§4.3); without one it is single play.
+ */
+export function startSession(
+  language: ContentLanguage,
+  cpuLevel?: number,
+): Promise<StartSessionResponse> {
   return request('/play/sessions', {
     method: 'POST',
-    body: { language, mode: 'single' },
+    body:
+      cpuLevel === undefined ? { language, mode: 'single' } : { language, mode: 'cpu', cpuLevel },
     schema: StartSessionResponseSchema,
   });
 }

@@ -14,6 +14,8 @@ import {
   type SessionState,
 } from '@typing-trainer/typing-engine';
 
+import { createCpuOpponent, type CpuOpponent } from './cpu-opponent';
+
 /** `ready` until the first keystroke starts the countdown (§4.1). */
 export type RunPhase = 'ready' | 'playing' | 'paused' | 'ended';
 
@@ -35,6 +37,8 @@ export interface RunSnapshot {
 
 export interface RunStore {
   readonly issued: StartSessionResponse;
+  /** The CPU of a vs CPU run, advanced by this store's own run clock; null for single play. */
+  readonly opponent: CpuOpponent | null;
   // Function properties rather than methods: both are passed unbound to useSyncExternalStore.
   readonly getSnapshot: () => RunSnapshot;
   readonly subscribe: (listener: () => void) => () => void;
@@ -94,6 +98,10 @@ export function createRunStore(issued: StartSessionResponse, issuedAt: number): 
   const problem = issuedRunProblem(issued);
   if (problem !== null) throw new RangeError(problem);
 
+  const opponent =
+    issued.mode === 'cpu' && issued.cpuLevel !== null
+      ? createCpuOpponent(issued, issued.cpuLevel)
+      : null;
   const listeners = new Set<() => void>();
   const logged: LoggedKey[] = [];
   let startedAt = 0;
@@ -134,10 +142,12 @@ export function createRunStore(issued: StartSessionResponse, issuedAt: number): 
   const end = (session: SessionState, endedBy: RunEnd, elapsedAtEnd: number) => {
     frozenMs = elapsedAtEnd;
     commit({ ...snapshot, session, phase: 'ended', endedBy });
+    opponent?.advanceTo(frozenMs);
   };
 
   return {
     issued,
+    opponent,
     getSnapshot: () => snapshot,
 
     subscribe(listener) {
@@ -174,6 +184,9 @@ export function createRunStore(issued: StartSessionResponse, issuedAt: number): 
             : snapshot.lastMiss,
         endedBy: state.endedBy,
       });
+      // The CPU runs on the player's run clock, so it starts with the first key and stops when the
+      // player pauses.
+      opponent?.advanceTo(elapsedMs(now));
     },
 
     pause(now) {
@@ -197,7 +210,9 @@ export function createRunStore(issued: StartSessionResponse, issuedAt: number): 
       }
       if (snapshot.phase === 'playing' && elapsedMs(now) >= PLAY_DURATION_MS) {
         end(endSessionByTime(snapshot.session), 'time', PLAY_DURATION_MS);
+        return;
       }
+      if (snapshot.phase === 'playing') opponent?.advanceTo(elapsedMs(now));
     },
 
     elapsedMs,

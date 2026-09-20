@@ -190,3 +190,57 @@ describe('play screen', () => {
     expect(attempt).toBe(2);
   });
 });
+
+describe('vs CPU', () => {
+  const CPU_ISSUED = { ...ISSUED, mode: 'cpu' as const, cpuLevel: 50 };
+
+  it('shows the CPU beside the player, each with its own current and next block', () => {
+    useRunSession.getState().begin(CPU_ISSUED, performance.now());
+    renderScreen();
+
+    expect(screen.getByText(/vs CPU Lv\.50/)).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'You' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /CPU Lv\.50 · SCORE 0/ })).toBeTruthy();
+    expect(screen.getAllByLabelText('Code to type')).toHaveLength(4);
+    const cpu = screen.getByLabelText('CPU');
+    expect(cpu.querySelector('.cell-cursor')).not.toBeNull();
+  });
+
+  it('shows no opponent in single play', () => {
+    beginRun();
+    renderScreen();
+    expect(screen.queryByLabelText('CPU')).toBeNull();
+    expect(screen.getAllByLabelText('Code to type')).toHaveLength(2);
+  });
+
+  it.each([
+    ['win', 'You won', /CPU Lv\.50 scored 70; you scored 88\. A tie counts as a win\./],
+    ['lose', 'You lost', /CPU Lv\.50 scored 70; you scored 88\./],
+  ] as const)('shows the server-judged result: %s', async (result, heading, line) => {
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve(
+        json(
+          {
+            run: {
+              ...STORED,
+              mode: 'cpu',
+              cpuLevel: 50,
+              opponentScore: 70,
+              score: 88,
+              result,
+            },
+          },
+          201,
+        ),
+      ),
+    );
+    useRunSession.getState().begin(CPU_ISSUED, performance.now());
+    renderScreen();
+    await finishTheRun();
+
+    expect(await screen.findByRole('heading', { name: heading })).toBeTruthy();
+    const text = document.querySelector('.match-result')?.textContent ?? '';
+    expect(text).toMatch(line);
+    if (result === 'lose') expect(text).not.toMatch(/tie/);
+  });
+});

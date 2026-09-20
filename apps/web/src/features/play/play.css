@@ -216,3 +216,36 @@ body {
 .footnote {
   margin: 12px 0;
 }
+
+/* vs CPU (§8.1): the player's column keeps the room 88 columns need at 18px, since a narrower
+   panel would hide the caret (v1.15); the CPU's column is smaller. Where the window cannot hold
+   both, the CPU's column goes below instead of squeezing the player's. */
+.versus {
+  display: grid;
+  gap: 16px;
+}
+
+.column-title {
+  margin: 8px 0;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.opponent-column .code {
+  font-size: 12px;
+}
+
+.opponent-column .code-panel {
+  cursor: default;
+}
+
+@media (min-width: 1740px) {
+  .play:has(.versus) {
+    max-width: 1732px;
+  }
+
+  .versus {
+    grid-template-columns: 992px minmax(0, 1fr);
+    align-items: start;
+  }
+}

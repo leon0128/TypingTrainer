@@ -1,5 +1,5 @@
 import type { TypingProgram } from '@typing-trainer/contracts';
-import { RUN_BLOCK_COUNT } from '@typing-trainer/typing-engine';
+import { RUN_BLOCK_COUNT, type SessionState } from '@typing-trainer/typing-engine';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router';
 
@@ -11,6 +11,9 @@ import { ResultPanel } from './ResultPanel';
 import { useRunSession } from './run-session';
 import { onRunClock, type RunPhase, type RunStore } from './run-store';
 import './play.css';
+
+const noSubscribe = () => () => undefined;
+const noSnapshot = () => null;
 
 export function PlayScreen() {
   const run = useRunSession((state) => state.run);
@@ -26,6 +29,11 @@ function RunView({ run }: { run: RunStore }) {
   const submission = useRunSession((state) => state.submission);
   const submit = useRunSession((state) => state.submit);
   const snapshot = useSyncExternalStore(run.subscribe, run.getSnapshot);
+  const opponent = run.opponent;
+  const opponentSession = useSyncExternalStore(
+    opponent?.subscribe ?? noSubscribe,
+    opponent?.getSnapshot ?? noSnapshot,
+  );
 
   const inputRef = useRef<HTMLInputElement>(null);
   const remainingRef = useRef<HTMLSpanElement>(null);
@@ -95,8 +103,6 @@ function RunView({ run }: { run: RunStore }) {
   };
 
   const { session } = snapshot;
-  const current = session.programs[session.blockIndex];
-  const next = session.programs[session.blockIndex + 1];
   const metrics = run.liveMetrics();
   const overlay = overlayText(snapshot.phase, focused, imeActive);
 
@@ -105,8 +111,9 @@ function RunView({ run }: { run: RunStore }) {
       <header className="play-header">
         <h1>TypingTrainer</h1>
         <span className="block-name">
-          {run.issued.language} · block {Math.min(session.blockIndex + 1, RUN_BLOCK_COUNT)} /{' '}
-          {session.programs.length}
+          {run.issued.language}
+          {opponent !== null && ` · vs CPU Lv.${String(opponent.level)}`} · block{' '}
+          {Math.min(session.blockIndex + 1, RUN_BLOCK_COUNT)} / {session.programs.length}
         </span>
         <span className="live-metrics">
           KPM {Math.round(metrics.kpm)} · ACC {Math.round(metrics.accuracy * 100)}% · SCORE{' '}
@@ -130,26 +137,35 @@ function RunView({ run }: { run: RunStore }) {
         {statusText(snapshot.phase)}
       </p>
 
-      {current !== undefined && snapshot.phase !== 'ended' && (
-        <section className="code-panel" onMouseDown={focusInput}>
-          <CodeView
-            layout={layoutOf(current)}
-            engine={session.block}
-            missSeq={snapshot.missSeq}
-            lastMiss={snapshot.lastMiss}
-          />
-          {overlay !== null && (
-            <div className="overlay" role="alert">
-              {overlay}
-            </div>
+      {snapshot.phase !== 'ended' && (
+        <div className={opponent === null ? undefined : 'versus'}>
+          <section className="column" aria-label="You">
+            {opponent !== null && <h2 className="column-title">You</h2>}
+            <BlockColumn
+              session={session}
+              layoutOf={layoutOf}
+              missSeq={snapshot.missSeq}
+              lastMiss={snapshot.lastMiss}
+              overlay={overlay}
+              onMouseDown={focusInput}
+            />
+          </section>
+          {opponent !== null && opponentSession !== null && (
+            <section className="column opponent-column" aria-label="CPU">
+              <h2 className="column-title">
+                CPU Lv.{opponent.level} · SCORE {opponent.liveMetrics().score}
+              </h2>
+              <BlockColumn
+                session={opponentSession}
+                layoutOf={layoutOf}
+                missSeq={0}
+                lastMiss={null}
+                overlay={null}
+                onMouseDown={focusInput}
+              />
+            </section>
           )}
-        </section>
-      )}
-
-      {next !== undefined && snapshot.phase !== 'ended' && (
-        <section className="code-panel code-next" aria-label="Next block">
-          <CodeView layout={layoutOf(next)} engine={null} missSeq={0} lastMiss={null} />
-        </section>
+        </div>
       )}
 
       {snapshot.phase === 'ended' && (
@@ -164,6 +180,52 @@ function RunView({ run }: { run: RunStore }) {
         />
       )}
     </main>
+  );
+}
+
+interface BlockColumnProps {
+  readonly session: SessionState;
+  readonly layoutOf: (program: TypingProgram) => Layout;
+  readonly missSeq: number;
+  readonly lastMiss: { readonly atomIndex: number; readonly charIndex: number } | null;
+  readonly overlay: string | null;
+  readonly onMouseDown: (event: MouseEvent) => void;
+}
+
+/** The block being typed and the next one dimmed beside it (§8.1), for the player or the CPU. */
+function BlockColumn({
+  session,
+  layoutOf,
+  missSeq,
+  lastMiss,
+  overlay,
+  onMouseDown,
+}: BlockColumnProps) {
+  const current = session.programs[session.blockIndex];
+  const next = session.programs[session.blockIndex + 1];
+  return (
+    <>
+      {current !== undefined && (
+        <section className="code-panel" onMouseDown={onMouseDown}>
+          <CodeView
+            layout={layoutOf(current)}
+            engine={session.block}
+            missSeq={missSeq}
+            lastMiss={lastMiss}
+          />
+          {overlay !== null && (
+            <div className="overlay" role="alert">
+              {overlay}
+            </div>
+          )}
+        </section>
+      )}
+      {next !== undefined && (
+        <section className="code-panel code-next" aria-label="Next block">
+          <CodeView layout={layoutOf(next)} engine={null} missSeq={0} lastMiss={null} />
+        </section>
+      )}
+    </>
   );
 }
 

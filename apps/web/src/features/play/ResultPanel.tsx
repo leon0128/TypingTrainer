@@ -28,6 +28,12 @@ export function ResultPanel({ metrics, submission, onRetry, onPlayAgain }: Resul
       <p className="submission" role="status">
         {statusLine(submission)}
       </p>
+      {stored?.result != null && (
+        <p className="match-result">
+          CPU Lv.{stored.cpuLevel} scored {stored.opponentScore}; you scored {stored.score}.{' '}
+          {stored.result === 'win' ? 'A tie counts as a win.' : ''}
+        </p>
+      )}
 
       {submission.kind !== 'discarded' && submission.kind !== 'empty' && (
         <dl>
@@ -73,6 +79,8 @@ function title(submission: Submission): string {
     case 'empty':
       return 'Nothing typed';
     case 'saved':
+      if (submission.run.result === 'win') return 'You won';
+      if (submission.run.result === 'lose') return 'You lost';
       return 'Run saved';
     default:
       return 'Run over';

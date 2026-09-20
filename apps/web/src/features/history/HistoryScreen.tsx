@@ -176,52 +176,56 @@ export function HistoryScreen() {
       ) : rows.length === 0 ? (
         <p role="status">{t('history.empty')}</p>
       ) : (
-        <table className="w-full border-collapse text-left">
-          <thead>
-            <tr className="border-b border-slate-400">
-              <th className="py-1 pr-2">{t('history.when')}</th>
-              <th className="py-1 pr-2">{t('history.mode')}</th>
-              <th className="py-1 pr-2">{t('history.language')}</th>
-              <th className="py-1 pr-2">{t('history.kpm')}</th>
-              <th className="py-1 pr-2">{t('history.accuracy')}</th>
-              <th className="py-1 pr-2">{t('history.score')}</th>
-              <th className="py-1 pr-2">{t('history.result')}</th>
-              <th className="py-1"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id} className="border-b border-slate-200 dark:border-slate-800">
-                <td className="py-1 pr-2">
-                  {new Date(row.startedAt).toLocaleString(i18n.language)}
-                </td>
-                <td className="py-1 pr-2">{t(`modes.${row.mode}`)}</td>
-                <td className="py-1 pr-2">
-                  {languages?.find((entry) => entry.slug === row.language)?.displayName ??
-                    row.language}
-                </td>
-                <td className="py-1 pr-2">{row.kpm}</td>
-                <td className="py-1 pr-2">{formatPercent(row.accuracy)}</td>
-                <td className="py-1 pr-2">{row.score}</td>
-                <td className="py-1 pr-2">
-                  {row.result === null ? '—' : t(`history.${row.result}`)}
-                </td>
-                <td className="py-1">
-                  <button
-                    type="button"
-                    className="text-red-700 underline disabled:opacity-60 dark:text-red-400"
-                    disabled={deleting === row.id}
-                    onClick={() => {
-                      remove(row.id);
-                    }}
-                  >
-                    {deleting === row.id ? t('history.deleting') : t('history.delete')}
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          {/* Eight columns do not fit a phone, so the table scrolls inside this box instead of
+              widening the page. */}
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="border-b border-slate-400">
+                <th className="py-1 pr-2">{t('history.when')}</th>
+                <th className="py-1 pr-2">{t('history.mode')}</th>
+                <th className="py-1 pr-2">{t('history.language')}</th>
+                <th className="py-1 pr-2">{t('history.kpm')}</th>
+                <th className="py-1 pr-2">{t('history.accuracy')}</th>
+                <th className="py-1 pr-2">{t('history.score')}</th>
+                <th className="py-1 pr-2">{t('history.result')}</th>
+                <th className="py-1"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.id} className="border-b border-slate-200 dark:border-slate-800">
+                  <td className="py-1 pr-2">
+                    {new Date(row.startedAt).toLocaleString(i18n.language)}
+                  </td>
+                  <td className="py-1 pr-2">{t(`modes.${row.mode}`)}</td>
+                  <td className="py-1 pr-2">
+                    {languages?.find((entry) => entry.slug === row.language)?.displayName ??
+                      row.language}
+                  </td>
+                  <td className="py-1 pr-2">{row.kpm}</td>
+                  <td className="py-1 pr-2">{formatPercent(row.accuracy)}</td>
+                  <td className="py-1 pr-2">{row.score}</td>
+                  <td className="py-1 pr-2">
+                    {row.result === null ? '—' : t(`history.${row.result}`)}
+                  </td>
+                  <td className="py-1">
+                    <button
+                      type="button"
+                      className="text-red-700 underline disabled:opacity-60 dark:text-red-400"
+                      disabled={deleting === row.id}
+                      onClick={() => {
+                        remove(row.id);
+                      }}
+                    >
+                      {deleting === row.id ? t('history.deleting') : t('history.delete')}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       <div className="flex items-center gap-3 text-sm">

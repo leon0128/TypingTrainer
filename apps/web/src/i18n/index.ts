@@ -29,9 +29,18 @@ const LOADERS: Record<Locale, () => Promise<{ default: object }>> = {
   ja: () => import('./locales/ja.json'),
 };
 
-/** The language to start in for someone whose account has not said: the browser's, else English. */
+/**
+ * The language to start in for someone whose account has not said: the first language the browser
+ * prefers that this app has, else English. The order is the person's own, so a browser that lists
+ * English before Japanese gets English.
+ */
 export function detectLocale(languages: readonly string[] = navigator.languages): Locale {
-  return languages.some((language) => language.toLowerCase().startsWith('ja')) ? 'ja' : 'en';
+  for (const language of languages) {
+    const primary = language.toLowerCase().split('-')[0];
+    if (primary === 'ja') return 'ja';
+    if (primary === 'en') return 'en';
+  }
+  return 'en';
 }
 
 /**

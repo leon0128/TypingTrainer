@@ -12,15 +12,27 @@ describe('detectLocale', () => {
     expect(detectLocale(['ja'])).toBe('ja');
     expect(detectLocale(['ja-JP'])).toBe('ja');
     expect(detectLocale(['JA-jp'])).toBe('ja');
-    expect(detectLocale(['en-US', 'ja'])).toBe('ja');
+  });
+
+  it('follows the order the person put their languages in', () => {
+    expect(detectLocale(['ja', 'en-US'])).toBe('ja');
+    // English first: Japanese is a fallback they listed, not their preference.
+    expect(detectLocale(['en-US', 'ja'])).toBe('en');
+    expect(detectLocale(['en-US', 'ja-US'])).toBe('en');
+  });
+
+  it('skips languages the app does not have, and takes the next it does', () => {
+    expect(detectLocale(['fr', 'ja'])).toBe('ja');
+    expect(detectLocale(['fr-CA', 'de', 'en-GB', 'ja'])).toBe('en');
   });
 
   it('is English for anything else, and when there is nothing to go on', () => {
     expect(detectLocale(['en-US'])).toBe('en');
     expect(detectLocale(['fr', 'de-DE'])).toBe('en');
     expect(detectLocale([])).toBe('en');
-    // A language merely starting with the same letter is not Japanese.
+    // A language merely starting with the same letters is not Japanese.
     expect(detectLocale(['jv'])).toBe('en');
+    expect(detectLocale(['jam'])).toBe('en');
   });
 });
 

@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.37 |
+| Version | 1.38 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.36 — every screen is in Japanese, and the language is set on the appearance screen (§8.4, Appendix B) |
+| Supersedes | v1.37 — the Japanese screens are checked in a real browser, and two narrow-screen defects are fixed (§8.4, Appendix B) |
 
 **Legend**
 
@@ -1263,3 +1263,8 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.37 | The language is set on the appearance screen | A Language group at the top offers English and 日本語, applied at once and saved like the other settings, and put back if saving fails. §8.4 says "in-app, applied immediately, persisted per user"; this and the sign-in switch are the two places (§8.4) |
 | 1.37 | Conquests are 対戦記録 | As chosen by the requester. "Highest level beaten" is 勝った最高 Level, the count is 勝った Level 数, and a grid cell reads "Level 12 勝ち" or "Level 3 未勝利" to a screen reader as well as showing a mark. The dashboard's line is 勝った CPU の最高 Level (§4.3.4, §8.4) |
 | 1.37 | Lint now covers attributes | The rule that flags text written into a screen now also flags `aria-label`, `title`, `placeholder` and any attribute not on a short list of ones a machine reads (`to`, `role`, `htmlFor`, SVG geometry, and so on). Turning it on found one: the conquests check mark, now a named constant. The rule sees strings in JSX only; one returned from a function is caught by the Japanese-screen tests instead (§8.4) |
+| 1.38 | Checked in a real browser | In a Chromium pane, with the app running against a real API and database, every screen was measured in both languages at 1,024 px and 375 px (a phone): the page's horizontal overflow and every element extending past the right edge. **Japanese: none, on any screen, at either width**, including the home screen in vs CPU and vs 自分 modes, the play screen with a run in progress, and sign-in and registration with the language switch. The document's `lang` followed the language on every screen (§8.4) |
+| 1.38 | Two narrow-screen defects, fixed | The same measurement at 375 px found the home screen's header overflowing the page by 286 px in English (19 px in Japanese) and the history table by 159 px in English (17 px in Japanese): the navigation did not wrap and the eight-column table had no box of its own. **English was the wider language, so these were not caused by Japanese** and would have shown to anyone on a phone. The navigation now wraps and the table scrolls inside its own container; afterwards the overflow is 0 px in both languages on every screen. §8.4's worry that Japanese is wider did not hold for this app's text, which uses short Japanese words (§8.4) |
+| 1.38 | The browser's language order | **Found in that browser:** it reports `["en-US", "ja-US"]`, and the first version of the detection chose Japanese because *any* entry began with `ja`, ignoring that English came first. It now takes the first language the browser lists that the app has (`ja` or `en`, in any regional form), skips others such as `fr`, and falls back to English (§8.4) |
+| 1.38 | Registering in Japanese, end to end | On the real app, registering with the screen switched to Japanese left the account's language saved as `ja` and the app in Japanese with a Japanese navigation, with no flip back to English (§8.4) |
+| 1.38 | Not checked | **No screenshot was seen:** the browser pane was not displaying, so the checks are measurements of the page, not a look at it; how the Japanese text reads visually, its fonts, and its line breaks are unreviewed. The Japanese wording itself has not been reviewed by a native reader, and the requester's own review is what settles it. Only one browser and two widths were tried (§8.4) |

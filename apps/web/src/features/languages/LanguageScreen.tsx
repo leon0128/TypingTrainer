@@ -102,9 +102,9 @@ export function LanguageScreen() {
 
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
-      <header className="flex items-baseline justify-between gap-4">
+      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
         <h1 className="text-2xl font-semibold">{t('app.name')}</h1>
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
           <Link className="underline" to="/rankings">
             {t('nav.rankings')}
           </Link>

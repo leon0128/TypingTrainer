@@ -1,0 +1,36 @@
+# One site: the static web build, and /api proxied to the API container (§9.7).
+#
+# APP_DOMAIN is required; Caddy obtains and renews the certificate for it. Local HTTPS testing
+# mounts a file into tls/ that says `tls internal` (infra/compose.local-https.yaml), which is why
+# the directive is imported rather than written here.
+{$APP_DOMAIN} {
+	import tls/*.caddy
+
+	# zstd and gzip only: Caddy's encode has no brotli. This also compresses the /api responses,
+	# whose 20 compiled blocks are 94-129 KB of JSON but a few KB compressed (§9.7).
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		# HSTS is per host, not per port, so the local HTTPS test sets max-age=0 rather than have a
+		# browser remember "localhost is https-only" and break the http dev server.
+		Strict-Transport-Security "{$HSTS_VALUE:max-age=31536000}"
+		-Server
+	}
+
+	handle /api/* {
+		# No trusted_proxies here, so Caddy replaces any client-sent X-Forwarded-For with the real
+		# peer address; the API trusts only Caddy's network (TRUST_PROXY, §7).
+		reverse_proxy api:3000
+	}
+
+	handle {
+		root * /srv/web
+		# Content-hashed assets never change under the same name.
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		try_files {path} /index.html
+		file_server
+	}
+}

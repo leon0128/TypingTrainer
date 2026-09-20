@@ -85,3 +85,12 @@ TEST_DATABASE_URL=postgres://typing_trainer:typing_trainer@127.0.0.1:5432/typing
 
 The CI `api` job runs the same tests against a PostgreSQL service with `REQUIRE_TEST_DATABASE=1`,
 which turns a missing `TEST_DATABASE_URL` into a failure instead of skipped tests.
+
+**Avoid boundary values in date/time-zone test fixtures.** U8 and U9 each found a mutation that
+survived because a fixture sat exactly on a boundary: a run dated on the Sunday itself made
+`local_date` and `local_week_start` agree by accident, so a query comparing the wrong column
+still passed; a player registered with a UTC profile made "today in the profile time zone" and
+"today in UTC" the same date, so a query that silently used the server's own clock instead of the
+profile's still passed. Prefer a date offset from the boundary (mid-week, not the Sunday) and a
+non-UTC profile time zone whenever a test is meant to prove a date or time-zone computation is
+actually happening, not merely that it doesn't crash.

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { build } from 'esbuild';
 
 /**
- * Bundles the API into dist/main.js. Workspace packages export TypeScript sources, so they are
+ * Bundles the API into dist/main.js, and the migration runner into dist/migrate.js. Workspace packages export TypeScript sources, so they are
  * bundled; every other dependency stays external and is installed in the image.
  */
 const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
@@ -11,8 +11,9 @@ const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.
 };
 
 await build({
-  entryPoints: ['src/main.ts'],
-  outfile: 'dist/main.js',
+  entryPoints: { main: 'src/main.ts', migrate: 'src/migrate.ts' },
+  outdir: 'dist',
+  outExtension: { '.js': '.js' },
   bundle: true,
   platform: 'node',
   format: 'esm',

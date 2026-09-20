@@ -1,0 +1,11 @@
+# Both images build from the repository root (infra/docker/*.Dockerfile). Keep the context small
+# and keep host build output out: each image installs and builds for its own architecture.
+.git
+**/node_modules
+apps/*/dist
+packages/*/dist
+tools/*/dist
+**/*.tsbuildinfo
+coverage
+**/.env
+docs

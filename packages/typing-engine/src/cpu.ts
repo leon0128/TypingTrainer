@@ -1,6 +1,6 @@
 import type { TypingProgram } from '@typing-trainer/contracts';
 
-import { ENTER_KEY, SPACE_KEY } from './engine';
+import { ENTER_KEY, SPACE_KEY, withTypedClosers } from './engine';
 import { PLAY_DURATION_MS, computeMetrics } from './metrics';
 import { MAX_SEED, createSeededRandom, type SeededRandom } from './random';
 
@@ -79,10 +79,13 @@ export function keyCost(key: string): number {
   return 1.3;
 }
 
-/** What the CPU types in one block: its literals and separators; auto-inserted text is skipped. */
+/**
+ * What the CPU types in one block: its literals and separators, closing brackets included because
+ * the player types them too (see `withTypedClosers`); only indentation is skipped.
+ */
 function blockKeys(program: TypingProgram): string[] {
   const keys: string[] = [];
-  for (const atom of program.atoms) {
+  for (const atom of withTypedClosers(program).atoms) {
     if (atom.kind === 'literal') keys.push(...atom.text.split(''));
     else if (atom.kind === 'separator') keys.push(atom.canonical === '\n' ? ENTER_KEY : SPACE_KEY);
   }

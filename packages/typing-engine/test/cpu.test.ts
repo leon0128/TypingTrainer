@@ -93,7 +93,7 @@ describe('keyCost', () => {
 });
 
 describe('cpuKeys', () => {
-  it('lists literals and separators only, skipping auto-inserted text', () => {
+  it('lists literals, separators, and typed closing brackets, skipping only indentation', () => {
     const block = program([
       L('f('),
       { kind: 'auto', text: ')', filledBy: 0 },
@@ -101,8 +101,8 @@ describe('cpuKeys', () => {
       L('x'),
       NL,
     ]);
-    expect(cpuKeys([block])).toEqual(['f', '(', ' ', 'x', 'Enter']);
-    expect(cpuKeys([block])).toHaveLength(block.canonicalKeystrokes);
+    expect(cpuKeys([block])).toEqual(['f', '(', ')', ' ', 'x', 'Enter']);
+    expect(cpuKeys([block])).toHaveLength(block.canonicalKeystrokes + 1);
   });
 });
 

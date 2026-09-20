@@ -358,7 +358,7 @@ describe('the play screen in Japanese', () => {
     );
     useRunSession.getState().begin({ ...ISSUED, mode: 'cpu', cpuLevel: 50 }, performance.now());
     const { container } = renderAt('/play');
-    await userEvent.type(screen.getByLabelText('入力欄'), 'if(a{{{Enter}b{Enter}');
+    await userEvent.type(screen.getByLabelText('入力欄'), 'if(a){{{Enter}b{Enter}}');
     await userEvent.type(screen.getByLabelText('入力欄'), 'a: 1');
 
     expect(await screen.findByRole('heading', { name: '勝ち' })).toBeTruthy();

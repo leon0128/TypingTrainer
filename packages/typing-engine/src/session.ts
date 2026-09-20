@@ -6,6 +6,7 @@ import {
   createEngineState,
   handleKey,
   isComplete,
+  withTypedClosers,
   type EngineState,
   type KeystrokeCounters,
   type Verdict,
@@ -52,7 +53,21 @@ const addCounters = (a: KeystrokeCounters, b: KeystrokeCounters): KeystrokeCount
   ignored: a.ignored + b.ignored,
 });
 
-export function createSession(programs: readonly TypingProgram[]): SessionState {
+export interface SessionOptions {
+  /**
+   * Whether closing brackets and quotes appear on their own once the opener is typed. Off by
+   * default: the player types them, so they become literals and count as keystrokes. Indentation
+   * is inserted either way. The live run, the CPU, and the server's replay must all agree, and
+   * none of them can switch it yet.
+   */
+  readonly autoClose?: boolean;
+}
+
+export function createSession(
+  issued: readonly TypingProgram[],
+  { autoClose = false }: SessionOptions = {},
+): SessionState {
+  const programs = autoClose ? issued : issued.map(withTypedClosers);
   const first = programs[0];
   if (first === undefined) throw new RangeError('A session needs at least one block');
   return {

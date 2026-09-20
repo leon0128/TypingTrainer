@@ -44,7 +44,7 @@ const json = (body: unknown, status = 200) =>
 function playToTheEnd(): void {
   const run = useRunSession.getState().run;
   if (run === null) throw new Error('no run');
-  const keys = ['i', 'f', '(', 'a', '{', ENTER_KEY, 'b', ENTER_KEY];
+  const keys = ['i', 'f', '(', 'a', ')', '{', ENTER_KEY, 'b', ENTER_KEY, '}'];
   keys.forEach((key, index) => {
     run.press(key, performance.now() + index * 100);
   });

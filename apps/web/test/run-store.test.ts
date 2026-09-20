@@ -22,7 +22,7 @@ import { IF_PROGRAM, PADDED_PROGRAM } from './program-fixture';
 const BLOCKS = [IF_PROGRAM, PADDED_PROGRAM];
 
 /** The keys that type IF_PROGRAM correctly, in order. */
-const IF_KEYS = ['i', 'f', '(', 'a', '{', ENTER_KEY, 'b', ENTER_KEY];
+const IF_KEYS = ['i', 'f', '(', 'a', ')', '{', ENTER_KEY, 'b', ENTER_KEY, '}'];
 /** The keys that type PADDED_PROGRAM correctly; the padding before the space is not typed. */
 const PADDED_KEYS = ['a', ':', ' ', '1'];
 
@@ -240,7 +240,21 @@ describe('the log the server replays', () => {
   });
 
   it('reproduces the counters for any sequence of keys and pauses', () => {
-    const keys = fc.constantFrom('i', 'f', '(', 'a', '{', 'b', ':', '1', ' ', 'x', ENTER_KEY);
+    const keys = fc.constantFrom(
+      'i',
+      'f',
+      '(',
+      'a',
+      ')',
+      '}',
+      '{',
+      'b',
+      ':',
+      '1',
+      ' ',
+      'x',
+      ENTER_KEY,
+    );
     fc.assert(
       fc.property(
         fc.array(fc.tuple(keys, fc.integer({ min: 0, max: 400 })), { maxLength: 60 }),

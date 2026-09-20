@@ -102,7 +102,8 @@ describe('the run store with an opponent', () => {
 
     store.press('i', 5000);
     const halfway = timeline[6] ?? 0;
-    store.tick(5000 + halfway);
+    // 1 ms of slack for the same reason as below: the key's time is rounded to a whole millisecond.
+    store.tick(5000 + halfway + 1);
     expect(typed()).toBe(7);
 
     store.pause(5000 + halfway);
@@ -122,7 +123,22 @@ describe('the run store with an opponent', () => {
     if (opponent === null) throw new Error('expected an opponent');
     // A level-1 CPU has typed nothing in the first 100 ms; the player finishes both blocks then.
     let now = 0;
-    for (const key of ['i', 'f', '(', 'a', '{', 'Enter', 'b', 'Enter', 'a', ':', ' ', '1']) {
+    for (const key of [
+      'i',
+      'f',
+      '(',
+      'a',
+      ')',
+      '{',
+      'Enter',
+      'b',
+      'Enter',
+      '}',
+      'a',
+      ':',
+      ' ',
+      '1',
+    ]) {
       store.press(key, now);
       now += 10;
     }

@@ -6,6 +6,7 @@ export {
   handleKey,
   isComplete,
   isUntypedAtom,
+  withTypedClosers,
 } from './engine';
 export type { EngineState, KeyResult, KeystrokeCounters, Verdict } from './engine';
 export { RUN_BLOCK_COUNT, drawBlockIds } from './draw';
@@ -31,6 +32,7 @@ export type {
   IntervalStats,
   LoggedKey,
   SessionEnd,
+  SessionOptions,
   SessionKeyResult,
   SessionReplay,
   SessionState,

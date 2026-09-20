@@ -72,7 +72,7 @@ const json = (body: unknown, status = 200) =>
 /** Types both issued blocks correctly, which ends the run (§4.1). */
 async function finishTheRun() {
   // `{{` is how user-event types a literal brace, and `{Enter}` is the Enter key.
-  await userEvent.type(typingInput(), 'if(a{{{Enter}b{Enter}');
+  await userEvent.type(typingInput(), 'if(a){{{Enter}b{Enter}}');
   await userEvent.type(typingInput(), 'a: 1');
 }
 

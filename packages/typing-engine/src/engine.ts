@@ -54,6 +54,19 @@ export function isUntypedAtom(atom: Atom | undefined): boolean {
   return atom?.kind === 'auto' || atom?.kind === 'padding';
 }
 
+/** Turns every closing auto atom into a literal, and counts its characters as keystrokes. */
+export function withTypedClosers(program: TypingProgram): TypingProgram {
+  const isCloser = (atom: Atom) => atom.kind === 'auto' && atom.text.trim() !== '';
+  if (!program.atoms.some(isCloser)) return program;
+  let added = 0;
+  const atoms = program.atoms.map((atom): Atom => {
+    if (atom.kind !== 'auto' || !isCloser(atom)) return atom;
+    added += atom.text.length;
+    return { kind: 'literal', text: atom.text };
+  });
+  return { ...program, atoms, canonicalKeystrokes: program.canonicalKeystrokes + added };
+}
+
 export function createEngineState(program: TypingProgram): EngineState {
   const draft: Draft = {
     atoms: program.atoms,

@@ -17,7 +17,7 @@ import {
   type SessionState,
 } from '../src';
 import { PROBE_KEYS, correctKeys, programArbitrary, spacingArbitrary } from './arbitraries';
-import { L, NL, program } from './helpers';
+import { A, L, NL, program } from './helpers';
 
 const AB = program([L('ab')]);
 const C = program([L('c')]);
@@ -208,5 +208,29 @@ describe('live session and log replay (property)', () => {
       ),
       { numRuns: 500 },
     );
+  });
+});
+
+describe('closing brackets', () => {
+  const CALL = program([L('f('), L('x'), A(')', 0)]);
+
+  it('are typed by the player by default', () => {
+    const { state, verdicts } = typeAll(createSession([CALL]), ['f', '(', 'x', ')']);
+    expect(verdicts).toEqual(['CORRECT', 'CORRECT', 'CORRECT', 'CORRECT']);
+    expect(state.endedBy).toBe('blocks');
+    expect(state.totals.effective).toBe(4);
+    expect(canonicalReached(createSession([CALL]))).toBe(4);
+  });
+
+  it('are inserted automatically when autoClose is on', () => {
+    const { state } = typeAll(createSession([CALL], { autoClose: true }), ['f', '(', 'x']);
+    expect(state.endedBy).toBe('blocks');
+    expect(state.totals.effective).toBe(3);
+  });
+
+  it('leave indentation automatic either way', () => {
+    const INDENTED = program([L('a'), NL, A('  ', 1), L('b')]);
+    const { state } = typeAll(createSession([INDENTED]), ['a', 'Enter', 'b']);
+    expect(state.endedBy).toBe('blocks');
   });
 });

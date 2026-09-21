@@ -92,9 +92,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('GET /api/rankings (TEST_DATABAS
     app = await createApp(testEnv({ DATABASE_URL: database.url }));
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
-    const [row] = await query<{ id: number }[]>(
-      `SELECT id FROM programming_languages WHERE slug = 'python'`,
-    );
+    const [row] = await query<{ id: number }[]>(`SELECT id FROM languages WHERE slug = 'python'`);
     languageId = row?.id ?? 0;
   });
 
@@ -258,11 +256,11 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('GET /api/rankings (TEST_DATABAS
 
   it('refuses a language the schema knows but the server has disabled', async () => {
     const { token } = await signedIn();
-    await query(`UPDATE programming_languages SET enabled = false WHERE slug = 'go'`);
+    await query(`UPDATE languages SET enabled = false WHERE slug = 'go'`);
     try {
       expect((await rankings(token, 'total', 'go')).statusCode).toBe(400);
     } finally {
-      await query(`UPDATE programming_languages SET enabled = true WHERE slug = 'go'`);
+      await query(`UPDATE languages SET enabled = true WHERE slug = 'go'`);
     }
   });
 

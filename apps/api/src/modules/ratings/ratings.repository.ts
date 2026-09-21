@@ -18,7 +18,7 @@ export class RatingsRepository {
     return this.dataSource.query<LanguageRatingRow[]>(
       `SELECT l.slug, l.display_name AS "displayName", COALESCE(r.rating, 0)::int AS rating,
               COALESCE(r.games_played, 0)::int AS "gamesPlayed"
-       FROM programming_languages l
+       FROM languages l
        LEFT JOIN language_ratings r ON r.language_id = l.id AND r.user_id = $1
        WHERE l.enabled = true
        ORDER BY l.sort_order ASC, l.id ASC`,

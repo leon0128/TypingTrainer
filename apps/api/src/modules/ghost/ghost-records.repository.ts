@@ -41,7 +41,7 @@ export class GhostRecordsRepository {
               max(r.score) FILTER (WHERE ${periodCondition("'daily'")})::int AS daily,
               max(r.score) FILTER (WHERE ${periodCondition("'weekly'")})::int AS weekly,
               max(r.score)::int AS total
-       FROM programming_languages l
+       FROM languages l
        JOIN users u ON u.id = $1
        LEFT JOIN play_sessions r ON r.language_id = l.id AND r.user_id = u.id
        WHERE l.enabled

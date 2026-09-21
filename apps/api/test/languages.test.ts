@@ -1,5 +1,5 @@
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
-import { CONTENT_LANGUAGES, LanguagesResponseSchema } from '@typing-trainer/contracts';
+import { CODE_LANGUAGES, LanguagesResponseSchema } from '@typing-trainer/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createApp } from '../src/app';
@@ -35,16 +35,12 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('GET /api/languages (TEST_DATABA
       { slug: 'java', displayName: 'Java' },
       { slug: 'python', displayName: 'Python' },
     ]);
-    expect((await list()).map((language) => language.slug)).toEqual([...CONTENT_LANGUAGES]);
+    expect((await list()).map((language) => language.slug)).toEqual([...CODE_LANGUAGES]);
   });
 
   it('follows sort_order and hides disabled languages', async () => {
-    await database.dataSource.query(
-      `UPDATE programming_languages SET enabled = false WHERE slug = 'java'`,
-    );
-    await database.dataSource.query(
-      `UPDATE programming_languages SET sort_order = 0 WHERE slug = 'python'`,
-    );
+    await database.dataSource.query(`UPDATE languages SET enabled = false WHERE slug = 'java'`);
+    await database.dataSource.query(`UPDATE languages SET sort_order = 0 WHERE slug = 'python'`);
     expect((await list()).map((language) => language.slug)).toEqual(['python', 'typescript', 'go']);
   });
 });

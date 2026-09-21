@@ -138,13 +138,13 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       expect((await startRun(token, { language: 'rust' })).statusCode).toBe(400);
       expect((await startRun(token, { language: 'python', mode: 'ghost' })).statusCode).toBe(400);
 
-      await query(`UPDATE programming_languages SET enabled = false WHERE slug = 'go'`);
+      await query(`UPDATE languages SET enabled = false WHERE slug = 'go'`);
       const disabled = await startRun(token, { language: 'go' });
       expect(disabled.statusCode).toBe(404);
       expect(ApiErrorSchema.parse(disabled.json()).message).toBe('language "go" is not available');
-      await query(`UPDATE programming_languages SET enabled = true WHERE slug = 'go'`);
+      await query(`UPDATE languages SET enabled = true WHERE slug = 'go'`);
       const [{ count } = { count: '' }] = await query<{ count: string }[]>(
-        `SELECT count(*) FROM issued_runs r JOIN programming_languages l ON l.id = r.language_id
+        `SELECT count(*) FROM issued_runs r JOIN languages l ON l.id = r.language_id
        WHERE l.slug = 'go'`,
       );
       expect(count).toBe('0');

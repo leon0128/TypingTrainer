@@ -106,7 +106,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('ratings (TEST_DATABASE_URL)', (
   async function rated(player: Player, rating: number, gamesPlayed: number) {
     await query(
       `INSERT INTO language_ratings (user_id, language_id, rating, games_played)
-       SELECT $1, id, $2, $3 FROM programming_languages WHERE slug = 'python'`,
+       SELECT $1, id, $2, $3 FROM languages WHERE slug = 'python'`,
       [player.id, rating, gamesPlayed],
     );
   }

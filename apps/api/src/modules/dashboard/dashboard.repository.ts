@@ -83,7 +83,7 @@ export class DashboardRepository {
   bestPerLanguage(userId: string): Promise<LanguageBestRow[]> {
     return this.dataSource.query<LanguageBestRow[]>(
       `SELECT l.slug, max(r.score)::int AS score
-       FROM play_sessions r JOIN programming_languages l ON l.id = r.language_id
+       FROM play_sessions r JOIN languages l ON l.id = r.language_id
        WHERE r.user_id = $1
        GROUP BY l.slug, l.sort_order
        ORDER BY l.sort_order ASC`,

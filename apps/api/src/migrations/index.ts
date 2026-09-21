@@ -9,6 +9,7 @@ import { AddSoundPreferences1789905782719 } from './1789905782719-AddSoundPrefer
 import { AddSkinPreference1789906000000 } from './1789906000000-AddSkinPreference';
 import { AddDisplayName1789907000000 } from './1789907000000-AddDisplayName';
 import { AddLanguageRatings1789968962575 } from './1789968962575-AddLanguageRatings';
+import { RenameLanguagesAddTracks1790000000000 } from './1790000000000-RenameLanguagesAddTracks';
 
 /**
  * Every migration in order, listed explicitly: the production bundle has no migration files for a
@@ -27,4 +28,5 @@ export const MIGRATIONS = [
   AddSkinPreference1789906000000,
   AddDisplayName1789907000000,
   AddLanguageRatings1789968962575,
+  RenameLanguagesAddTracks1790000000000,
 ];

@@ -806,6 +806,8 @@ Only three substantive tables hold user data (`users`, `play_sessions`, and late
 - **Conquest records** are computed from `play_sessions`, because deleting a run must also delete the conquest it produced (Q15). A separate durable table would contradict that.
 - **Code blocks** live in the repository and ship inside the image as a compiled bundle (§5.2) 🔵 (Q29), so no `code_blocks` table exists. Roughly 600 KB in memory for 600 blocks, with no seeding step and no coupling between content updates and database migrations.
 
+🟡 (v1.43) `programming_languages` below is now `languages`, with a `track` and a `kind` (§13.2); it holds the pools of every track, ids 1–4 the programming languages and 5–10 the natural-language pools.
+
 ```sql
 CREATE EXTENSION citext;                        -- created by the initial migration
 
@@ -1131,17 +1133,19 @@ ALTER TABLE languages ADD CONSTRAINT chk_languages_track
   CHECK (track IN ('code', 'natural-ja', 'natural-en'));
 ALTER TABLE languages ADD CONSTRAINT chk_languages_kind
   CHECK ((track = 'code' AND kind IS NULL)
-      OR (track <> 'code' AND kind IN ('word', 'line', 'paragraph')));
+      OR (track <> 'code' AND kind IS NOT NULL AND kind IN ('word', 'line', 'paragraph')));
 -- ids 5-7 ja-word, ja-line, ja-paragraph; 8-10 en-word, en-line, en-paragraph
 ```
 
-`issued_runs`'s `CHECK (cardinality(block_ids) = 20)` becomes `BETWEEN 1 AND 300`; the exact count is set by the pool's kind (§13.7) and enforced by the service.
+🟡 (v1.43) The `IS NOT NULL` is not decoration: `NULL IN (...)` is NULL, and a CHECK constraint only rejects false, so without it a natural-language pool with no kind would be accepted (§9.3). `track` has no default once the existing rows are filled, so a new row must say which track it is on. The constraints cannot tie a slug to its track, so the API also refuses to start when a row's `(track, kind)` differs from what `POOLS` in `contracts` gives its slug. The six natural-language rows are inserted **disabled**, because an enabled language without a content bundle stops the API from starting; they are enabled together with the locale check of §13.11.
+
+`issued_runs`'s `CHECK (cardinality(block_ids) = 20)` becomes `BETWEEN 1 AND 300` in the migration that starts issuing natural-language runs, not before; the exact count is set by the pool's kind (§13.7) and enforced by the service.
 
 `user_preferences.font`, `font_size`, and `color_preset` move to a new table keyed by track (§13.10). `language_ratings` is unchanged.
 
 ### 13.3 Rating and rank per track
 
-The rating of §4.3.5 is computed independently for each track. The languages in a track's overall rating are its pools (the three kinds), so playing several kinds is rewarded as playing several programming languages is. Ranks are the same 31 steps, scaled to each track's own ceiling. A track's rating, rank, and history never influence another's. `RATING_LANGUAGE_COUNTS` (in `typing-engine`) holds the count per track, and a test keeps it equal to the pools of each track.
+The rating of §4.3.5 is computed independently for each track. The languages in a track's overall rating are its pools (the three kinds), so playing several kinds is rewarded as playing several programming languages is. Ranks are the same 31 steps, scaled to each track's own ceiling. A track's rating, rank, and history never influence another's. `RATING_LANGUAGE_COUNTS` (in `typing-engine`) holds the count per track, and a test keeps it equal to the pools of each track. The rating functions take the count as an argument and have no default, so a caller cannot rate one track by another's ceiling. For three languages the rank thresholds are: Bronze 1 from 244, Silver 1 from 549, Gold 1 from 915, Platinum 1 from 1342, Diamond 1 from 1830, Master from 2379 (the code track's, for four, are in §4.3.5).
 
 ### 13.4 Content
 
@@ -1496,3 +1500,8 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.43 | Settings per track | Font, size, and color preset are stored per track in `user_play_appearance`; theme, skin, sound, and language are shared |
 | 1.43 | Japanese only for Japanese accounts | Judged by `users.locale = 'ja'`; hidden in the UI and answered with 403 by the API otherwise. Data is kept, not deleted, when the language is switched |
 | 1.43 | Play-history grid | A GitHub-style year grid on Home, two hues (code, natural language) with four shades, a day with both split in two; served by the new `GET /api/activity` |
+| 1.43 | `languages` table migration | `RenameLanguagesAddTracks` renames the table, its primary key, unique constraint, and slug check (TypeORM derives the first two from the table name, so they are renamed to the names it now expects), adds `track` (no default once existing rows are filled) and `kind`, and inserts the six natural-language pools disabled. Foreign keys keep their explicit names and follow the table. `down` is valid only while no run, rating, or issued run refers to a natural-language pool |
+| 1.43 | Pools enabled last | The natural-language rows stay `enabled = false` until the API can serve them and refuse Japanese to other accounts: an enabled language without a bundle stops the API from starting, and enabling before the locale check would show Japanese to everyone |
+| 1.43 | Kind CHECK | **Spec bug found while implementing N1.** The `chk_languages_kind` of the first v1.43 draft accepted a natural-language pool with no kind, because `NULL IN (...)` is NULL; it now requires `"kind" IS NOT NULL`, as §9.3 asks of every nullable comparison |
+| 1.43 | Track consistency at startup | `ContentConsistency` refuses to start when a row's `(track, kind)` differs from `POOLS[slug]`, since the constraints cannot tie a slug to its track |
+| 1.43 | No default rating count | `RATING_LANGUAGE_COUNT` is replaced by `RATING_LANGUAGE_COUNTS` per track and the functions take the count with no default; the web standing counts only the asked track's languages |

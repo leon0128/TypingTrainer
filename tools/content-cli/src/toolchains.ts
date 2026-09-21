@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { ContentLanguage } from '@typing-trainer/contracts';
+import type { CodeLanguage } from '@typing-trainer/contracts';
 
 import { PYTHON_STDLIB } from './constraints';
 import type { ContentDiagnostic } from './diagnostics';
@@ -97,7 +97,7 @@ const diagnostic = (
 });
 
 export function toolchainDiagnostics(
-  language: ContentLanguage,
+  language: CodeLanguage,
   blocks: readonly ToolchainBlock[],
 ): ContentDiagnostic[] {
   if (blocks.length === 0) return [];

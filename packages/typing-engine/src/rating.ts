@@ -1,3 +1,5 @@
+import type { Track } from '@typing-trainer/contracts';
+
 import { CPU_MAX_LEVEL, CPU_MIN_LEVEL } from './cpu';
 
 /**
@@ -7,11 +9,20 @@ import { CPU_MAX_LEVEL, CPU_MIN_LEVEL } from './cpu';
  */
 
 /**
- * How many languages the overall rating counts. Adding a language means raising this: the ceiling
- * of the overall rating and every rank threshold grow with it, and nobody's own rating changes
- * (a new language starts at 0, which adds nothing). A test keeps it equal to the language list.
+ * How many languages each track's overall rating counts (§4.3.5, §13.3): the programming languages
+ * of the code track, and the three kinds of text (word, sentence, paragraph) of a natural-language
+ * track. Adding a pool means raising the count of its track: the ceiling of that track's overall
+ * rating and every rank threshold grow with it, and nobody's own rating changes (a new language
+ * starts at 0, which adds nothing). A test keeps each count equal to the track's pools.
+ *
+ * There is deliberately no default count in the functions below: a call that forgot the track
+ * would silently rate it by another track's ceiling.
  */
-export const RATING_LANGUAGE_COUNT = 4;
+export const RATING_LANGUAGE_COUNTS = {
+  code: 4,
+  'natural-ja': 3,
+  'natural-en': 3,
+} as const satisfies Record<Track, number>;
 
 /** Everyone starts at 0 in every language. */
 export const RATING_INITIAL = 0;
@@ -75,7 +86,7 @@ export function ratingWeight(index: number): number {
 }
 
 /** The highest overall rating for a number of languages: every one of them maxed out. */
-export function maxTotalRating(languageCount: number = RATING_LANGUAGE_COUNT): number {
+export function maxTotalRating(languageCount: number): number {
   let weights = 0;
   for (let index = 0; index < languageCount; index += 1) weights += ratingWeight(index);
   return Math.round(RATING_LANGUAGE_MAX * weights);
@@ -85,10 +96,7 @@ export function maxTotalRating(languageCount: number = RATING_LANGUAGE_COUNT): n
  * The overall rating: the language ratings from best to worst, each times its weight. Languages
  * not played are 0 and cost nothing, so they may be left out of `ratings`.
  */
-export function totalRating(
-  ratings: readonly number[],
-  languageCount: number = RATING_LANGUAGE_COUNT,
-): number {
+export function totalRating(ratings: readonly number[], languageCount: number): number {
   const best = [...ratings].sort((a, b) => b - a).slice(0, languageCount);
   return Math.round(best.reduce((sum, rating, index) => sum + rating * ratingWeight(index), 0));
 }
@@ -135,7 +143,7 @@ interface RankStep extends Rank {
 }
 
 /** Every rank from the lowest, with the rating it starts at, for a number of languages. */
-export function rankSteps(languageCount: number = RATING_LANGUAGE_COUNT): RankStep[] {
+export function rankSteps(languageCount: number): RankStep[] {
   const scale = maxTotalRating(languageCount) / RANK_LAYOUT_CEILING;
   const steps: RankStep[] = [];
   for (const { tier, start, width } of RANK_LAYOUT) {
@@ -161,7 +169,7 @@ export interface RankStanding extends Rank {
 }
 
 /** The rank an overall rating holds, and how close it is to the next. */
-export function rankOf(total: number, languageCount: number = RATING_LANGUAGE_COUNT): RankStanding {
+export function rankOf(total: number, languageCount: number): RankStanding {
   const steps = rankSteps(languageCount);
   let index = 0;
   steps.forEach((step, candidate) => {

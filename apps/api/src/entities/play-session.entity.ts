@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { ProgrammingLanguage } from './programming-language.entity';
+import { Language } from './language.entity';
 import { User } from './user.entity';
 
 /**
@@ -65,9 +65,9 @@ export class PlaySession {
   @Column({ name: 'language_id', type: 'int' })
   languageId!: number;
 
-  @ManyToOne(() => ProgrammingLanguage, { nullable: false })
+  @ManyToOne(() => Language, { nullable: false })
   @JoinColumn({ name: 'language_id', foreignKeyConstraintName: 'fk_play_sessions_language' })
-  language?: ProgrammingLanguage;
+  language?: Language;
 
   @Column({ name: 'duration_sec', type: 'int', default: 120 })
   durationSec!: number;

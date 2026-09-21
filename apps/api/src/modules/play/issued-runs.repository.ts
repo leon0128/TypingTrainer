@@ -102,7 +102,7 @@ export class IssuedRunsRepository {
   /** The id of an enabled language, or undefined when it is unknown or disabled. */
   async findEnabledLanguageId(slug: string): Promise<number | undefined> {
     const rows = await this.dataSource.query<{ id: number }[]>(
-      'SELECT id FROM programming_languages WHERE slug = $1 AND enabled = true',
+      'SELECT id FROM languages WHERE slug = $1 AND enabled = true',
       [slug],
     );
     return rows[0]?.id;
@@ -189,7 +189,7 @@ export class IssuedRunsRepository {
   async consume(id: string, userId: string, windowMs: number): Promise<ConsumedRun | undefined> {
     const result: unknown = await this.dataSource.query(
       `UPDATE issued_runs r SET submitted_at = now()
-       FROM programming_languages l
+       FROM languages l
        WHERE r.id = $1 AND r.user_id = $2 AND r.submitted_at IS NULL
          AND r.issued_at > now() - make_interval(secs => $3)
          AND l.id = r.language_id

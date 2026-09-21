@@ -102,7 +102,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('DELETE /api/auth/me (TEST_DATAB
       payload: { language: 'python', mode: 'cpu', cpuLevel: 5 },
     });
     const [language] = await query<{ id: number }[]>(
-      "SELECT id FROM programming_languages WHERE slug = 'python'",
+      "SELECT id FROM languages WHERE slug = 'python'",
     );
     await query(
       `INSERT INTO play_sessions (
@@ -343,7 +343,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('DELETE /api/auth/me (TEST_DATAB
   it('stores nothing for an account erased between a run being consumed and stored', async () => {
     const account = await register();
     const [language] = await query<{ id: number }[]>(
-      "SELECT id FROM programming_languages WHERE slug = 'python'",
+      "SELECT id FROM languages WHERE slug = 'python'",
     );
     await remove(account.token);
 

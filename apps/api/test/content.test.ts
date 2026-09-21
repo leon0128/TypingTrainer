@@ -43,26 +43,44 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
     it('refuses to start with an enabled language that has no bundle', async () => {
       const db = await database();
       await db.dataSource.query(
-        `INSERT INTO programming_languages (id, slug, display_name, sort_order) VALUES (5, 'rust', 'Rust', 5)`,
+        `INSERT INTO languages (id, slug, display_name, sort_order, track) VALUES (100, 'rust', 'Rust', 100, 'code')`,
       );
       await expect(start(db.url)).rejects.toThrow(
         /language "rust" is enabled but has no content bundle/,
       );
     });
 
+    it.each([
+      [
+        'on another track',
+        `track = 'natural-en', kind = 'word'`,
+        /language "ja-word" is listed as track "natural-en", kind word, but is "natural-ja", word/,
+      ],
+      [
+        'as a programming language',
+        `track = 'code', kind = NULL`,
+        /language "ja-word" is listed as track "code", kind null/,
+      ],
+      [
+        'as another kind',
+        `kind = 'paragraph'`,
+        /language "ja-word" is listed as track "natural-ja", kind paragraph/,
+      ],
+    ])('refuses to start with a pool listed %s', async (_description, assignment, message) => {
+      const db = await database();
+      await db.dataSource.query(`UPDATE languages SET ${assignment} WHERE slug = 'ja-word'`);
+      await expect(start(db.url)).rejects.toThrow(message);
+    });
+
     it('refuses to start with a bundle that has no language row', async () => {
       const db = await database();
-      await db.dataSource.query(`DELETE FROM programming_languages WHERE slug = 'python'`);
-      await expect(start(db.url)).rejects.toThrow(
-        /content bundle "python" has no programming_languages row/,
-      );
+      await db.dataSource.query(`DELETE FROM languages WHERE slug = 'python'`);
+      await expect(start(db.url)).rejects.toThrow(/content bundle "python" has no languages row/);
     });
 
     it('starts with a disabled language that keeps its bundle, and does not list it', async () => {
       const db = await database();
-      await db.dataSource.query(
-        `UPDATE programming_languages SET enabled = false WHERE slug = 'go'`,
-      );
+      await db.dataSource.query(`UPDATE languages SET enabled = false WHERE slug = 'go'`);
       const app = await start(db.url);
       const response = await app.inject({ method: 'GET', url: '/api/languages' });
       expect(LanguagesResponseSchema.parse(response.json()).languages.map((l) => l.slug)).toEqual([
@@ -76,7 +94,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       const db = await database();
       const app = await start(db.url);
       await db.dataSource.query(
-        `INSERT INTO programming_languages (id, slug, display_name, sort_order) VALUES (5, 'typescript-next', 'TS Next', 5)`,
+        `INSERT INTO languages (id, slug, display_name, sort_order, track) VALUES (100, 'typescript-next', 'TS Next', 100, 'code')`,
       );
       const ready = await app.inject({ method: 'GET', url: '/api/health/ready' });
       expect(ready.statusCode).toBe(503);

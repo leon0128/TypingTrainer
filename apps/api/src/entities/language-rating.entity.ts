@@ -1,6 +1,6 @@
 import { Check, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 
-import { ProgrammingLanguage } from './programming-language.entity';
+import { Language } from './language.entity';
 import { User } from './user.entity';
 
 /**
@@ -22,9 +22,9 @@ export class LanguageRating {
   @PrimaryColumn({ name: 'language_id', type: 'int' })
   languageId!: number;
 
-  @ManyToOne(() => ProgrammingLanguage, { nullable: false })
+  @ManyToOne(() => Language, { nullable: false })
   @JoinColumn({ name: 'language_id', foreignKeyConstraintName: 'fk_language_ratings_language' })
-  language?: ProgrammingLanguage;
+  language?: Language;
 
   @Column({ name: 'rating', type: 'int', default: 0 })
   rating!: number;

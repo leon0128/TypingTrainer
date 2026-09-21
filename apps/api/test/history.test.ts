@@ -109,7 +109,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       await app.init();
       await app.getHttpAdapter().getInstance().ready();
       const rows = await query<{ id: number; slug: string }[]>(
-        `SELECT id, slug FROM programming_languages WHERE slug IN ('python', 'go')`,
+        `SELECT id, slug FROM languages WHERE slug IN ('python', 'go')`,
       );
       pythonId = rows.find((r) => r.slug === 'python')?.id ?? 0;
       goId = rows.find((r) => r.slug === 'go')?.id ?? 0;

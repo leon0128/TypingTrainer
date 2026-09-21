@@ -20,7 +20,7 @@ export class ConquestsRepository {
   beatenLevels(userId: string): Promise<BeatenLevelRow[]> {
     return this.dataSource.query<BeatenLevelRow[]>(
       `SELECT l.slug, r.cpu_level::int AS level
-       FROM play_sessions r JOIN programming_languages l ON l.id = r.language_id
+       FROM play_sessions r JOIN languages l ON l.id = r.language_id
        WHERE r.user_id = $1 AND r.mode = 'cpu' AND r.result = 'win'
        GROUP BY l.slug, l.sort_order, r.cpu_level
        ORDER BY l.sort_order ASC, r.cpu_level ASC`,

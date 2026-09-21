@@ -1,8 +1,8 @@
-import { CONTENT_LANGUAGES } from '@typing-trainer/contracts';
+import { TRACKS, TRACK_POOLS } from '@typing-trainer/contracts';
 import { describe, expect, it } from 'vitest';
 
 import {
-  RATING_LANGUAGE_COUNT,
+  RATING_LANGUAGE_COUNTS,
   RATING_LANGUAGE_MAX,
   cpuRating,
   maxTotalRating,
@@ -12,9 +12,12 @@ import {
   totalRating,
 } from '../src';
 
+/** The code track's language count, which the tests below of the overall rating are written for. */
+const CODE = RATING_LANGUAGE_COUNTS.code;
+
 describe('the language count setting', () => {
-  it('matches the languages the app has', () => {
-    expect(RATING_LANGUAGE_COUNT).toBe(CONTENT_LANGUAGES.length);
+  it.each(TRACKS)('matches the pools of the %s track', (track) => {
+    expect(RATING_LANGUAGE_COUNTS[track]).toBe(TRACK_POOLS[track].length);
   });
 });
 
@@ -76,26 +79,26 @@ describe('ratingDelta', () => {
 
 describe('totalRating', () => {
   it('is 0 with nothing played', () => {
-    expect(totalRating([])).toBe(0);
+    expect(totalRating([], CODE)).toBe(0);
   });
 
   it('counts a single language at half, so a maxed one is 1000', () => {
-    expect(totalRating([2000])).toBe(1000);
-    expect(totalRating([2000, 0, 0, 0])).toBe(1000);
+    expect(totalRating([2000], CODE)).toBe(1000);
+    expect(totalRating([2000, 0, 0, 0], CODE)).toBe(1000);
   });
 
   it('weighs languages from best to worst whatever the order given', () => {
-    expect(totalRating([500, 2000])).toBe(totalRating([2000, 500]));
-    expect(totalRating([2000, 500])).toBe(1000 + 500 * 0.4);
+    expect(totalRating([500, 2000], CODE)).toBe(totalRating([2000, 500], CODE));
+    expect(totalRating([2000, 500], CODE)).toBe(1000 + 500 * 0.4);
   });
 
   it('reaches the ceiling only with every language maxed', () => {
-    expect(totalRating([2000, 2000, 2000, 2000])).toBe(2952);
-    expect(totalRating([2000, 2000, 2000, 1900])).toBeLessThan(2952);
+    expect(totalRating([2000, 2000, 2000, 2000], CODE)).toBe(2952);
+    expect(totalRating([2000, 2000, 2000, 1900], CODE)).toBeLessThan(2952);
   });
 
   it('rates breadth above depth', () => {
-    expect(totalRating([1000, 1000, 1000, 1000])).toBeGreaterThan(totalRating([2000]));
+    expect(totalRating([1000, 1000, 1000, 1000], CODE)).toBeGreaterThan(totalRating([2000], CODE));
   });
 
   it('is unchanged when a language is added that has not been played', () => {
@@ -118,7 +121,7 @@ describe('maxTotalRating', () => {
 
 describe('ranks', () => {
   it('has 31 steps, rising, from beginner 1 to master', () => {
-    const steps = rankSteps();
+    const steps = rankSteps(CODE);
     expect(steps).toHaveLength(31);
     expect(steps[0]).toMatchObject({ tier: 'beginner', division: 1, min: 0 });
     expect(steps[30]).toMatchObject({ tier: 'master', division: null });
@@ -129,7 +132,7 @@ describe('ranks', () => {
 
   it('lays the thresholds for four languages out as announced', () => {
     const min = (tier: string, division: number | null) =>
-      rankSteps().find((step) => step.tier === tier && step.division === division)?.min;
+      rankSteps(CODE).find((step) => step.tier === tier && step.division === division)?.min;
     expect(min('bronze', 1)).toBe(295);
     expect(min('silver', 1)).toBe(664);
     expect(min('gold', 1)).toBe(1107);
@@ -139,25 +142,52 @@ describe('ranks', () => {
   });
 
   it('puts a new player in beginner 1 and a maxed single language in silver 4', () => {
-    expect(rankOf(0)).toMatchObject({ tier: 'beginner', division: 1 });
-    expect(rankOf(totalRating([2000]))).toMatchObject({ tier: 'silver', division: 4 });
+    expect(rankOf(0, CODE)).toMatchObject({ tier: 'beginner', division: 1 });
+    expect(rankOf(totalRating([2000], CODE), CODE)).toMatchObject({ tier: 'silver', division: 4 });
   });
 
   it('puts every language maxed in master', () => {
-    expect(rankOf(2952)).toMatchObject({ tier: 'master', division: null, progress: 1 });
-    expect(rankOf(2952).next).toBeNull();
+    expect(rankOf(2952, CODE)).toMatchObject({ tier: 'master', division: null, progress: 1 });
+    expect(rankOf(2952, CODE).next).toBeNull();
   });
 
   it('reports the next rank and the progress towards it', () => {
-    const standing = rankOf(100);
+    const standing = rankOf(100, CODE);
     expect(standing).toMatchObject({ tier: 'beginner', division: 2, min: 59, nextMin: 118 });
     expect(standing.next).toEqual({ tier: 'beginner', division: 3 });
     expect(standing.progress).toBeCloseTo((100 - 59) / (118 - 59));
   });
 
   it('moves a player down when a language is added and the ceiling rises', () => {
-    const total = totalRating([2000, 2000, 2000, 2000]);
+    const total = totalRating([2000, 2000, 2000, 2000], CODE);
     expect(rankOf(total, 4).tier).toBe('master');
     expect(rankOf(total, 5).tier).toBe('diamond');
+  });
+});
+
+describe('a natural-language track', () => {
+  const NATURAL = RATING_LANGUAGE_COUNTS['natural-ja'];
+
+  it('has three languages, the kinds of text, and a lower ceiling than code', () => {
+    expect(RATING_LANGUAGE_COUNTS['natural-en']).toBe(3);
+    expect(maxTotalRating(NATURAL)).toBe(2440);
+    expect(totalRating([2000, 2000, 2000], NATURAL)).toBe(2440);
+  });
+
+  it('lays the thresholds for three languages out on its own ceiling', () => {
+    const min = (tier: string, division: number | null) =>
+      rankSteps(NATURAL).find((step) => step.tier === tier && step.division === division)?.min;
+    expect(min('bronze', 1)).toBe(244);
+    expect(min('silver', 1)).toBe(549);
+    expect(min('gold', 1)).toBe(915);
+    expect(min('platinum', 1)).toBe(1342);
+    expect(min('diamond', 1)).toBe(1830);
+    expect(min('master', null)).toBe(2379);
+  });
+
+  it('is master only with every kind maxed, where four languages would not be', () => {
+    expect(rankOf(2440, NATURAL)).toMatchObject({ tier: 'master', division: null });
+    expect(rankOf(2440, CODE).tier).not.toBe('master');
+    expect(rankOf(2952, CODE).tier).toBe('master');
   });
 });

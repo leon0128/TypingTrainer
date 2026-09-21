@@ -1,6 +1,7 @@
-import type { LanguageRating } from '@typing-trainer/contracts';
+import { trackOf, type LanguageRating, type Track } from '@typing-trainer/contracts';
 import {
   RANK_TIERS,
+  RATING_LANGUAGE_COUNTS,
   rankOf,
   totalRating,
   type Rank,
@@ -16,11 +17,16 @@ export interface Standing {
 
 /**
  * Worked out here from the language ratings rather than fetched: the server keeps no overall
- * rating, and both sides use the same functions.
+ * rating, and both sides use the same functions. Only the track's own languages count, so another
+ * track's ratings in the list never leak into it (§13.3).
  */
-export function standingOf(languages: readonly LanguageRating[]): Standing {
-  const total = totalRating(languages.map((entry) => entry.rating));
-  return { total, rank: rankOf(total) };
+export function standingOf(languages: readonly LanguageRating[], track: Track): Standing {
+  const count = RATING_LANGUAGE_COUNTS[track];
+  const total = totalRating(
+    languages.filter((entry) => trackOf(entry.language) === track).map((entry) => entry.rating),
+    count,
+  );
+  return { total, rank: rankOf(total, count) };
 }
 
 /** The standing with one language's rating swapped for another, for "before" and "after". */
@@ -31,6 +37,7 @@ export function standingWith(
 ): Standing {
   return standingOf(
     languages.map((entry) => (entry.language === language ? { ...entry, rating } : entry)),
+    trackOf(language),
   );
 }
 

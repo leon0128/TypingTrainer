@@ -145,7 +145,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('Ghost (TEST_DATABASE_URL)', () 
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
     for (const row of await query<{ id: number; slug: string }[]>(
-      'SELECT id, slug FROM programming_languages',
+      'SELECT id, slug FROM languages',
     )) {
       languageIds.set(row.slug, row.id);
     }

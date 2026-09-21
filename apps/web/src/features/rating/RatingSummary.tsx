@@ -74,7 +74,7 @@ export function RatingSummary({
   languages: readonly LanguageRating[];
 }): ReactElement {
   const { t } = useTranslation();
-  const { total, rank } = standingOf(languages);
+  const { total, rank } = standingOf(languages, 'code');
   return (
     <section className="rating-summary" aria-label={t('rating.title')}>
       <RankIcon rank={rank} size={72} />

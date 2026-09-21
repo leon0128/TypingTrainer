@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { ProgrammingLanguage } from './programming-language.entity';
+import { Language } from './language.entity';
 import { User } from './user.entity';
 
 /**
@@ -44,9 +44,9 @@ export class IssuedRun {
   @Column({ name: 'language_id', type: 'int' })
   languageId!: number;
 
-  @ManyToOne(() => ProgrammingLanguage, { nullable: false })
+  @ManyToOne(() => Language, { nullable: false })
   @JoinColumn({ name: 'language_id', foreignKeyConstraintName: 'fk_issued_runs_language' })
-  language?: ProgrammingLanguage;
+  language?: Language;
 
   /** 'single' | 'cpu' | 'ghost'; Ghost is not issued yet (§10). */
   @Column({ name: 'mode', type: 'text' })

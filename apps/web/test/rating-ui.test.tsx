@@ -27,7 +27,7 @@ const language = (
 describe('standing', () => {
   it('works the overall rating and rank out of the language ratings', () => {
     const languages = [language('python', 2000), language('go', 0)];
-    expect(standingOf(languages)).toMatchObject({
+    expect(standingOf(languages, 'code')).toMatchObject({
       total: 1000,
       rank: { tier: 'silver', division: 4 },
     });
@@ -37,7 +37,25 @@ describe('standing', () => {
     const languages = [language('python', 1000), language('go', 500)];
     const before = standingWith(languages, 'python', 200);
     expect(before.total).toBe(Math.round(500 * 0.5 + 200 * 0.4));
-    expect(standingOf(languages).total).toBe(Math.round(1000 * 0.5 + 500 * 0.4));
+    expect(standingOf(languages, 'code').total).toBe(Math.round(1000 * 0.5 + 500 * 0.4));
+  });
+
+  it("counts only the asked track's languages, so another track's ratings never leak in", () => {
+    const languages = [
+      language('python', 2000),
+      language('ja-word', 2000),
+      language('en-line', 400),
+    ];
+    expect(standingOf(languages, 'code').total).toBe(1000);
+    expect(standingOf(languages, 'natural-ja').total).toBe(1000);
+    expect(standingOf(languages, 'natural-en').total).toBe(200);
+    expect(standingOf([], 'natural-en').total).toBe(0);
+  });
+
+  it('rates the track of the language a match was played in', () => {
+    const languages = [language('python', 2000), language('ja-word', 0)];
+    expect(standingWith(languages, 'ja-word', 2000).total).toBe(1000);
+    expect(standingWith(languages, 'python', 0).total).toBe(0);
   });
 
   it('orders ranks by tier, then division', () => {
@@ -48,7 +66,7 @@ describe('standing', () => {
   });
 
   it('has an icon file, placeholder or final, for every rank', () => {
-    const steps = rankSteps();
+    const steps = rankSteps(4);
     expect(steps).toHaveLength(31);
     for (const rank of steps) {
       for (const theme of ['light', 'dark'] as const) {

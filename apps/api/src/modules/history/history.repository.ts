@@ -41,7 +41,7 @@ export class HistoryRepository {
       `SELECT r.id, r.started_at, r.mode, l.slug, r.kpm, r.accuracy, r.score, r.result
        FROM play_sessions r
        JOIN users u ON u.id = r.user_id
-       JOIN programming_languages l ON l.id = r.language_id
+       JOIN languages l ON l.id = r.language_id
        WHERE r.user_id = $1
          AND ($2::text IS NULL OR r.mode = $2)
          AND ($3::text IS NULL OR l.slug = $3)
@@ -55,7 +55,7 @@ export class HistoryRepository {
       `SELECT count(*)::text AS count
        FROM play_sessions r
        JOIN users u ON u.id = r.user_id
-       JOIN programming_languages l ON l.id = r.language_id
+       JOIN languages l ON l.id = r.language_id
        WHERE r.user_id = $1
          AND ($2::text IS NULL OR r.mode = $2)
          AND ($3::text IS NULL OR l.slug = $3)

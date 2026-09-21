@@ -2,9 +2,26 @@ import { z } from 'zod';
 
 import { TypingProgramSchema, type TypingProgram } from './typing-program';
 
-export const CONTENT_LANGUAGES = ['typescript', 'go', 'java', 'python'] as const;
+/** Programming languages: the pools of the code track (§13.1). */
+export const CODE_LANGUAGES = ['typescript', 'go', 'java', 'python'] as const;
+/** Natural-language pools: a kind of text in one language (§13.1). */
+export const NATURAL_POOLS = [
+  'ja-word',
+  'ja-line',
+  'ja-paragraph',
+  'en-word',
+  'en-line',
+  'en-paragraph',
+] as const;
+/**
+ * Every pool a run can be drawn from, in the order of `languages.id` and `sort_order` (ids 1 to
+ * 10). The name is historical: a pool is a programming language or a kind of natural-language
+ * text, and `POOLS` says which (§13.1).
+ */
+export const CONTENT_LANGUAGES = [...CODE_LANGUAGES, ...NATURAL_POOLS] as const;
 export const ContentLanguageSchema = z.enum(CONTENT_LANGUAGES);
 export type ContentLanguage = z.infer<typeof ContentLanguageSchema>;
+export type CodeLanguage = (typeof CODE_LANGUAGES)[number];
 
 /**
  * The compiled blocks of one language (§5.2), written to `content/dist/<language>.bundle.json` by

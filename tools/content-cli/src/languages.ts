@@ -10,14 +10,14 @@ import {
   type LanguageAdapter,
   type Token,
 } from '@typing-trainer/block-compiler';
-import type { ContentLanguage } from '@typing-trainer/contracts';
+import type { CodeLanguage } from '@typing-trainer/contracts';
 import ts from 'typescript';
 
 // ts.SyntaxKind is an enum; Token.kind is a plain number shared by every adapter.
 const TYPESCRIPT_IDENTIFIER: number = ts.SyntaxKind.Identifier;
 
 export interface LanguageConfig {
-  readonly language: ContentLanguage;
+  readonly language: CodeLanguage;
   /** File extension of block sources, without the dot. */
   readonly extension: string;
   readonly adapter: LanguageAdapter;
@@ -31,7 +31,7 @@ export interface LanguageConfig {
   readonly isIdentifier: (token: Token) => boolean;
 }
 
-export const LANGUAGES: Readonly<Record<ContentLanguage, LanguageConfig>> = {
+export const LANGUAGES: Readonly<Record<CodeLanguage, LanguageConfig>> = {
   typescript: {
     language: 'typescript',
     extension: 'ts',

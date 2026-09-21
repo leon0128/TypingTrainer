@@ -3,8 +3,9 @@ import { join } from 'node:path';
 
 import { CompileError, compileBlock, type Token } from '@typing-trainer/block-compiler';
 import {
-  CONTENT_LANGUAGES,
+  CODE_LANGUAGES,
   type ContentBundle,
+  type CodeLanguage,
   type ContentLanguage,
   type TypingProgram,
 } from '@typing-trainer/contracts';
@@ -53,7 +54,7 @@ export async function runPipeline({
   const diagnostics: ContentDiagnostic[] = [];
   const bundles = new Map<ContentLanguage, BuiltBundle>();
 
-  for (const language of CONTENT_LANGUAGES) {
+  for (const language of CODE_LANGUAGES) {
     const config = LANGUAGES[language];
     const dir = join(root, 'content', 'blocks', language);
     if (!existsSync(dir)) continue;
@@ -116,7 +117,7 @@ interface BlockResult {
 }
 
 async function checkBlock(
-  language: ContentLanguage,
+  language: CodeLanguage,
   source: string,
   file: string,
   fromToolchain: readonly ContentDiagnostic[],
@@ -165,7 +166,7 @@ async function checkBlock(
 export function writeBundles(root: string, result: PipelineResult): string[] {
   mkdirSync(join(root, 'content', 'dist'), { recursive: true });
   const written: string[] = [];
-  for (const language of CONTENT_LANGUAGES) {
+  for (const language of CODE_LANGUAGES) {
     const path = join(root, bundlePath(language));
     const built = result.bundles.get(language);
     if (built === undefined) {
@@ -181,7 +182,7 @@ export function writeBundles(root: string, result: PipelineResult): string[] {
 /** Compares committed bundles with freshly built ones (§5.2 `content:check`). */
 export function bundleDiagnostics(root: string, result: PipelineResult): ContentDiagnostic[] {
   const diagnostics: ContentDiagnostic[] = [];
-  for (const language of CONTENT_LANGUAGES) {
+  for (const language of CODE_LANGUAGES) {
     const file = bundlePath(language);
     const path = join(root, file);
     const built = result.bundles.get(language);

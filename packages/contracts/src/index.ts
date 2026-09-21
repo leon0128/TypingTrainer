@@ -9,12 +9,25 @@ export {
 export type { Atom, AutoAtom, LiteralAtom, SeparatorAtom, TypingProgram } from './typing-program';
 export { MAX_SESSION_KEYS, SessionLogSchema } from './session-log';
 export {
+  CODE_LANGUAGES,
   CONTENT_LANGUAGES,
   ContentBundleSchema,
   ContentLanguageSchema,
+  NATURAL_POOLS,
   canonicalBlocksJson,
 } from './content-bundle';
-export type { ContentBundle, ContentLanguage } from './content-bundle';
+export type { CodeLanguage, ContentBundle, ContentLanguage } from './content-bundle';
+export {
+  POOLS,
+  POOL_KINDS,
+  PoolKindSchema,
+  TRACKS,
+  TRACK_POOLS,
+  TrackSchema,
+  poolKindOf,
+  trackOf,
+} from './tracks';
+export type { PoolInfo, PoolKind, Track } from './tracks';
 export type { SessionLog } from './session-log';
 export { HealthCheckSchema, HealthResponseSchema } from './health';
 export type { HealthCheck, HealthResponse } from './health';

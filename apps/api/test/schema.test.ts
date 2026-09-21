@@ -1,4 +1,4 @@
-import { CONTENT_LANGUAGES, UsernameSchema } from '@typing-trainer/contracts';
+import { CONTENT_LANGUAGES, POOLS, UsernameSchema } from '@typing-trainer/contracts';
 import { QueryFailedError } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -123,12 +123,70 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('initial schema (TEST_DATABASE_U
     }
   });
 
-  it('seeds one language per content bundle, with fixed ids in bundle order', async () => {
-    const rows = await query<{ id: number; slug: string }[]>(
-      'SELECT id, slug FROM programming_languages ORDER BY sort_order',
-    );
+  it('seeds one language per pool, with fixed ids in pool order and the track and kind of POOLS', async () => {
+    const rows = await query<
+      { id: number; slug: string; enabled: boolean; track: string; kind: string | null }[]
+    >('SELECT id, slug, enabled, track, kind FROM languages ORDER BY sort_order');
     expect(rows.map((row) => row.slug)).toEqual([...CONTENT_LANGUAGES]);
-    expect(rows.map((row) => row.id)).toEqual([1, 2, 3, 4]);
+    expect(rows.map((row) => row.id)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    for (const row of rows) {
+      expect({ track: row.track, kind: row.kind }, row.slug).toEqual(
+        POOLS[row.slug as keyof typeof POOLS],
+      );
+    }
+  });
+
+  it('seeds the natural-language pools disabled: they have no content bundle yet', async () => {
+    const rows = await query<{ slug: string; enabled: boolean }[]>(
+      'SELECT slug, enabled FROM languages ORDER BY sort_order',
+    );
+    expect(rows.filter((row) => row.enabled).map((row) => row.slug)).toEqual([
+      'typescript',
+      'go',
+      'java',
+      'python',
+    ]);
+  });
+
+  describe("a language row's track and kind", () => {
+    const insertLanguage = (track: string, kind: string | null) =>
+      sqlState(() =>
+        query(
+          `INSERT INTO languages (id, slug, display_name, sort_order, track, kind)
+           VALUES (900, 'probe', 'Probe', 900, $1, $2)`,
+          [track, kind],
+        ),
+      );
+
+    it.each([
+      ['code', null],
+      ['natural-ja', 'word'],
+      ['natural-ja', 'line'],
+      ['natural-en', 'paragraph'],
+    ])('accepts track %s with kind %s', async (track, kind) => {
+      expect(await insertLanguage(track, kind)).toBeUndefined();
+      await query(`DELETE FROM languages WHERE id = 900`);
+    });
+
+    it.each([
+      ['a programming language with a kind', 'code', 'word'],
+      ['a natural-language pool with no kind', 'natural-ja', null],
+      ['a natural-language pool with an unknown kind', 'natural-en', 'chapter'],
+      ['an unknown track', 'natural-fr', 'word'],
+    ])('refuses %s', async (_description, track, kind) => {
+      expect(await insertLanguage(track, kind)).toBe(CHECK_VIOLATION);
+    });
+
+    it('needs the track to be stated', async () => {
+      expect(
+        await sqlState(() =>
+          query(
+            `INSERT INTO languages (id, slug, display_name, sort_order)
+             VALUES (900, 'probe', 'Probe', 900)`,
+          ),
+        ),
+      ).toBe('23502');
+    });
   });
 
   it.each([

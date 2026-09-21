@@ -92,9 +92,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('GET /api/dashboard (TEST_DATABA
     app = await createApp(testEnv({ DATABASE_URL: database.url }));
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
-    const rows = await query<{ id: number; slug: string }[]>(
-      `SELECT id, slug FROM programming_languages`,
-    );
+    const rows = await query<{ id: number; slug: string }[]>(`SELECT id, slug FROM languages`);
     pythonId = rows.find((row) => row.slug === 'python')?.id ?? 0;
     goId = rows.find((row) => row.slug === 'go')?.id ?? 0;
   });

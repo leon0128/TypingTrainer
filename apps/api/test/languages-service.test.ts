@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ProgrammingLanguage } from '../src/entities';
+import type { Language } from '../src/entities';
 import { LanguagesService } from '../src/modules/languages/languages.service';
 
 const allBundles = { has: () => true };
 
-const row = (slug: string, displayName: string): ProgrammingLanguage =>
-  Object.assign(Object.create(null) as ProgrammingLanguage, { slug, displayName });
+const row = (slug: string, displayName: string): Language =>
+  Object.assign(Object.create(null) as Language, { slug, displayName });
 
 describe('LanguagesService.list', () => {
   it('maps enabled rows to contract languages in the order the repository returns', async () => {

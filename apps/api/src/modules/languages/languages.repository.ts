@@ -2,17 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 
-import { ProgrammingLanguage } from '../../entities';
+import { Language } from '../../entities';
 
 @Injectable()
 export class LanguagesRepository {
   constructor(
-    @InjectRepository(ProgrammingLanguage)
-    private readonly languages: Repository<ProgrammingLanguage>,
+    @InjectRepository(Language)
+    private readonly languages: Repository<Language>,
   ) {}
 
   /** Enabled languages in display order. */
-  findEnabled(): Promise<ProgrammingLanguage[]> {
+  findEnabled(): Promise<Language[]> {
     return this.languages.find({
       where: { enabled: true },
       order: { sortOrder: 'ASC', id: 'ASC' },

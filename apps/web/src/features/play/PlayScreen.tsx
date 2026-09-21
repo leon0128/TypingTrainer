@@ -9,7 +9,7 @@ import { soundPlayer } from '../sound/sound';
 import { CodeView } from './CodeView';
 import { JaView } from './JaView';
 import { lookahead } from './lookahead';
-import { languageLabel, trackPath } from '../tracks/tracks';
+import { languageLabel } from '../tracks/tracks';
 import { formatSeconds } from './format';
 import { attachKeyboardInput } from './keyboard-input';
 import { buildLayout, type Layout } from './layout';
@@ -225,7 +225,7 @@ function RunView({ run }: { run: RunStore }) {
           onRetry={() => void submit()}
           onPlayAgain={() => {
             clear();
-            void navigate(trackPath(track), { replace: true });
+            void navigate('/', { replace: true });
           }}
         />
       )}

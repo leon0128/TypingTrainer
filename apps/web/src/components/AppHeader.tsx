@@ -51,7 +51,7 @@ export function AppHeader(): ReactElement {
             onClick={confirmLeave}
           >
             <Icon name="person" className="ui-icon" />
-            {user.username}
+            {user.displayName ?? user.username}
           </NavLink>
           <button
             className="ui-logout"

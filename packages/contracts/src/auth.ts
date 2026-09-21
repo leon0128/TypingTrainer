@@ -91,9 +91,38 @@ export const DeleteAccountRequestSchema = z.object({
     .max(PASSWORD_MAX_LENGTH * 4),
 });
 
+/**
+ * Display names: what the header and the player screen show in place of the username. 1 to 24
+ * characters (code points) after trimming, no control characters, not unique. The same bounds are
+ * the `chk_users_display_name` constraint in the database.
+ */
+export const DISPLAY_NAME_MAX_LENGTH = 24;
+
+export const DisplayNameSchema = z
+  .string()
+  .trim()
+  .refine((value) => Array.from(value).length >= 1, { message: 'must not be empty' })
+  .refine((value) => Array.from(value).length <= DISPLAY_NAME_MAX_LENGTH, {
+    message: `must be at most ${String(DISPLAY_NAME_MAX_LENGTH)} characters`,
+  })
+  // eslint-disable-next-line no-control-regex
+  .refine((value) => !/[\u0000-\u001f\u007f-\u009f]/.test(value), {
+    message: 'must not contain control characters',
+  });
+
+/** Body of `PATCH /api/auth/me`. `null` or a blank string clears it, back to the username. */
+export const UpdateProfileRequestSchema = z.object({
+  displayName: z
+    .string()
+    .nullable()
+    .transform((value) => (value === null || value.trim() === '' ? null : value))
+    .pipe(DisplayNameSchema.nullable()),
+});
+
 export const UserSchema = z.object({
   id: z.uuid(),
   username: z.string(),
+  displayName: z.string().nullable(),
   timezone: z.string(),
   locale: z.string(),
 });
@@ -105,6 +134,7 @@ export const AuthResponseSchema = z.object({
 
 export type RegisterRequest = z.output<typeof RegisterRequestSchema>;
 export type LoginRequest = z.output<typeof LoginRequestSchema>;
+export type UpdateProfileRequest = z.output<typeof UpdateProfileRequestSchema>;
 export type DeleteAccountRequest = z.output<typeof DeleteAccountRequestSchema>;
 export type User = z.infer<typeof UserSchema>;
 export type AuthResponse = z.infer<typeof AuthResponseSchema>;

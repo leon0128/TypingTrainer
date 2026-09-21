@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  Patch,
   Post,
   Req,
   Res,
@@ -15,10 +16,12 @@ import {
   DeleteAccountRequestSchema,
   LoginRequestSchema,
   RegisterRequestSchema,
+  UpdateProfileRequestSchema,
   type AuthResponse,
   type DeleteAccountRequest,
   type LoginRequest,
   type RegisterRequest,
+  type UpdateProfileRequest,
 } from '@typing-trainer/contracts';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -94,6 +97,16 @@ export class AuthController {
     // AuthGuard sets the user before any non-public handler runs; checked rather than asserted.
     if (request.user === undefined) throw new UnauthorizedException('authentication required');
     return { user: request.user };
+  }
+
+  /** Sets the display name, or clears it with null so the username shows again. */
+  @Patch('me')
+  async updateMe(
+    @Body({ schema: UpdateProfileRequestSchema }) body: UpdateProfileRequest,
+    @Req() request: FastifyRequest,
+  ): Promise<AuthResponse> {
+    if (request.user === undefined) throw new UnauthorizedException('authentication required');
+    return { user: await this.auth.updateDisplayName(request.user, body.displayName) };
   }
 
   private presentedToken(request: FastifyRequest): string | undefined {

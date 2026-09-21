@@ -80,8 +80,8 @@ export class AuthService {
     const token = await this.sessions.issue(user.id);
     await this.sessions.revoke(presentedToken);
     // Listed explicitly, so a column added to users is never sent by accident.
-    const { id, username, timezone, locale } = user;
-    return { user: { id, username, timezone, locale }, token };
+    const { id, username, displayName, timezone, locale } = user;
+    return { user: { id, username, displayName, timezone, locale }, token };
   }
 
   /**
@@ -105,6 +105,14 @@ export class AuthService {
     if (!(await this.users.deleteById(user.id))) {
       throw new UnauthorizedException('authentication required');
     }
+  }
+
+  /** Sets or clears (null) the signed-in user's display name; the user as it now is. */
+  async updateDisplayName(user: User, displayName: string | null): Promise<User> {
+    const updated = await this.users.updateDisplayName(user.id, displayName);
+    // The session was valid a moment ago, so a missing account was deleted a moment ago.
+    if (updated === undefined) throw new UnauthorizedException('authentication required');
+    return updated;
   }
 
   logout(token: string | undefined): Promise<void> {

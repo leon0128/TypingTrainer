@@ -114,6 +114,58 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('authentication (TEST_DATABASE_U
     await database.drop();
   });
 
+  describe('display name', () => {
+    const patch = (token: string | undefined, payload: object) =>
+      app.inject({
+        method: 'PATCH',
+        url: '/api/auth/me',
+        remoteAddress: nextAddress(),
+        headers: {
+          origin: TEST_APP_ORIGIN,
+          ...(token === undefined ? {} : { cookie: `${COOKIE}=${token}` }),
+        },
+        payload,
+      });
+
+    it('starts unset, is set and read back through /me, and is cleared by null or blank', async () => {
+      const username = nextUsername();
+      const registration = await api.register(username);
+      expect(AuthResponseSchema.parse(registration.json()).user.displayName).toBeNull();
+      const token = tokenOf(registration);
+
+      const set = await patch(token, { displayName: '  たいぴんぐ 太郎  ' });
+      expect(set.statusCode).toBe(200);
+      expect(AuthResponseSchema.parse(set.json()).user).toMatchObject({
+        username,
+        displayName: 'たいぴんぐ 太郎',
+      });
+      const me = await api.me(token);
+      expect(AuthResponseSchema.parse(me.json()).user.displayName).toBe('たいぴんぐ 太郎');
+      const login = await api.login(username);
+      expect(AuthResponseSchema.parse(login.json()).user.displayName).toBe('たいぴんぐ 太郎');
+
+      const cleared = await patch(token, { displayName: null });
+      expect(AuthResponseSchema.parse(cleared.json()).user.displayName).toBeNull();
+      await patch(token, { displayName: 'again' });
+      const blank = await patch(token, { displayName: '   ' });
+      expect(AuthResponseSchema.parse(blank.json()).user.displayName).toBeNull();
+    });
+
+    it('is not unique, and refuses a name that is too long or has control characters', async () => {
+      const first = tokenOf(await api.register(nextUsername()));
+      const second = tokenOf(await api.register(nextUsername()));
+      expect((await patch(first, { displayName: 'Same' })).statusCode).toBe(200);
+      expect((await patch(second, { displayName: 'Same' })).statusCode).toBe(200);
+      expect((await patch(first, { displayName: 'a'.repeat(25) })).statusCode).toBe(400);
+      expect((await patch(first, { displayName: 'a\u0007b' })).statusCode).toBe(400);
+      expect((await patch(first, {})).statusCode).toBe(400);
+    });
+
+    it('requires a session', async () => {
+      expect((await patch(undefined, { displayName: 'x' })).statusCode).toBe(401);
+    });
+  });
+
   describe('sessions', () => {
     it('registers, signs in with the cookie, and signs out', async () => {
       const username = nextUsername('Alice');

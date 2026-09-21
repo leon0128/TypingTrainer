@@ -91,12 +91,15 @@ const VALIDATION_RULES: readonly Rule[] = [
     pattern: /^may contain only letters, digits, "_" and "-", starting with a letter or digit$/,
     key: 'validation.usernamePattern',
   },
+  { pattern: /^must not be empty$/, key: 'validation.displayNameEmpty' },
+  { pattern: /^must not contain control characters$/, key: 'validation.displayNameControl' },
   { pattern: /^must be an IANA time zone name$/, key: 'validation.timezone' },
   { pattern: /^must not be the username$/, key: 'validation.passwordIsUsername' },
 ];
 
 const FIELDS = {
   username: 'fields.username',
+  displayName: 'fields.displayName',
   password: 'fields.password',
   timezone: 'fields.timezone',
   language: 'fields.language',

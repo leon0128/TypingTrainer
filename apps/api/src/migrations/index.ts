@@ -7,6 +7,7 @@ import { AddUserPreferences1789903169290 } from './1789903169290-AddUserPreferen
 import { AddGhostToIssuedRuns1789905002284 } from './1789905002284-AddGhostToIssuedRuns';
 import { AddSoundPreferences1789905782719 } from './1789905782719-AddSoundPreferences';
 import { AddSkinPreference1789906000000 } from './1789906000000-AddSkinPreference';
+import { AddDisplayName1789907000000 } from './1789907000000-AddDisplayName';
 
 /**
  * Every migration in order, listed explicitly: the production bundle has no migration files for a
@@ -23,4 +24,5 @@ export const MIGRATIONS = [
   AddGhostToIssuedRuns1789905002284,
   AddSoundPreferences1789905782719,
   AddSkinPreference1789906000000,
+  AddDisplayName1789907000000,
 ];

@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from '../src/app';
+import { AppLayout } from '../src/components/AppLayout';
 import { AccountScreen } from '../src/features/auth/AccountScreen';
 import { useAuthStore } from '../src/features/auth/auth-store';
 import { LoginScreen } from '../src/features/auth/LoginScreen';
@@ -14,6 +15,7 @@ import { expectNoEnglish } from './ja-helpers';
 const USER = {
   id: '11111111-1111-4111-8111-111111111111',
   username: 'ada',
+  displayName: null,
   timezone: 'Asia/Tokyo',
   locale: 'en',
 };
@@ -67,6 +69,48 @@ describe('the account screen', () => {
     const warning = screen.getByText(/This erases your account and everything in it/);
     expect(warning.textContent).toContain('cannot be undone');
     expect(warning.textContent).toContain('up to 7 days');
+  });
+
+  it('saves a display name, then shows it in the header, and clears it back to the username', async () => {
+    const calls: { method: string; body: unknown }[] = [];
+    vi.stubGlobal('fetch', (_url: string, init: { method?: string; body?: string }) => {
+      const body = JSON.parse(init.body ?? 'null') as { displayName: string | null };
+      calls.push({ method: init.method ?? 'GET', body });
+      return Promise.resolve(json({ user: { ...USER, displayName: body.displayName } }, 200));
+    });
+    render(
+      <MemoryRouter initialEntries={['/account']}>
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route path="/account" element={<AccountScreen />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+    const header = within(
+      screen.getByRole('navigation', { name: 'Menu' }).closest('header') ?? document.body,
+    );
+    expect(header.getByRole('link', { name: /ada/ })).toBeTruthy();
+
+    await userEvent.type(screen.getByLabelText('Display name'), 'Ada L.');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(await header.findByRole('link', { name: /Ada L\./ })).toBeTruthy();
+    expect(calls).toEqual([{ method: 'PATCH', body: { displayName: 'Ada L.' } }]);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Use username' }));
+    expect(await header.findByRole('link', { name: /ada/ })).toBeTruthy();
+    expect(calls[1]).toEqual({ method: 'PATCH', body: { displayName: null } });
+    expect(screen.getByLabelText<HTMLInputElement>('Display name').value).toBe('');
+  });
+
+  it('says why a display name was refused', async () => {
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve(refusal(400, 'Bad Request', 'displayName: must be at most 24 characters')),
+    );
+    renderAccount();
+    await userEvent.type(screen.getByLabelText('Display name'), 'x');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect((await screen.findByRole('alert')).textContent).toContain('24');
   });
 
   it('will not delete until the password is given and the warning acknowledged', async () => {

@@ -15,7 +15,7 @@ export interface ResponseSchema<T> {
 const BASE_PATH = '/api';
 
 export interface RequestOptions<T> {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   /** Serialized as JSON; the API refuses any other content type (§7). */
   body?: unknown;
   /** The contract schema the response must match, or null for a 204 with no body. */

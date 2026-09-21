@@ -18,7 +18,7 @@ export class UsersRepository {
   /** Case-insensitive, since the column is citext. */
   async findByUsername(username: string): Promise<UserWithPassword | undefined> {
     const rows = await this.dataSource.query<UserWithPassword[]>(
-      `SELECT id, username::text AS username, timezone, locale, password_hash AS "passwordHash"
+      `SELECT id, username::text AS username, display_name AS "displayName", timezone, locale, password_hash AS "passwordHash"
        FROM users WHERE username = $1::citext`,
       [username],
     );
@@ -34,7 +34,7 @@ export class UsersRepository {
     try {
       const rows = await this.dataSource.query<User[]>(
         `INSERT INTO users (username, password_hash, timezone) VALUES ($1, $2, $3)
-         RETURNING id, username::text AS username, timezone, locale`,
+         RETURNING id, username::text AS username, display_name AS "displayName", timezone, locale`,
         [username, passwordHash, timezone],
       );
       return rows[0];
@@ -60,6 +60,16 @@ export class UsersRepository {
       [userId],
     );
     return returnedRows<{ id: string }>(result).length === 1;
+  }
+
+  /** Sets the display name, or clears it with null; the updated user, or undefined if gone. */
+  async updateDisplayName(userId: string, displayName: string | null): Promise<User | undefined> {
+    const result: unknown = await this.dataSource.query(
+      `UPDATE users SET display_name = $1 WHERE id = $2
+       RETURNING id, username::text AS username, display_name AS "displayName", timezone, locale`,
+      [displayName, userId],
+    );
+    return returnedRows<User>(result)[0];
   }
 
   async updatePasswordHash(userId: string, passwordHash: string): Promise<void> {

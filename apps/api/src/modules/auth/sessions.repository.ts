@@ -49,7 +49,7 @@ export class SessionsRepository {
   async findActiveUser(tokenHash: string): Promise<User | undefined> {
     const rows = await this.dataSource.query<User[]>(
       `WITH valid AS (
-         SELECT s.id, s.last_seen_at, u.id AS user_id, u.username, u.timezone, u.locale
+         SELECT s.id, s.last_seen_at, u.id AS user_id, u.username, u.display_name, u.timezone, u.locale
          FROM auth_sessions s JOIN users u ON u.id = s.user_id
          WHERE s.id = $1
            AND s.expires_at > now()
@@ -59,7 +59,8 @@ export class SessionsRepository {
          WHERE id IN (SELECT id FROM valid WHERE last_seen_at < now() - $3::interval)
          RETURNING id
        )
-       SELECT user_id AS id, username::text AS username, timezone, locale FROM valid`,
+       SELECT user_id AS id, username::text AS username, display_name AS "displayName", timezone, locale
+       FROM valid`,
       [tokenHash, SESSION_IDLE_LIFETIME, SESSION_TOUCH_INTERVAL],
     );
     return rows[0];

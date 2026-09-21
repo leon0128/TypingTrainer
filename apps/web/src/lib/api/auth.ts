@@ -2,6 +2,7 @@ import {
   AuthResponseSchema,
   type LoginRequest,
   type RegisterRequest,
+  type UpdateProfileRequest,
   type User,
 } from '@typing-trainer/contracts';
 
@@ -28,6 +29,18 @@ export async function login(body: LoginRequest): Promise<User> {
 
 export async function logout(): Promise<void> {
   await request('/auth/logout', { method: 'POST', schema: null });
+}
+
+/** Sets the display name, or clears it with null so the username shows again. */
+export async function updateDisplayName(
+  displayName: UpdateProfileRequest['displayName'],
+): Promise<User> {
+  const { user } = await request('/auth/me', {
+    method: 'PATCH',
+    body: { displayName },
+    schema: AuthResponseSchema,
+  });
+  return user;
 }
 
 /**

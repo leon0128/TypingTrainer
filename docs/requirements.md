@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.40 |
+| Version | 1.41 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.39 — the account can be erased from the Account screen (§7, §10, Appendix B) |
+| Supersedes | v1.40 — a display name can be set from the Account screen (§7, §9.3, Appendix B); v1.39 — the account can be erased from the Account screen (§7, §10, Appendix B) |
 
 **Legend**
 
@@ -791,6 +791,7 @@ CREATE TABLE programming_languages (
 CREATE TABLE users (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   username      citext UNIQUE NOT NULL,
+  display_name  text,                          -- 🟡 (v1.41) NULL = show the username; 1–24 characters, not unique
   password_hash text NOT NULL,
   timezone      text NOT NULL DEFAULT 'UTC',   -- IANA name
   locale        text NOT NULL DEFAULT 'en',
@@ -941,6 +942,7 @@ Design points:
 | POST | `/api/auth/login` | Sign in (issues the session cookie) |
 | POST | `/api/auth/logout` | Sign out |
 | GET | `/api/auth/me` | Current user |
+| PATCH | `/api/auth/me` | 🟡 (v1.41) Set the display name. Body `{ displayName }`: trimmed, 1–24 code points, no control characters; `null` or a blank string clears it. Returns the user |
 | DELETE | `/api/auth/me` | 🟡 (v1.39) Delete the account and all its data. Body `{ password }`; 204 and the session cookie cleared, 403 for a wrong password, 429 while the account's sign-in backoff applies (§7) |
 | GET | `/api/languages` | Available languages |
 | POST | `/api/play/sessions` | **Start a run.** Body `{ language, mode, cpuLevel?, ghostPeriod? }`: `mode` is `single`, `cpu`, or `ghost`; `cpuLevel` (1–100) is required for `cpu` and `ghostPeriod` (`daily`, `weekly`, `total`) for `ghost`, and each is refused for the other modes. Returns 20 compiled blocks, the RNG seed, and the level or the Ghost's period and record score. A Ghost with no record to race answers 409 |
@@ -1278,3 +1280,4 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.40 | Checked end to end | In a real browser against a real API and database: a wrong password showed "incorrect password" and stayed on the screen signed in; the right one sent the person to sign-in and left the erased account's sessions, runs, issued runs, and settings gone, **0 orphan rows** in any table, and a second account's runs and settings unchanged; afterwards `me` and sign-in with the old credentials answered 401 (§7) |
 | 1.40 | A found and fixed defect | **Found in that browser:** the "Your account was deleted." notice never appeared. Clearing the session makes the route guard send an anonymous visitor to sign-in before the account screen's own navigation, and that redirect carries no router state. The notice is now kept in the auth store, and the first test, which used a router without the guard, could not have seen it; a test through the whole app now fails with the old behaviour (§7) |
 | 1.40 | Not covered | Deleting while another tab has the account open leaves that tab signed in until its next request, which then answers 401; the player's own record of what they asked for is not kept, so the restore procedure above depends on the operator's own log (§7, §9.6) |
+| 1.41 | Display name | `users.display_name` (nullable, 1–24 characters, not unique, `chk_users_display_name`) is shown in place of the username in the header when set. It is set and cleared on the Account screen through `PATCH /api/auth/me`; the username stays the sign-in identity, is still shown on the Account screen, and is what appears when no display name is set. The user object gains `displayName: string \| null` |

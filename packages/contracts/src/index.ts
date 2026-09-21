@@ -22,7 +22,10 @@ export { ApiErrorSchema } from './api-error';
 export type { ApiError } from './api-error';
 export {
   AuthResponseSchema,
+  DISPLAY_NAME_MAX_LENGTH,
   DeleteAccountRequestSchema,
+  DisplayNameSchema,
+  UpdateProfileRequestSchema,
   LoginRequestSchema,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
@@ -41,6 +44,7 @@ export type {
   DeleteAccountRequest,
   LoginRequest,
   RegisterRequest,
+  UpdateProfileRequest,
   User,
 } from './auth';
 export { LanguageSchema, LanguagesResponseSchema } from './languages';

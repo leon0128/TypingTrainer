@@ -9,6 +9,10 @@ import { Check, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 
   'chk_users_username',
   `char_length("username") BETWEEN 3 AND 24 AND "username" ~ '^[A-Za-z0-9][A-Za-z0-9_-]*$'`,
 )
+@Check(
+  'chk_users_display_name',
+  `"display_name" IS NULL OR char_length("display_name") BETWEEN 1 AND 24`,
+)
 @Check('chk_users_locale', `"locale" IN ('en', 'ja')`)
 export class User {
   /** DEFAULT gen_random_uuid(), given uuidExtension 'pgcrypto' in the data source options. */
@@ -18,6 +22,10 @@ export class User {
   /** citext, so `Alice` and `alice` are the same account. */
   @Column({ name: 'username', type: 'citext', unique: true })
   username!: string;
+
+  /** Shown instead of the username when set; null means "show the username". Not unique. */
+  @Column({ name: 'display_name', type: 'text', nullable: true })
+  displayName!: string | null;
 
   @Column({ name: 'password_hash', type: 'text' })
   passwordHash!: string;

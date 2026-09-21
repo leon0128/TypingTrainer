@@ -1,6 +1,7 @@
 {
   "fields": {
     "username": "username",
+    "displayName": "display name",
     "password": "password",
     "timezone": "timezone",
     "language": "language"
@@ -15,7 +16,9 @@
     "tooLong": "must be at most {{max}} characters",
     "usernamePattern": "may contain only letters, digits, \"_\" and \"-\", starting with a letter or digit",
     "timezone": "must be an IANA time zone name",
-    "passwordIsUsername": "must not be the username"
+    "passwordIsUsername": "must not be the username",
+    "displayNameEmpty": "must not be empty",
+    "displayNameControl": "must not contain control characters"
   },
   "rejection": {
     "logStart": "the first key did not start the countdown",
@@ -282,6 +285,11 @@
   "account": {
     "title": "Player",
     "username": "Username",
+    "displayName": "Display name",
+    "displayNameHint": "Shown instead of your username. Leave it empty to show the username.",
+    "saveDisplayName": "Save",
+    "saving": "Saving…",
+    "useUsername": "Use username",
     "timezone": "Time zone",
     "deleteHeading": "Erase data",
     "warning": "This erases your account and everything in it: every run, ranking, CPU battle record, and setting. It cannot be undone. Backups may keep a copy for up to 7 days.",

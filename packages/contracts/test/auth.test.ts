@@ -5,6 +5,7 @@ import {
   PasswordSchema,
   RegisterRequestSchema,
   TimezoneSchema,
+  UpdateProfileRequestSchema,
   UsernameSchema,
 } from '../src';
 
@@ -86,5 +87,31 @@ describe('LoginRequestSchema', () => {
     expect(
       LoginRequestSchema.safeParse({ username: 'alice', password: 'x'.repeat(513) }).success,
     ).toBe(false);
+  });
+});
+
+describe('UpdateProfileRequestSchema', () => {
+  const parse = (displayName: string | null) =>
+    UpdateProfileRequestSchema.safeParse({ displayName });
+
+  it('trims a name, and keeps Japanese and emoji', () => {
+    expect(parse('  Ada  ').data).toEqual({ displayName: 'Ada' });
+    expect(parse('たいぴんぐ').success).toBe(true);
+    expect(parse('👩‍💻').success).toBe(true);
+  });
+
+  it('counts code points: 24 pass, 25 do not', () => {
+    expect(parse('あ'.repeat(24)).success).toBe(true);
+    expect(parse('あ'.repeat(25)).success).toBe(false);
+  });
+
+  it('reads null and a blank string as "clear"', () => {
+    expect(parse(null).data).toEqual({ displayName: null });
+    expect(parse('   ').data).toEqual({ displayName: null });
+  });
+
+  it('rejects control characters', () => {
+    expect(parse('a\nb').success).toBe(false);
+    expect(parse('a\u0000b').success).toBe(false);
   });
 });

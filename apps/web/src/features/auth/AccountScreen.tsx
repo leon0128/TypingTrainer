@@ -2,7 +2,7 @@ import { useId, useState, type SubmitEventHandler } from 'react';
 import { useNavigate } from 'react-router';
 
 import { useTranslation } from '../../i18n';
-import { deleteAccount } from '../../lib/api/auth';
+import { deleteAccount, updateDisplayName } from '../../lib/api/auth';
 import { describeError } from '../../lib/api/describe-error';
 import { useAuthStore } from './auth-store';
 
@@ -15,13 +15,40 @@ export function AccountScreen() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const accountDeleted = useAuthStore((state) => state.accountDeleted);
+  const signedIn = useAuthStore((state) => state.signedIn);
   const passwordId = useId();
+  const displayNameId = useId();
+  const [displayName, setDisplayName] = useState(user?.displayName ?? '');
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [nameBusy, setNameBusy] = useState(false);
   const [password, setPassword] = useState('');
   const [understood, setUnderstood] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const ready = password !== '' && understood && !busy;
+
+  /** Sets the display name, or clears it (null) so the username shows again. */
+  const saveName = (next: string | null): void => {
+    setNameError(null);
+    setNameBusy(true);
+    updateDisplayName(next)
+      .then((updated) => {
+        signedIn(updated);
+        setDisplayName(updated.displayName ?? '');
+      })
+      .catch((cause: unknown) => {
+        setNameError(describeError(cause));
+      })
+      .finally(() => {
+        setNameBusy(false);
+      });
+  };
+
+  const submitName: SubmitEventHandler<HTMLFormElement> = (event) => {
+    event.preventDefault();
+    if (!nameBusy) saveName(displayName);
+  };
 
   const submit: SubmitEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
@@ -52,6 +79,49 @@ export function AccountScreen() {
         <dt>{t('account.timezone')}</dt>
         <dd>{user?.timezone}</dd>
       </dl>
+
+      <form className="flex max-w-md flex-col gap-2" onSubmit={submitName} noValidate>
+        <label htmlFor={displayNameId}>{t('account.displayName')}</label>
+        <input
+          id={displayNameId}
+          className="ui-input px-3 py-2"
+          type="text"
+          value={displayName}
+          placeholder={user?.username}
+          onChange={(event) => {
+            setDisplayName(event.target.value);
+          }}
+          aria-describedby={`${displayNameId}-hint`}
+        />
+        <p id={`${displayNameId}-hint`} className="text-sm">
+          {t('account.displayNameHint')}
+        </p>
+        {nameError !== null && (
+          <p
+            className="rounded border border-red-500 px-3 py-2 text-red-700 dark:text-red-400"
+            role="alert"
+          >
+            {nameError}
+          </p>
+        )}
+        <div className="flex gap-2">
+          <button className="ui-chip" type="submit" disabled={nameBusy}>
+            {nameBusy ? t('account.saving') : t('account.saveDisplayName')}
+          </button>
+          {user?.displayName != null && (
+            <button
+              className="ui-chip"
+              type="button"
+              disabled={nameBusy}
+              onClick={() => {
+                saveName(null);
+              }}
+            >
+              {t('account.useUsername')}
+            </button>
+          )}
+        </div>
+      </form>
 
       <section
         aria-labelledby="delete-heading"

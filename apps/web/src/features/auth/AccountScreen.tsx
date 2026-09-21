@@ -1,11 +1,10 @@
 import { useId, useState, type SubmitEventHandler } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import { useTranslation } from '../../i18n';
 import { deleteAccount } from '../../lib/api/auth';
 import { describeError } from '../../lib/api/describe-error';
 import { useAuthStore } from './auth-store';
-import { Logo } from '../../components/Logo';
 
 /**
  * The account (F-15): who it is, and how to erase it. Erasing takes the password again and an
@@ -43,12 +42,8 @@ export function AccountScreen() {
 
   return (
     <main className="ui-page mx-auto flex max-w-xl flex-col gap-6 p-6">
-      <Logo />
       <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
         <h1 className="ui-title text-2xl font-semibold">{t('account.title')}</h1>
-        <Link className="ui-chip" to="/">
-          {t('common.chooseLanguage')}
-        </Link>
       </header>
 
       <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1">

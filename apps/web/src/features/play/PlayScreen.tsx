@@ -19,7 +19,7 @@ import { useRunSession } from './run-session';
 import { onRunClock, type RunPhase, type RunStore } from './run-store';
 import './play.css';
 import { Icon } from '../../components/Icon';
-import { Logo } from '../../components/Logo';
+import { useLeaveGuard } from '../nav/leave-guard';
 
 const noSubscribe = () => () => undefined;
 const noSnapshot = () => null;
@@ -116,6 +116,16 @@ function RunView({ run }: { run: RunStore }) {
     if (snapshot.phase === 'ended') void submit();
   }, [snapshot.phase, submit]);
 
+  // While the run is on, the header asks before it takes the player away; the run would be lost.
+  const setLeaveGuard = useLeaveGuard((state) => state.set);
+  const running = snapshot.phase !== 'ended';
+  useEffect(() => {
+    setLeaveGuard(running ? t('play.confirmLeave') : null);
+    return () => {
+      setLeaveGuard(null);
+    };
+  }, [running, setLeaveGuard, t]);
+
   const focusInput = (event: MouseEvent) => {
     // Keep focus on the hidden input instead of letting the click blur it (and pause the run).
     event.preventDefault();
@@ -128,13 +138,6 @@ function RunView({ run }: { run: RunStore }) {
 
   return (
     <main className="play">
-      <Logo
-        onClick={(event) => {
-          if (snapshot.phase !== 'ended' && !window.confirm(t('play.confirmLeave'))) {
-            event.preventDefault();
-          }
-        }}
-      />
       <header className="play-header">
         <span className="block-name">
           {run.issued.language}

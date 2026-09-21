@@ -77,11 +77,4 @@ describe('rankings screen', () => {
       'No scores for this period yet.',
     );
   });
-
-  it('links back to language selection', async () => {
-    renderScreen();
-    await screen.findByText('88');
-    await userEvent.click(screen.getByRole('link', { name: 'Home' }));
-    expect(await screen.findByText('choose a language')).toBeTruthy();
-  });
 });

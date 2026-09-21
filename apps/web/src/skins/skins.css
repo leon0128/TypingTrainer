@@ -439,3 +439,88 @@
   color: var(--sk-accent);
   filter: drop-shadow(var(--sk-glow));
 }
+
+/* ---- the header shared by every signed-in screen ---- */
+
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 16px 24px 0;
+}
+
+.app-nav {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.ui-chip[aria-current='page'] {
+  background: var(--sk-accent);
+  border-color: var(--sk-accent);
+  color: var(--sk-accent-fg);
+  box-shadow: var(--sk-glow);
+}
+
+/* Who is playing and the way out: a box of its own, unlike the places to go beside it. */
+.ui-userbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  padding: 4px 4px 4px 12px;
+  border: var(--sk-bw) dashed var(--sk-accent2);
+  border-radius: 999px;
+  font-family: var(--sk-font);
+  font-size: 0.9rem;
+}
+
+.ui-username {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-weight: 700;
+  color: var(--sk-accent2);
+}
+
+.ui-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.25rem 0.8rem;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--error) 88%, transparent);
+  color: var(--error-fg);
+  font-family: var(--sk-font);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ui-logout:hover {
+  filter: brightness(1.12);
+}
+
+.ui-logout:focus-visible {
+  outline: 3px solid var(--sk-accent2);
+  outline-offset: 2px;
+}
+
+/* Stage buttons: lifted off the page so they do not blend into the background. */
+.ui-tile.ui-card {
+  background: color-mix(in srgb, var(--sk-tile-bg) 86%, var(--sk-accent) 14%);
+  border-color: color-mix(in srgb, var(--sk-accent) 60%, var(--border));
+  box-shadow:
+    0 3px 0 color-mix(in srgb, var(--sk-accent) 45%, transparent),
+    var(--sk-glow);
+}
+
+[data-skin='pixel'] .ui-card {
+  font-size: 0.65em;
+  overflow-wrap: anywhere;
+}

@@ -67,7 +67,8 @@
     "conquests": "Conquests",
     "dashboard": "Status",
     "history": "Play log",
-    "account": "Player"
+    "account": "Player",
+    "label": "Menu"
   },
   "auth": {
     "signIn": "Log in",
@@ -101,7 +102,8 @@
     "best": "best {{score}}",
     "noRecord": "No record yet",
     "modeGroup": "Mode",
-    "recordGroup": "Record"
+    "recordGroup": "Record",
+    "modeHeading": "Select your mode"
   },
   "periodsShort": {
     "daily": "Today",

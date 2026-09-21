@@ -10,6 +10,7 @@ import { useAuthStore } from '../src/features/auth/auth-store';
 import { LoginScreen } from '../src/features/auth/LoginScreen';
 import { RegisterScreen } from '../src/features/auth/RegisterScreen';
 import { StartupScreen } from '../src/features/auth/StartupScreen';
+import { AppLayout } from '../src/components/AppLayout';
 import { LanguageScreen } from '../src/features/languages/LanguageScreen';
 import { PlayScreen } from '../src/features/play/PlayScreen';
 import { useRunSession } from '../src/features/play/run-session';
@@ -51,8 +52,10 @@ function renderAt(path: string) {
       <Routes>
         <Route path="/login" element={<LoginScreen />} />
         <Route path="/register" element={<RegisterScreen />} />
-        <Route path="/play" element={<PlayScreen />} />
-        <Route path="/" element={<LanguageScreen />} />
+        <Route element={<AppLayout />}>
+          <Route path="/play" element={<PlayScreen />} />
+          <Route path="/" element={<LanguageScreen />} />
+        </Route>
       </Routes>
     </MemoryRouter>,
   );

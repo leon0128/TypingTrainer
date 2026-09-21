@@ -133,12 +133,6 @@ describe('the appearance settings screen', () => {
     );
     expect(screen.getByRole('button', { name: '18 px' }).getAttribute('aria-pressed')).toBe('true');
   });
-
-  it('links back to language selection', async () => {
-    renderScreen();
-    await userEvent.click(screen.getByRole('link', { name: 'Home' }));
-    expect(await screen.findByText('choose a language')).toBeTruthy();
-  });
 });
 
 describe('the key sound settings', () => {

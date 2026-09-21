@@ -129,14 +129,4 @@ describe('history screen', () => {
     );
     expect(screen.getByText('88')).toBeTruthy();
   });
-
-  it('links back to language selection', async () => {
-    vi.stubGlobal('fetch', (url: string) =>
-      Promise.resolve(url.endsWith('/languages') ? json(LANGUAGES) : json(EMPTY)),
-    );
-    renderScreen();
-    await screen.findByText('No play log matches these filters.');
-    await userEvent.click(screen.getByRole('link', { name: 'Home' }));
-    expect(await screen.findByText('choose a language')).toBeTruthy();
-  });
 });

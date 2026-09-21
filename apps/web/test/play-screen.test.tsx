@@ -7,6 +7,7 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { soundPlayer } from '../src/features/sound/sound';
+import { AppLayout } from '../src/components/AppLayout';
 import { PlayScreen } from '../src/features/play/PlayScreen';
 import { useRunSession } from '../src/features/play/run-session';
 import { IF_PROGRAM, PADDED_PROGRAM } from './program-fixture';
@@ -29,8 +30,10 @@ function renderScreen() {
   return render(
     <MemoryRouter initialEntries={['/play']}>
       <Routes>
-        <Route path="/play" element={<PlayScreen />} />
-        <Route path="/" element={<p>choose a language</p>} />
+        <Route element={<AppLayout />}>
+          <Route path="/play" element={<PlayScreen />} />
+          <Route path="/" element={<p>choose a language</p>} />
+        </Route>
       </Routes>
     </MemoryRouter>,
   );

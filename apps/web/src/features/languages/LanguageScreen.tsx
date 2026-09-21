@@ -6,17 +6,14 @@ import type {
 } from '@typing-trainer/contracts';
 import { CPU_MAX_LEVEL, CPU_MIN_LEVEL, cpuBaseKpm } from '@typing-trainer/typing-engine';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 
-import { useAuthStore } from '../auth/auth-store';
 import { describeError } from '../../lib/api/describe-error';
 import { useTranslation } from '../../i18n';
 import { getGhostRecords } from '../../lib/api/ghost-records';
 import { listLanguages } from '../../lib/api/languages';
 import { startSession, type Opponent } from '../../lib/api/play';
 import { useRunSession } from '../play/run-session';
-import { Icon } from '../../components/Icon';
-import { Logo } from '../../components/Logo';
 
 type Mode = 'single' | 'cpu' | 'ghost';
 
@@ -33,8 +30,6 @@ export function LanguageScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const begin = useRunSession((state) => state.begin);
-  const user = useAuthStore((state) => state.user);
-  const signOut = useAuthStore((state) => state.signOut);
 
   const [languages, setLanguages] = useState<Language[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -104,43 +99,7 @@ export function LanguageScreen() {
 
   return (
     <main className="ui-page mx-auto flex max-w-2xl flex-col gap-6 p-6">
-      <Logo />
-      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-          <Link className="ui-chip" to="/rankings">
-            <Icon name="leaderboard" className="ui-icon" />
-            {t('nav.rankings')}
-          </Link>
-          <Link className="ui-chip" to="/account">
-            <Icon name="account_circle" className="ui-icon" />
-            {t('nav.account')}
-          </Link>
-          <Link className="ui-chip" to="/settings">
-            <Icon name="palette" className="ui-icon" />
-            {t('nav.appearance')}
-          </Link>
-          <Link className="ui-chip" to="/conquests">
-            <Icon name="military_tech" className="ui-icon" />
-            {t('nav.conquests')}
-          </Link>
-          <Link className="ui-chip" to="/dashboard">
-            <Icon name="insights" className="ui-icon" />
-            {t('nav.dashboard')}
-          </Link>
-          <Link className="ui-chip" to="/history">
-            <Icon name="history" className="ui-icon" />
-            {t('nav.history')}
-          </Link>
-          {user !== null && (
-            <p className="flex items-center gap-3">
-              <span>{user.username}</span>
-              <button className="ui-chip" type="button" onClick={() => void signOut()}>
-                {t('common.signOut')}
-              </button>
-            </p>
-          )}
-        </div>
-      </header>
+      <h2 className="ui-title text-lg">{t('home.modeHeading')}</h2>
 
       <div
         className="flex flex-wrap items-center gap-3"
@@ -209,7 +168,7 @@ export function LanguageScreen() {
         </div>
       )}
 
-      <h2 className="text-lg">{t('home.heading')}</h2>
+      <h2 className="ui-title text-lg">{t('home.heading')}</h2>
 
       {error !== null && (
         <p

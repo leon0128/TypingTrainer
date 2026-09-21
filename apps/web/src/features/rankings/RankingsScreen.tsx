@@ -5,14 +5,12 @@ import type {
   RankingPeriod,
 } from '@typing-trainer/contracts';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
 
 import { i18n, useTranslation } from '../../i18n';
 import { describeError } from '../../lib/api/describe-error';
 import { listLanguages } from '../../lib/api/languages';
 import { getRankings } from '../../lib/api/rankings';
 import { formatPercent } from '../play/format';
-import { Logo } from '../../components/Logo';
 
 const PERIODS: RankingPeriod[] = ['daily', 'weekly', 'total'];
 
@@ -61,12 +59,8 @@ export function RankingsScreen() {
 
   return (
     <main className="ui-page mx-auto flex max-w-2xl flex-col gap-6 p-6">
-      <Logo />
       <header className="flex items-baseline justify-between gap-4">
         <h1 className="ui-title text-2xl font-semibold">{t('rankings.title')}</h1>
-        <Link className="ui-chip" to="/">
-          {t('common.chooseLanguage')}
-        </Link>
       </header>
 
       {error !== null && (

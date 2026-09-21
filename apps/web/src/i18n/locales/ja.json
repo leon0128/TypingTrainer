@@ -66,7 +66,8 @@
     "conquests": "対戦記録",
     "dashboard": "ステータス",
     "history": "プレイログ",
-    "account": "プレイヤー情報"
+    "account": "プレイヤー情報",
+    "label": "メニュー"
   },
   "auth": {
     "signIn": "ログイン",
@@ -100,7 +101,8 @@
     "best": "ベスト {{score}}",
     "noRecord": "記録なし",
     "modeGroup": "モード",
-    "recordGroup": "記録"
+    "recordGroup": "記録",
+    "modeHeading": "モードを選ぶ"
   },
   "periodsShort": {
     "daily": "今日",

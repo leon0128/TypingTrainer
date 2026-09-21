@@ -14,6 +14,7 @@ import { DashboardScreen } from './features/dashboard/DashboardScreen';
 import { HistoryScreen } from './features/history/HistoryScreen';
 import { RankingsScreen } from './features/rankings/RankingsScreen';
 import { PlayScreen } from './features/play/PlayScreen';
+import { AppLayout } from './components/AppLayout';
 
 /** Screens that need a session; an ended session lands here as `anonymous` and goes to sign-in. */
 function RequireAuth({ children }: { children: ReactElement }): ReactElement {
@@ -65,69 +66,21 @@ export function App() {
         }
       />
       <Route
-        path="/"
         element={
           <RequireAuth>
-            <LanguageScreen />
+            <AppLayout />
           </RequireAuth>
         }
-      />
-      <Route
-        path="/play"
-        element={
-          <RequireAuth>
-            <PlayScreen />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/rankings"
-        element={
-          <RequireAuth>
-            <RankingsScreen />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/account"
-        element={
-          <RequireAuth>
-            <AccountScreen />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <RequireAuth>
-            <SettingsScreen />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/conquests"
-        element={
-          <RequireAuth>
-            <ConquestsScreen />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/dashboard"
-        element={
-          <RequireAuth>
-            <DashboardScreen />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/history"
-        element={
-          <RequireAuth>
-            <HistoryScreen />
-          </RequireAuth>
-        }
-      />
+      >
+        <Route path="/" element={<LanguageScreen />} />
+        <Route path="/play" element={<PlayScreen />} />
+        <Route path="/rankings" element={<RankingsScreen />} />
+        <Route path="/account" element={<AccountScreen />} />
+        <Route path="/settings" element={<SettingsScreen />} />
+        <Route path="/conquests" element={<ConquestsScreen />} />
+        <Route path="/dashboard" element={<DashboardScreen />} />
+        <Route path="/history" element={<HistoryScreen />} />
+      </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

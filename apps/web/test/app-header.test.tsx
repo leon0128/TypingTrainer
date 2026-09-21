@@ -45,6 +45,7 @@ describe('the shared header', () => {
     renderAt('/history');
     const menu = within(screen.getByRole('navigation', { name: 'Menu' }));
     expect(menu.getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'homeHome',
       'leaderboardHigh scores',
       'account_circlePlayer',
       'paletteSettings',
@@ -62,6 +63,9 @@ describe('the shared header', () => {
     await userEvent.click(screen.getByRole('link', { name: 'High scores' }));
     expect(await screen.findByText('rankings page')).toBeTruthy();
     await userEvent.click(screen.getByRole('link', { name: 'TypingTrainer' }));
+    expect(await screen.findByText('home page')).toBeTruthy();
+    await userEvent.click(screen.getByRole('link', { name: 'High scores' }));
+    await userEvent.click(screen.getByRole('link', { name: 'Home' }));
     expect(await screen.findByText('home page')).toBeTruthy();
   });
 

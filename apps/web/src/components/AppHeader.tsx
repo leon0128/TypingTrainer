@@ -8,6 +8,7 @@ import { Icon } from './Icon';
 import { Logo } from './Logo';
 
 const LINKS = [
+  { to: '/', icon: 'home', label: 'common.chooseLanguage' },
   { to: '/rankings', icon: 'leaderboard', label: 'nav.rankings' },
   { to: '/account', icon: 'account_circle', label: 'nav.account' },
   { to: '/settings', icon: 'palette', label: 'nav.appearance' },
@@ -36,7 +37,7 @@ export function AppHeader(): ReactElement {
       <Logo onClick={confirmLeave} />
       <nav className="app-nav" aria-label={t('nav.label')}>
         {LINKS.map(({ to, icon, label }) => (
-          <NavLink key={to} className="ui-chip" to={to} onClick={confirmLeave}>
+          <NavLink key={to} className="ui-chip" to={to} end={to === '/'} onClick={confirmLeave}>
             <Icon name={icon} className="ui-icon" />
             {t(label)}
           </NavLink>

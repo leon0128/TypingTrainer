@@ -11,3 +11,6 @@
  * bound to what line-view produces, and P3's appearance settings will theme them through the
  * custom properties defined there.
  */
+
+@import 'material-icons/iconfont/round.css';
+@import './skins/skins.css';

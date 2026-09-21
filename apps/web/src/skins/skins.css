@@ -1,0 +1,403 @@
+/*
+ * Skins: the look of the whole app apart from the light or dark theme. The theme and colour preset
+ * set --bg, --panel, --border, --fg and friends (appearance/apply.ts); a skin only adds shape,
+ * accent, decoration and type on top of them, so every skin works in every theme. Screens use the
+ * `ui-*` classes below and never a skin name. `classic` is the plain look and sets nothing.
+ */
+
+:root {
+  --sk-font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sk-radius: 6px;
+  --sk-bw: 1px;
+  --sk-shadow: none;
+  --sk-glow: none;
+  --sk-accent: var(--fg);
+  --sk-accent-fg: var(--bg);
+  --sk-accent2: var(--fg);
+  --sk-tile-bg: var(--panel);
+  --sk-cut: 0px;
+  --sk-tracking: normal;
+  --sk-transform: none;
+}
+
+/* ---- shared components ---- */
+
+.ui-page {
+  font-family: var(--sk-font);
+}
+
+.ui-title {
+  font-family: var(--sk-font);
+  letter-spacing: var(--sk-tracking);
+  text-transform: var(--sk-transform);
+}
+
+.ui-panel,
+.ui-tile {
+  background: var(--sk-tile-bg);
+  border: var(--sk-bw) solid var(--border);
+  border-radius: var(--sk-radius);
+  box-shadow: var(--sk-shadow);
+}
+
+.ui-tile-value {
+  font-family: var(--sk-font);
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--sk-accent2);
+  text-shadow: var(--sk-glow);
+}
+
+.ui-chip,
+.ui-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.3rem 0.85rem;
+  border: var(--sk-bw) solid var(--border);
+  border-radius: var(--sk-radius);
+  background: transparent;
+  color: var(--fg);
+  font-family: var(--sk-font);
+  cursor: pointer;
+}
+
+.ui-chip:hover:not(:disabled),
+.ui-tab:hover:not(:disabled) {
+  border-color: var(--sk-accent);
+}
+
+.ui-tab[aria-pressed='true'],
+.ui-tab[aria-current='true'],
+.ui-tab.is-active {
+  background: var(--sk-accent);
+  border-color: var(--sk-accent);
+  color: var(--sk-accent-fg);
+  box-shadow: var(--sk-glow);
+}
+
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  padding: 0.7rem 1.4rem;
+  border: var(--sk-bw) solid var(--sk-accent);
+  border-radius: var(--sk-radius);
+  background: var(--sk-accent);
+  color: var(--sk-accent-fg);
+  font-family: var(--sk-font);
+  font-weight: 700;
+  letter-spacing: var(--sk-tracking);
+  cursor: pointer;
+  box-shadow: var(--sk-shadow);
+}
+
+.ui-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.ui-btn:active:not(:disabled) {
+  transform: translateY(2px);
+}
+
+.ui-btn:disabled,
+.ui-chip:disabled,
+.ui-tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ui-btn:focus-visible,
+.ui-chip:focus-visible,
+.ui-tab:focus-visible {
+  outline: 3px solid var(--sk-accent2);
+  outline-offset: 2px;
+}
+
+.ui-meter {
+  height: 0.8rem;
+  border: var(--sk-bw) solid var(--border);
+  border-radius: var(--sk-radius);
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.ui-meter > * {
+  display: block;
+  height: 100%;
+  background: var(--sk-accent);
+  box-shadow: var(--sk-glow);
+}
+
+.ui-icon {
+  font-size: 1.25em;
+  vertical-align: -0.2em;
+}
+
+/* ---- neon ---- */
+
+[data-skin='neon'] {
+  --sk-font: Orbitron, system-ui, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  --sk-radius: 3px;
+  --sk-accent: #00b8d4;
+  --sk-accent2: #d500b0;
+  --sk-accent-fg: #06051a;
+  --sk-tracking: 0.06em;
+  --sk-glow: 0 0 10px color-mix(in srgb, var(--sk-accent) 70%, transparent);
+  --sk-shadow: 0 0 12px color-mix(in srgb, var(--sk-accent) 35%, transparent);
+  --sk-tile-bg: color-mix(in srgb, var(--panel) 85%, var(--sk-accent) 6%);
+}
+
+[data-skin='neon'][data-theme='dark'],
+[data-skin='neon'][data-theme='high-contrast'] {
+  --sk-accent: #00e5ff;
+  --sk-accent2: #ff4de0;
+}
+
+[data-skin='neon'] .ui-panel,
+[data-skin='neon'] .ui-tile {
+  border-color: var(--sk-accent);
+  clip-path: polygon(
+    0 0,
+    calc(100% - 14px) 0,
+    100% 14px,
+    100% 100%,
+    14px 100%,
+    0 calc(100% - 14px)
+  );
+}
+
+[data-skin='neon'] body {
+  background-image:
+    radial-gradient(
+      circle at 15% 0,
+      color-mix(in srgb, var(--sk-accent2) 18%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 90% 100%,
+      color-mix(in srgb, var(--sk-accent) 16%, transparent),
+      transparent 50%
+    );
+  background-attachment: fixed;
+}
+
+[data-skin='neon'] .ui-btn {
+  background: linear-gradient(90deg, var(--sk-accent), var(--sk-accent2));
+  border-color: transparent;
+  box-shadow: 0 0 20px color-mix(in srgb, var(--sk-accent2) 55%, transparent);
+}
+
+[data-skin='neon'] .ui-chip,
+[data-skin='neon'] .ui-tab {
+  border-color: var(--sk-accent2);
+  color: var(--sk-accent2);
+}
+
+[data-skin='neon'] .ui-tab[aria-pressed='true'],
+[data-skin='neon'] .ui-tab[aria-current='true'],
+[data-skin='neon'] .ui-tab.is-active {
+  background: var(--sk-accent2);
+  border-color: var(--sk-accent2);
+  color: var(--sk-accent-fg);
+  box-shadow: 0 0 12px var(--sk-accent2);
+}
+
+/* ---- pixel ---- */
+
+[data-skin='pixel'] {
+  --sk-font: 'Press Start 2P', 'DotGothic16', ui-monospace, monospace;
+  --sk-radius: 0;
+  --sk-bw: 4px;
+  --sk-accent: #d6284b;
+  --sk-accent2: #b58900;
+  --sk-accent-fg: #ffffff;
+  --sk-shadow: 5px 5px 0 var(--fg);
+}
+
+[data-skin='pixel'][data-theme='dark'],
+[data-skin='pixel'][data-theme='high-contrast'] {
+  --sk-accent: #ff4d6d;
+  --sk-accent2: #ffd93d;
+  --sk-accent-fg: #101020;
+  --sk-shadow: 5px 5px 0 #000;
+}
+
+[data-skin='pixel'] .ui-panel,
+[data-skin='pixel'] .ui-tile,
+[data-skin='pixel'] .ui-chip,
+[data-skin='pixel'] .ui-tab,
+[data-skin='pixel'] .ui-btn {
+  border-color: var(--fg);
+}
+
+[data-skin='pixel'] .ui-panel,
+[data-skin='pixel'] .ui-tile,
+[data-skin='pixel'] .ui-chip,
+[data-skin='pixel'] .ui-tab {
+  font-size: 0.8em;
+  line-height: 1.6;
+}
+
+[data-skin='pixel'] .ui-chip,
+[data-skin='pixel'] .ui-tab {
+  box-shadow: 3px 3px 0 var(--fg);
+}
+
+[data-skin='pixel'] .ui-tab[aria-pressed='true'],
+[data-skin='pixel'] .ui-tab[aria-current='true'],
+[data-skin='pixel'] .ui-tab.is-active {
+  background: var(--sk-accent2);
+  border-color: var(--fg);
+  color: #000;
+}
+
+[data-skin='pixel'] .ui-tile-value {
+  font-size: 1.1rem;
+}
+
+[data-skin='pixel'] .ui-meter > * {
+  background: repeating-linear-gradient(90deg, var(--sk-accent) 0 10px, transparent 10px 12px);
+}
+
+[data-skin='pixel'] body {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--fg) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--fg) 6%, transparent) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+[data-skin='pixel'] * {
+  image-rendering: pixelated;
+}
+
+/* ---- fantasy ---- */
+
+[data-skin='fantasy'] {
+  --sk-font: Cinzel, 'Zen Old Mincho', 'Hiragino Mincho ProN', serif;
+  --sk-radius: 10px;
+  --sk-bw: 3px;
+  --sk-accent: #9a6a12;
+  --sk-accent2: #8c2f1f;
+  --sk-accent-fg: #fff6dc;
+  --sk-shadow:
+    0 3px 0 color-mix(in srgb, var(--fg) 25%, transparent),
+    inset 0 0 18px color-mix(in srgb, var(--sk-accent) 14%, transparent);
+  --sk-tile-bg: color-mix(in srgb, var(--panel) 90%, var(--sk-accent) 10%);
+}
+
+[data-skin='fantasy'][data-theme='dark'],
+[data-skin='fantasy'][data-theme='high-contrast'] {
+  --sk-accent: #d4a83a;
+  --sk-accent2: #ffd76a;
+  --sk-accent-fg: #26170a;
+}
+
+[data-skin='fantasy'] .ui-panel,
+[data-skin='fantasy'] .ui-tile {
+  border-style: double;
+  border-color: var(--sk-accent);
+}
+
+[data-skin='fantasy'] .ui-chip,
+[data-skin='fantasy'] .ui-tab {
+  border-radius: 999px;
+  border-width: 2px;
+  border-color: var(--sk-accent);
+}
+
+[data-skin='fantasy'] .ui-btn {
+  border-width: 2px;
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--sk-accent) 55%, #000);
+  background: linear-gradient(color-mix(in srgb, var(--sk-accent) 80%, #fff), var(--sk-accent));
+}
+
+[data-skin='fantasy'] .ui-meter {
+  border-width: 2px;
+  border-color: var(--sk-accent);
+}
+
+[data-skin='fantasy'] .ui-meter > * {
+  background: linear-gradient(#ff6b5a, #b8321f);
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+[data-skin='fantasy'] body {
+  background-image: radial-gradient(
+    ellipse at top,
+    color-mix(in srgb, var(--sk-accent) 14%, transparent),
+    transparent 65%
+  );
+  background-attachment: fixed;
+}
+
+/* ---- pop ---- */
+
+[data-skin='pop'] {
+  --sk-font: Fredoka, 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', sans-serif;
+  --sk-radius: 20px;
+  --sk-bw: 3px;
+  --sk-accent: #d63384;
+  --sk-accent2: #6f42c1;
+  --sk-accent-fg: #ffffff;
+  --sk-shadow: 0 5px 0 color-mix(in srgb, var(--sk-accent2) 45%, transparent);
+}
+
+[data-skin='pop'][data-theme='dark'],
+[data-skin='pop'][data-theme='high-contrast'] {
+  --sk-accent: #ff6fb1;
+  --sk-accent2: #b39bff;
+  --sk-accent-fg: #1b1030;
+}
+
+[data-skin='pop'] .ui-panel,
+[data-skin='pop'] .ui-tile {
+  border-color: transparent;
+}
+
+[data-skin='pop'] .ui-chip,
+[data-skin='pop'] .ui-tab {
+  border-radius: 999px;
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--sk-accent2) 45%, transparent);
+}
+
+[data-skin='pop'] .ui-tab[aria-pressed='true'],
+[data-skin='pop'] .ui-tab[aria-current='true'],
+[data-skin='pop'] .ui-tab.is-active {
+  background: var(--sk-accent2);
+  border-color: var(--sk-accent2);
+}
+
+[data-skin='pop'] .ui-btn {
+  border-radius: 999px;
+  border-color: transparent;
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--sk-accent) 60%, #000);
+}
+
+[data-skin='pop'] .ui-meter {
+  border-radius: 999px;
+  border-color: transparent;
+}
+
+[data-skin='pop'] .ui-meter > * {
+  background: linear-gradient(90deg, var(--sk-accent2), var(--sk-accent));
+  border-radius: 999px;
+}
+
+[data-skin='pop'] body {
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--sk-accent) 12%, transparent),
+    color-mix(in srgb, var(--sk-accent2) 12%, transparent)
+  );
+  background-attachment: fixed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-btn:active:not(:disabled) {
+    transform: none;
+  }
+}

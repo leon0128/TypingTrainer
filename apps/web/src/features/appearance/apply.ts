@@ -1,5 +1,6 @@
 import type { Appearance, Theme } from '@typing-trainer/contracts';
 
+import { loadSkinFonts } from '../../skins/fonts';
 import { fontStack, loadFont } from './fonts';
 import { PALETTES, type Palette, type ResolvedTheme } from './palettes';
 
@@ -48,4 +49,5 @@ export function applyAppearance(
   root.setAttribute('data-skin', appearance.skin);
   root.style.colorScheme = resolved === 'light' ? 'light' : 'dark';
   void loadFont(appearance.font);
+  void loadSkinFonts(appearance.skin);
 }

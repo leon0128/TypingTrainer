@@ -28,7 +28,14 @@ export function ResultPanel({ metrics, submission, onRetry, onPlayAgain }: Resul
 
   return (
     <section className="result-panel" aria-labelledby="result-title">
-      <h2 id="result-title">{title(submission, t)}</h2>
+      <h2
+        id="result-title"
+        className={
+          submission.kind === 'saved' && submission.run.result == null ? 'sr-only' : undefined
+        }
+      >
+        {title(submission, t)}
+      </h2>
       <p className="submission" role="status">
         {statusLine(submission, t)}
       </p>

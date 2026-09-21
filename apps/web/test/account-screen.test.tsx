@@ -42,7 +42,7 @@ function renderAccount() {
 const passwordField = () => screen.getByLabelText('Your password');
 const acknowledge = () =>
   screen.getByRole('checkbox', { name: 'I understand this cannot be undone' });
-const deleteButton = () => screen.getByRole('button', { name: /Delete my account|Deleting…/ });
+const deleteButton = () => screen.getByRole('button', { name: /Erase my player data|Deleting…/ });
 
 beforeEach(() => {
   useAuthStore.setState({
@@ -105,7 +105,7 @@ describe('the account screen', () => {
     await userEvent.click(acknowledge());
     await userEvent.click(deleteButton());
 
-    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Log in' })).toBeTruthy();
     expect(calls).toEqual([
       {
         url: '/api/auth/me',
@@ -127,7 +127,7 @@ describe('the account screen', () => {
     expect((await screen.findByRole('alert')).textContent).toBe('incorrect password');
     // A 403 is not a 401: the session is untouched and the screen is still here.
     expect(useAuthStore.getState().status).toBe('signed-in');
-    expect(screen.getByRole('heading', { name: 'Account' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Player' })).toBeTruthy();
     // It can be tried again.
     await waitFor(() => {
       expect(deleteButton()).toHaveProperty('disabled', false);
@@ -180,7 +180,7 @@ describe('the account screen', () => {
     await userEvent.type(passwordField(), '{Enter}');
     expect(fetched).toHaveBeenCalledTimes(1);
     release(new Response(null, { status: 204 }));
-    await screen.findByRole('heading', { name: 'Sign in' });
+    await screen.findByRole('heading', { name: 'Log in' });
   });
 });
 
@@ -220,7 +220,7 @@ describe('the sign-in notice', () => {
     await userEvent.click(acknowledge());
     await userEvent.click(deleteButton());
 
-    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Log in' })).toBeTruthy();
     expect(screen.getByRole('status').textContent).toBe('Your account was deleted.');
   });
 
@@ -242,13 +242,13 @@ describe('the account screen in Japanese', () => {
     await applyLocale('ja');
     vi.stubGlobal('fetch', () => Promise.resolve(refusal(403, 'Forbidden', 'incorrect password')));
     const { container } = renderAccount();
-    expect(screen.getByRole('heading', { name: 'アカウント' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'プレイヤー情報' })).toBeTruthy();
     expect(screen.getByText(/アカウントと、その中のすべて/).textContent).toContain('7 日間');
     expectNoEnglish(container);
 
     await userEvent.type(screen.getByLabelText('パスワード'), 'x');
     await userEvent.click(screen.getByRole('checkbox', { name: '元に戻せないことを理解しました' }));
-    await userEvent.click(screen.getByRole('button', { name: 'アカウントを削除する' }));
+    await userEvent.click(screen.getByRole('button', { name: 'プレイヤーデータを消去する' }));
     expect((await screen.findByRole('alert')).textContent).toBe('パスワードが正しくありません');
   });
 
@@ -258,7 +258,7 @@ describe('the account screen in Japanese', () => {
     renderAccount();
     await userEvent.type(screen.getByLabelText('パスワード'), 'x');
     await userEvent.click(screen.getByRole('checkbox', { name: '元に戻せないことを理解しました' }));
-    await userEvent.click(screen.getByRole('button', { name: 'アカウントを削除する' }));
+    await userEvent.click(screen.getByRole('button', { name: 'プレイヤーデータを消去する' }));
     expect(await screen.findByText('アカウントを削除しました。')).toBeTruthy();
   });
 });

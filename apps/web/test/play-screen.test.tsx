@@ -111,7 +111,7 @@ describe('play screen', () => {
     beginRun();
     renderScreen();
 
-    expect(screen.getByText(/python · block 1 \/ 2/)).toBeTruthy();
+    expect(screen.getByText(/python · stage 1 \/ 2/)).toBeTruthy();
     const panels = screen.getAllByLabelText('Code to type');
     expect(panels).toHaveLength(2);
     expect(panels[0]?.textContent).toContain('if (a)');
@@ -222,23 +222,23 @@ describe('vs CPU', () => {
     renderScreen();
 
     expect(screen.getByText(/vs CPU Lv\.50/)).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'You' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'PLAYER' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /CPU Lv\.50 · SCORE 0/ })).toBeTruthy();
     expect(screen.getAllByLabelText('Code to type')).toHaveLength(4);
-    const cpu = screen.getByLabelText('Opponent');
+    const cpu = screen.getByLabelText('RIVAL');
     expect(cpu.querySelector('.cell-cursor')).not.toBeNull();
   });
 
   it('shows no opponent in single play', () => {
     beginRun();
     renderScreen();
-    expect(screen.queryByLabelText('Opponent')).toBeNull();
+    expect(screen.queryByLabelText('RIVAL')).toBeNull();
     expect(screen.getAllByLabelText('Code to type')).toHaveLength(2);
   });
 
   it.each([
-    ['win', 'You won', /CPU Lv\.50 scored 70; you scored 88\. A tie counts as a win\./],
-    ['lose', 'You lost', /CPU Lv\.50 scored 70; you scored 88\./],
+    ['win', 'YOU WIN!', /CPU Lv\.50 scored 70; you scored 88\. A tie counts as a win\./],
+    ['lose', 'YOU LOSE…', /CPU Lv\.50 scored 70; you scored 88\./],
   ] as const)('shows the server-judged result: %s', async (result, heading, line) => {
     vi.stubGlobal('fetch', () =>
       Promise.resolve(
@@ -289,8 +289,12 @@ describe('a Ghost run', () => {
   });
 
   it.each([
-    ['win', 'You won', /Ghost \(today's best\) scored 88; you scored 91\. A tie counts as a win\./],
-    ['lose', 'You lost', /Ghost \(today's best\) scored 88; you scored 91\./],
+    [
+      'win',
+      'YOU WIN!',
+      /Ghost \(today's best\) scored 88; you scored 91\. A tie counts as a win\./,
+    ],
+    ['lose', 'YOU LOSE…', /Ghost \(today's best\) scored 88; you scored 91\./],
   ] as const)('shows the server-judged result: %s', async (result, heading, line) => {
     vi.stubGlobal('fetch', () =>
       Promise.resolve(

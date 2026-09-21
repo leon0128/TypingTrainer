@@ -52,7 +52,7 @@ describe('sign-in screen', () => {
     renderScreen('/login');
     await userEvent.type(screen.getByLabelText('Username'), 'ada');
     await userEvent.type(screen.getByLabelText('Password'), PASSWORD);
-    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
     await screen.findByText('signed in');
     expect(JSON.parse(bodies[0] ?? '{}')).toEqual({ username: 'ada', password: PASSWORD });
@@ -72,7 +72,7 @@ describe('sign-in screen', () => {
     renderScreen('/login');
     await userEvent.type(screen.getByLabelText('Username'), 'ada');
     await userEvent.type(screen.getByLabelText('Password'), PASSWORD);
-    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
     expect((await screen.findByRole('alert')).textContent).toBe('username or password is wrong');
     expect(useAuthStore.getState().status).toBe('anonymous');
@@ -98,7 +98,7 @@ describe('sign-in screen', () => {
     renderScreen('/login');
     await userEvent.type(screen.getByLabelText('Username'), 'ada');
     await userEvent.type(screen.getByLabelText('Password'), PASSWORD);
-    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
     expect((await screen.findByRole('alert')).textContent).toContain('try again in 60 seconds');
   });
@@ -115,7 +115,7 @@ describe('registration screen', () => {
     renderScreen('/register');
     await userEvent.type(screen.getByLabelText('Username'), 'ada');
     await userEvent.type(screen.getByLabelText('Password'), PASSWORD);
-    await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Register and start' }));
 
     await screen.findByText('signed in');
     const sent: unknown = JSON.parse(bodies[0] ?? '{}');
@@ -132,7 +132,7 @@ describe('registration screen', () => {
     renderScreen('/register');
     await userEvent.type(screen.getByLabelText('Username'), 'ada');
     await userEvent.type(screen.getByLabelText('Password'), 'short');
-    await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Register and start' }));
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toBeTruthy();

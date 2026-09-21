@@ -14,7 +14,21 @@ function englishTexts(): string[] {
     found
       .filter((text) => !text.includes('{{') && text.length >= 4)
       // Names that are the same in both languages are not leftovers.
-      .filter((text) => !['TypingTrainer', 'English', 'vs CPU', 'KPM', 'Okabe–Ito'].includes(text))
+      .filter(
+        (text) =>
+          ![
+            'TypingTrainer',
+            'English',
+            'vs CPU',
+            'KPM',
+            'Okabe–Ito',
+            'TIME',
+            'PLAYER',
+            'RIVAL',
+            'NEXT',
+            'SCORE',
+          ].includes(text),
+      )
   );
 }
 

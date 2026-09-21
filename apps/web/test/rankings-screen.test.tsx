@@ -74,7 +74,7 @@ describe('rankings screen', () => {
     await userEvent.click(screen.getByRole('button', { name: 'This week' }));
     expect(await screen.findByRole('status')).toHaveProperty(
       'textContent',
-      'No runs yet for this period.',
+      'No scores for this period yet.',
     );
   });
 

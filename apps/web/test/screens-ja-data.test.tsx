@@ -134,7 +134,7 @@ describe('the rankings screen in Japanese', () => {
   it('reads in Japanese, with the time written the Japanese way', async () => {
     stubApi();
     const { container } = renderScreen('/rankings', <RankingsScreen />);
-    expect(screen.getByRole('heading', { name: 'あなたのランキング' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'ハイスコア' })).toBeTruthy();
     expect(await screen.findByText('88')).toBeTruthy();
     for (const header of ['スコア', '正確率', '日時']) {
       expect(screen.getByRole('columnheader', { name: header })).toBeTruthy();
@@ -152,7 +152,7 @@ describe('the rankings screen in Japanese', () => {
   it('says so in Japanese when there is nothing', async () => {
     stubApi({ '/rankings': { period: 'daily', language: 'python', entries: [] } });
     renderScreen('/rankings', <RankingsScreen />);
-    expect(await screen.findByText('この期間のプレイはまだありません。')).toBeTruthy();
+    expect(await screen.findByText('この期間の記録はまだありません。')).toBeTruthy();
   });
 });
 
@@ -160,7 +160,7 @@ describe('the history screen in Japanese', () => {
   it('reads in Japanese: filters, modes, results, and paging', async () => {
     stubApi();
     const { container } = renderScreen('/history', <HistoryScreen />);
-    expect(screen.getByRole('heading', { name: 'あなたの履歴' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'プレイログ' })).toBeTruthy();
     await screen.findByText('88');
 
     const mode = screen.getByLabelText('モード');
@@ -168,8 +168,8 @@ describe('the history screen in Japanese', () => {
       within(mode)
         .getAllByRole('option')
         .map((option) => option.textContent),
-    ).toEqual(['すべて', 'シングルプレイ', 'vs CPU', 'vs 自分']);
-    expect(screen.getByText('vs 自分', { selector: 'td' })).toBeTruthy();
+    ).toEqual(['すべて', 'ソロプレイ', 'vs CPU', 'vs ゴースト']);
+    expect(screen.getByText('vs ゴースト', { selector: 'td' })).toBeTruthy();
     expect(screen.getByText('勝ち', { selector: 'td' })).toBeTruthy();
     expect(screen.getByText('負け', { selector: 'td' })).toBeTruthy();
     expect(screen.getByText('1 / 3 ページ')).toBeTruthy();
@@ -195,12 +195,12 @@ describe('the dashboard screen in Japanese', () => {
   it('reads in Japanese: summary, periods, ranges, and the chart', async () => {
     stubApi();
     const { container } = renderScreen('/dashboard', <DashboardScreen />);
-    expect(screen.getByRole('heading', { name: 'ダッシュボード' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'ステータス' })).toBeTruthy();
     expect(await screen.findByRole('img', { name: 'スコアの推移' })).toBeTruthy();
     expect(screen.getByText('プレイ回数: 3')).toBeTruthy();
-    expect(screen.getByText('キー入力数: 700')).toBeTruthy();
-    expect(screen.getByText('勝った CPU の最高 Level: 12')).toBeTruthy();
-    expect(screen.getByText(/ベストスコア:.*Python 90/)).toBeTruthy();
+    expect(screen.getByText('総キー入力数: 700')).toBeTruthy();
+    expect(screen.getByText('撃破した CPU の最高 Level: 12')).toBeTruthy();
+    expect(screen.getByText(/ハイスコア:.*Python 90/)).toBeTruthy();
     expect(
       within(screen.getByRole('group', { name: '期間' }))
         .getAllByRole('button')
@@ -223,11 +223,11 @@ describe('the conquests screen in Japanese', () => {
     const { container } = renderScreen('/conquests', <ConquestsScreen />);
     expect(screen.getByRole('heading', { name: '対戦記録' })).toBeTruthy();
     expect(
-      await screen.findByText(/勝った最高 Level: 12 · 勝った Level 数: 3 \/ 100/),
+      await screen.findByText(/撃破した最高 Level: 12 · 撃破 Level 数: 3 \/ 100/),
     ).toBeTruthy();
     const python = within(screen.getByLabelText('Pythonの Level'));
-    expect(python.getByLabelText('Level 12 勝ち').textContent).toContain('✓');
-    expect(python.getByLabelText('Level 3 未勝利').textContent).not.toContain('✓');
+    expect(python.getByLabelText('Level 12 撃破済み').textContent).toContain('✓');
+    expect(python.getByLabelText('Level 3 未撃破').textContent).not.toContain('✓');
     expect(screen.getByText(/vs CPU でその Level に勝つと記録されます/)).toBeTruthy();
     expectNoEnglish(container);
   });
@@ -237,7 +237,7 @@ describe('the appearance screen in Japanese', () => {
   it('reads in Japanese: every group, choice, and note', () => {
     stubApi();
     const { container } = renderScreen('/settings', <SettingsScreen />);
-    expect(screen.getByRole('heading', { name: '外観' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '設定' })).toBeTruthy();
     for (const legend of ['言語', 'フォント', 'サイズ', 'テーマ', '配色', 'サウンド']) {
       expect(screen.getByText(legend, { selector: 'legend' })).toBeTruthy();
     }
@@ -272,7 +272,7 @@ describe('the appearance screen in Japanese', () => {
     expect(group.getByRole('button', { name: '日本語' }).getAttribute('aria-pressed')).toBe('true');
 
     await userEvent.click(group.getByRole('button', { name: 'English' }));
-    expect(await screen.findByRole('heading', { name: 'Appearance' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Settings' })).toBeTruthy();
     expect(i18n.language).toBe('en');
     expect(calls.find((call) => call.method === 'PUT')?.body).toEqual({ locale: 'en' });
     expect(screen.getByRole('button', { name: 'English' }).getAttribute('aria-pressed')).toBe(

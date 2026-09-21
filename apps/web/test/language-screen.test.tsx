@@ -174,14 +174,14 @@ describe('vs CPU', () => {
     const requests = stubServer();
     renderScreen();
     await userEvent.click(await screen.findByRole('button', { name: 'vs CPU' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Single play' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Solo' }));
     await userEvent.click(screen.getByRole('button', { name: 'Go' }));
     await screen.findByText('playing');
     expect(JSON.parse(requests[1]?.body ?? '{}')).toEqual({ language: 'go', mode: 'single' });
   });
 });
 
-describe('Ghost', () => {
+describe('vs Ghost', () => {
   const RECORDS = {
     languages: [
       { language: 'python', daily: 88, weekly: 88, total: 120 },
@@ -205,7 +205,7 @@ describe('Ghost', () => {
   it('offers the three periods to race, defaulting to today', async () => {
     stubServer();
     renderScreen();
-    await userEvent.click(await screen.findByRole('button', { name: 'Ghost' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'vs Ghost' }));
 
     const periods = within(screen.getByRole('group', { name: 'Record' }));
     expect(periods.getAllByRole('button').map((button) => button.textContent)).toEqual([
@@ -221,7 +221,7 @@ describe('Ghost', () => {
   it('shows the record of each language for the period, and disables a language with none', async () => {
     stubServer();
     renderScreen();
-    await userEvent.click(await screen.findByRole('button', { name: 'Ghost' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'vs Ghost' }));
 
     // Today: Python has 88, Go has nothing.
     expect(await screen.findByRole('button', { name: /Python.*best 88/ })).toHaveProperty(
@@ -241,7 +241,7 @@ describe('Ghost', () => {
   it('starts a Ghost run for the language and period chosen, and names no record itself', async () => {
     const requests = stubServer();
     renderScreen();
-    await userEvent.click(await screen.findByRole('button', { name: 'Ghost' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'vs Ghost' }));
     await userEvent.click(screen.getByRole('button', { name: 'This week' }));
     await userEvent.click(await screen.findByRole('button', { name: /Go.*best 61/ }));
 
@@ -260,7 +260,7 @@ describe('Ghost', () => {
       languages: [{ language: 'python', daily: 0, weekly: 0, total: 0 }],
     });
     renderScreen();
-    await userEvent.click(await screen.findByRole('button', { name: 'Ghost' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'vs Ghost' }));
     expect(await screen.findByRole('button', { name: /Python.*No record yet/ })).toHaveProperty(
       'disabled',
       true,
@@ -272,10 +272,10 @@ describe('Ghost', () => {
     renderScreen();
     const ghostRequests = () =>
       requests.filter((request) => request.url.endsWith('/ghost-records'));
-    await userEvent.click(await screen.findByRole('button', { name: 'Ghost' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'vs Ghost' }));
     await screen.findByRole('button', { name: /Python.*best 88/ });
-    await userEvent.click(screen.getByRole('button', { name: 'Single play' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Ghost' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Solo' }));
+    await userEvent.click(screen.getByRole('button', { name: 'vs Ghost' }));
     await vi.waitFor(() => {
       expect(ghostRequests()).toHaveLength(2);
     });

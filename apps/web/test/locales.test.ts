@@ -63,6 +63,15 @@ const SAME_IN_EVERY_LANGUAGE = new Set<string>([
   'settings.presets.okabe-ito',
   // "30%": a number and a symbol, which Japanese writes the same way.
   'settings.volumeText',
+  // Arcade-style labels kept in Latin capitals in both languages.
+  'play.left',
+  'play.you',
+  'play.opponentGroup',
+  'play.nextBlock',
+  'play.opponentScore',
+  'result.score',
+  'result.won',
+  'result.lost',
 ]);
 
 describe('the language resources (§8.4)', () => {

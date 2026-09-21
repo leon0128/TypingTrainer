@@ -74,7 +74,7 @@ describe('the sign-in and registration screens in Japanese', () => {
 
   it('registration reads in Japanese, with the rule for passwords', () => {
     const { container } = renderAt('/register');
-    expect(screen.getByRole('heading', { name: 'アカウントを作成' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'プレイヤー登録' })).toBeTruthy();
     expect(screen.getByText('8文字以上。覚えやすいフレーズでも構いません。')).toBeTruthy();
     expectNoEnglish(container);
   });
@@ -83,7 +83,7 @@ describe('the sign-in and registration screens in Japanese', () => {
     renderAt('/register');
     await userEvent.type(screen.getByLabelText('ユーザー名'), 'ada');
     await userEvent.type(screen.getByLabelText('パスワード'), 'short');
-    await userEvent.click(screen.getByRole('button', { name: 'アカウントを作成' }));
+    await userEvent.click(screen.getByRole('button', { name: '登録してスタート' }));
     expect((await screen.findByRole('alert')).textContent).toBe('8文字以上にしてください');
   });
 
@@ -96,7 +96,7 @@ describe('the sign-in and registration screens in Japanese', () => {
     renderAt('/register');
     await userEvent.type(screen.getByLabelText('ユーザー名'), 'ada');
     await userEvent.type(screen.getByLabelText('パスワード'), 'correct horse battery');
-    await userEvent.click(screen.getByRole('button', { name: 'アカウントを作成' }));
+    await userEvent.click(screen.getByRole('button', { name: '登録してスタート' }));
     expect((await screen.findByRole('alert')).textContent).toBe('そのユーザー名は使われています');
   });
 
@@ -106,7 +106,7 @@ describe('the sign-in and registration screens in Japanese', () => {
         <StartupScreen />
       </MemoryRouter>,
     );
-    expect(screen.getByRole('status').textContent).toBe('読み込み中…');
+    expect(screen.getByRole('status').textContent).toBe('ロード中…');
     expectNoEnglish(container);
   });
 });
@@ -140,7 +140,7 @@ describe('the language switch before an account', () => {
     expect(fetched).not.toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole('button', { name: 'English' }));
-    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Log in' })).toBeTruthy();
   });
 });
 
@@ -177,7 +177,9 @@ describe('registering in the language the screen is in', () => {
   async function register() {
     await userEvent.type(screen.getByLabelText(/ユーザー名|Username/), 'ada');
     await userEvent.type(screen.getByLabelText(/パスワード|Password/), 'correct horse battery');
-    await userEvent.click(screen.getByRole('button', { name: /アカウントを作成|Create account/ }));
+    await userEvent.click(
+      screen.getByRole('button', { name: /登録してスタート|Register and start/ }),
+    );
   }
 
   it('saves Japanese for the new account, before the app learns it is signed in', async () => {
@@ -255,16 +257,16 @@ describe('the language screen in Japanese', () => {
   it('reads in Japanese with the terms the requester chose', async () => {
     const { container } = renderAt('/');
     await screen.findByRole('button', { name: 'Python' });
-    for (const name of ['ランキング', '外観', '対戦記録', 'ダッシュボード', '履歴']) {
+    for (const name of ['ハイスコア', '設定', '対戦記録', 'ステータス', 'プレイログ']) {
       expect(screen.getByRole('link', { name })).toBeTruthy();
     }
     const modes = within(screen.getByRole('group', { name: 'モード' }));
     expect(modes.getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'シングルプレイ',
+      'ソロプレイ',
       'vs CPU',
-      'vs 自分',
+      'vs ゴースト',
     ]);
-    expect(screen.getByRole('heading', { name: '言語を選択' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'ステージを選ぶ' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'ログアウト' })).toBeTruthy();
     expectNoEnglish(container);
   });
@@ -272,15 +274,15 @@ describe('the language screen in Japanese', () => {
   it('shows the CPU level with its speed, and complains about a bad level, in Japanese', async () => {
     renderAt('/');
     await userEvent.click(await screen.findByRole('button', { name: 'vs CPU' }));
-    expect(screen.getByText('CPU の Level(1–100)')).toBeTruthy();
+    expect(screen.getByText('CPU の強さ(1–100)')).toBeTruthy();
     expect(screen.getByText('約 50 KPM')).toBeTruthy();
-    await userEvent.clear(screen.getByLabelText(/Level/));
+    await userEvent.clear(screen.getByLabelText(/強さ/));
     expect(screen.getByText('1〜100 の整数を入力してください')).toBeTruthy();
   });
 
   it('shows the Ghost options, periods, and records in Japanese', async () => {
     const { container } = renderAt('/');
-    await userEvent.click(await screen.findByRole('button', { name: 'vs 自分' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'vs ゴースト' }));
     const periods = within(screen.getByRole('group', { name: '記録' }));
     expect(periods.getAllByRole('button').map((button) => button.textContent)).toEqual([
       '今日',
@@ -311,12 +313,10 @@ describe('the play screen in Japanese', () => {
   it('reads the header, the status, and the overlay in Japanese', () => {
     useRunSession.getState().begin(ISSUED, performance.now());
     const { container } = renderAt('/play');
-    expect(screen.getByText(/ブロック 1 \/ 2/)).toBeTruthy();
-    expect(screen.getByText(/KPM 0 · 正確率 0% · スコア 0/)).toBeTruthy();
-    expect(screen.getByText(/残り/)).toBeTruthy();
-    expect(screen.getByRole('status').textContent).toBe(
-      '入力を始めてください。最初のキー入力でカウントダウンが始まります。',
-    );
+    expect(screen.getByText(/ステージ 1 \/ 2/)).toBeTruthy();
+    expect(screen.getByText(/KPM 0 · 正確率 0% · SCORE 0/)).toBeTruthy();
+    expect(screen.getByText(/TIME/)).toBeTruthy();
+    expect(screen.getByRole('status').textContent).toBe('最初のキーでカウントダウン開始!');
     expect(screen.getByLabelText('入力欄')).toBeTruthy();
     expect(screen.getAllByLabelText('入力するコード')).toHaveLength(2);
     expectNoEnglish(container);
@@ -328,9 +328,9 @@ describe('the play screen in Japanese', () => {
       .begin({ ...ISSUED, mode: 'ghost', ghostPeriod: 'daily', ghostScore: 88 }, performance.now());
     renderAt('/play');
     expect(screen.getByText(/vs 自分 · 今日のベスト 88/)).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'あなた' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: /自分 · 今日のベスト 88 · スコア 0/ })).toBeTruthy();
-    expect(screen.getByLabelText('対戦相手')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'PLAYER' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /自分 · 今日のベスト 88 · SCORE 0/ })).toBeTruthy();
+    expect(screen.getByLabelText('RIVAL')).toBeTruthy();
   });
 
   it('shows the result, the match, and the date in Japanese', async () => {
@@ -365,12 +365,12 @@ describe('the play screen in Japanese', () => {
     await userEvent.type(screen.getByLabelText('入力欄'), 'if(a){{{Enter}b{Enter}}');
     await userEvent.type(screen.getByLabelText('入力欄'), 'a: 1');
 
-    expect(await screen.findByRole('heading', { name: '勝ち' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'WIN!' })).toBeTruthy();
     expect(screen.getByText('2026年9月20日のプレイとして保存しました。')).toBeTruthy();
     expect(container.querySelector('.match-result')?.textContent).toBe(
       'CPU Lv.50のスコアは 70、あなたは 88 でした。 同点は勝ちです。',
     );
-    for (const label of ['スコア', '正確率', 'キー入力']) {
+    for (const label of ['SCORE', '正確率', 'キー入力']) {
       expect(screen.getByText(label, { selector: 'dt' })).toBeTruthy();
     }
     expect(screen.getByText('有効 123 · ミス 4 · 総数 111')).toBeTruthy();

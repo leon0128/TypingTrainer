@@ -77,7 +77,7 @@ describe('history screen', () => {
       within(mode)
         .getAllByRole('option')
         .map((option) => option.textContent),
-    ).toEqual(['All', 'Single play', 'vs CPU', 'Ghost']);
+    ).toEqual(['All', 'Solo', 'vs CPU', 'vs Ghost']);
 
     await userEvent.selectOptions(mode, 'ghost');
     await vi.waitFor(() => {
@@ -90,7 +90,7 @@ describe('history screen', () => {
       Promise.resolve(url.endsWith('/languages') ? json(LANGUAGES) : json(EMPTY)),
     );
     renderScreen();
-    expect(await screen.findByText('No runs match these filters.')).toBeTruthy();
+    expect(await screen.findByText('No play log matches these filters.')).toBeTruthy();
   });
 
   it('asks for confirmation before deleting, and removes the row once confirmed', async () => {
@@ -135,7 +135,7 @@ describe('history screen', () => {
       Promise.resolve(url.endsWith('/languages') ? json(LANGUAGES) : json(EMPTY)),
     );
     renderScreen();
-    await screen.findByText('No runs match these filters.');
+    await screen.findByText('No play log matches these filters.');
     await userEvent.click(screen.getByRole('link', { name: 'Home' }));
     expect(await screen.findByText('choose a language')).toBeTruthy();
   });

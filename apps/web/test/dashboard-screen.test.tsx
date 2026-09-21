@@ -72,7 +72,7 @@ describe('dashboard screen', () => {
     renderScreen();
     expect(await screen.findByRole('img', { name: 'Score trend' })).toBeTruthy();
     expect(screen.getByText('Python 90', { exact: false })).toBeTruthy();
-    expect(screen.getByText('Keystrokes: 700')).toBeTruthy();
+    expect(screen.getByText('Total keystrokes: 700')).toBeTruthy();
   });
 
   it('moves the weekly view back by seven days', async () => {
@@ -87,10 +87,10 @@ describe('dashboard screen', () => {
     renderScreen();
     await screen.findByRole('img', { name: 'Score trend' });
     await userEvent.click(screen.getByRole('button', { name: 'All time' }));
-    expect(await screen.findByText('No runs for this period.')).toBeTruthy();
+    expect(await screen.findByText('No scores for this period.')).toBeTruthy();
     expect(requested.at(-1)?.searchParams.get('from')).not.toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'All' }));
-    await screen.findByText('No runs for this period.');
+    await screen.findByText('No scores for this period.');
     expect(requested.at(-1)?.searchParams.get('from')).toBeNull();
   });
 });

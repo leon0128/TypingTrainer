@@ -48,8 +48,8 @@ describe('conquests screen', () => {
     );
     renderScreen();
 
-    expect(await screen.findByText(/Highest level beaten: 12 · Beaten: 3 \/ 100/)).toBeTruthy();
-    expect(screen.getByText(/Highest level beaten: — · Beaten: 0 \/ 100/)).toBeTruthy();
+    expect(await screen.findByText(/Toughest CPU beaten: Lv.12 · Beaten: 3 \/ 100/)).toBeTruthy();
+    expect(screen.getByText(/Toughest CPU beaten: Lv.— · Beaten: 0 \/ 100/)).toBeTruthy();
 
     const python = within(screen.getByLabelText('Python levels'));
     expect(python.getAllByRole('listitem')).toHaveLength(100);

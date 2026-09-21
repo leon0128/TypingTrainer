@@ -54,7 +54,7 @@ function LevelGrid({
           >
             <button
               type="button"
-              className="w-full py-1"
+              className="w-full cursor-pointer py-1 disabled:cursor-not-allowed"
               disabled={disabled}
               aria-label={t('conquests.startLevel', { level })}
               onClick={() => {

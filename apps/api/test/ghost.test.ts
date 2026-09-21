@@ -168,7 +168,15 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('Ghost (TEST_DATABASE_URL)', () 
     it('has no record for a new player, in every language', async () => {
       const me = await signedIn();
       const state = await records(me.token);
-      expect([...state.keys()]).toEqual(['typescript', 'go', 'java', 'python']);
+      expect([...state.keys()]).toEqual([
+        'typescript',
+        'go',
+        'java',
+        'python',
+        'en-word',
+        'en-line',
+        'en-paragraph',
+      ]);
       for (const entry of state.values()) {
         expect(entry).toMatchObject({ daily: null, weekly: null, total: null });
       }

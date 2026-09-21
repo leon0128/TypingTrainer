@@ -1,4 +1,9 @@
-import { CONTENT_LANGUAGES, POOLS, UsernameSchema } from '@typing-trainer/contracts';
+import {
+  CODE_LANGUAGES,
+  CONTENT_LANGUAGES,
+  POOLS,
+  UsernameSchema,
+} from '@typing-trainer/contracts';
 import { RUN_BLOCK_COUNTS } from '@typing-trainer/typing-engine';
 import { QueryFailedError } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -137,16 +142,16 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('initial schema (TEST_DATABASE_U
     }
   });
 
-  it('seeds the natural-language pools disabled: they have no content bundle yet', async () => {
+  it('seeds the natural-language pools disabled, and the last migration turns them on', async () => {
     const rows = await query<{ slug: string; enabled: boolean }[]>(
       'SELECT slug, enabled FROM languages ORDER BY sort_order',
     );
-    expect(rows.filter((row) => row.enabled).map((row) => row.slug)).toEqual([
-      'typescript',
-      'go',
-      'java',
-      'python',
-    ]);
+    // They are added disabled and enabled by their own migration, once the API and web serve them
+    // (§13), so every pool is on here and the ones outside the code track are exactly six.
+    expect(rows.every((row) => row.enabled)).toBe(true);
+    expect(
+      rows.map((row) => row.slug).filter((slug) => !CODE_LANGUAGES.includes(slug as never)),
+    ).toHaveLength(6);
   });
 
   describe("a language row's track and kind", () => {

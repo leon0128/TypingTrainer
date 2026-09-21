@@ -60,18 +60,31 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('GET /api/languages (TEST_DATABA
   });
 
   it('lists the seeded languages in display order, with their track', async () => {
-    expect(await list()).toEqual([
+    const languages = await list();
+    expect(languages.filter((language) => language.track === 'code')).toEqual([
       { slug: 'typescript', displayName: 'TypeScript', track: 'code', kind: null },
       { slug: 'go', displayName: 'Go', track: 'code', kind: null },
       { slug: 'java', displayName: 'Java', track: 'code', kind: null },
       { slug: 'python', displayName: 'Python', track: 'code', kind: null },
     ]);
-    expect((await list()).map((language) => language.slug)).toEqual([...CODE_LANGUAGES]);
+    expect(languages.map((language) => language.slug)).toEqual([
+      ...CODE_LANGUAGES,
+      'en-word',
+      'en-line',
+      'en-paragraph',
+    ]);
   });
 
   it('follows sort_order and hides disabled languages', async () => {
     await database.dataSource.query(`UPDATE languages SET enabled = false WHERE slug = 'java'`);
     await database.dataSource.query(`UPDATE languages SET sort_order = 0 WHERE slug = 'python'`);
-    expect((await list()).map((language) => language.slug)).toEqual(['python', 'typescript', 'go']);
+    expect((await list()).map((language) => language.slug)).toEqual([
+      'python',
+      'typescript',
+      'go',
+      'en-word',
+      'en-line',
+      'en-paragraph',
+    ]);
   });
 });

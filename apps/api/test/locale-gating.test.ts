@@ -91,7 +91,6 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
 
     beforeAll(async () => {
       database = await createTestDatabase(TEST_DATABASE_URL ?? '');
-      await query(`UPDATE languages SET enabled = true WHERE track <> 'code'`);
       app = await createApp(
         testEnv({ DATABASE_URL: database.url, REGISTRATION_DAILY_LIMIT: '500' }),
       );

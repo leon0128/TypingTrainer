@@ -117,10 +117,19 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       await database.drop();
     });
 
-    it('lists every enabled language, with nothing beaten for a new player', async () => {
+    it('lists every language the account may use, with nothing beaten for a new player', async () => {
       const me = await signedIn();
       const state = await conquests(me.token);
-      expect([...state.keys()]).toEqual(['typescript', 'go', 'java', 'python']);
+      // An English account is offered the code and English pools, not the Japanese ones (§13.11).
+      expect([...state.keys()]).toEqual([
+        'typescript',
+        'go',
+        'java',
+        'python',
+        'en-word',
+        'en-line',
+        'en-paragraph',
+      ]);
       for (const entry of state.values()) {
         expect(entry).toMatchObject({ highestLevel: null, beatenLevels: [], totalConquests: 0 });
       }

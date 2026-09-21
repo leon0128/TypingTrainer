@@ -1300,7 +1300,7 @@ The exact hues of the accents and the grid, the initial content itself, and the 
 
 ### 13.13 Play screen
 
-Japanese is drawn as two lines: the text above and the romaji below it. Each text (a kana, or a kanji with the units of its reading) is one column, as wide as the wider of the text and its romaji, and a line wraps between columns. The caret is the unit being typed, and its romaji is redrawn along the spelling the keys typed so far have settled on (`si` continues as `si`, not `shi`); a unit already left shows its first spelling. English sentences and paragraphs wrap at the panel's edge instead of scrolling. After the current block, three blocks are shown for words and sentences and one for paragraphs; code keeps one. A Caps Lock that is on is announced above the text in the natural-language tracks, since every letter would miss. The result screen's button returns to the start screen of the track played.
+Japanese is drawn as two lines: the text above and the romaji below it. Each text (a kana, or a kanji with the units of its reading) is one column, as wide as the wider of the text and its romaji, and a line wraps between columns. The caret is the unit being typed, and its romaji is redrawn along the spelling the keys typed so far have settled on (`si` continues as `si`, not `shi`); a unit already left shows its first spelling. English sentences and paragraphs wrap at the panel's edge instead of scrolling. After the current block, three blocks are shown for words and sentences and one for paragraphs; code keeps one. A Caps Lock that is on is announced above the text in the natural-language tracks, since every letter would miss. The result screen's button returns home, as it always did.
 
 ---
 
@@ -1568,3 +1568,7 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.43 | English track fonts | The same five monospaced fonts as code, since the caret needs a fixed width |
 | 1.43 | Colour sets for the Japanese track | The same three sets as code |
 | 1.43 | Settings tabs | The settings screen shows a track chooser only when the account is offered more than one track, taken from the language list like the header's track switch |
+| 1.43 | Pools enabled | The migration `EnableNaturalLanguagePools` turns the six natural-language pools on once the API serves and gates them and the web has the track screens and play views; its down migration turns off exactly those six. An enabled pool without a bundle stops the API from starting, so a deployment without the bundles fails at once |
+| 1.43 | Natural run size | **Measured** on issue: plain 31 to 94 KB and gzip 2.7 to 7.3 KB across the six pools, against 85 KB and 5.3 KB for a Python run, so no natural run is larger than a code run once compressed. No limit was set by the owner; a test only guards against a pool growing several times over (200 KB plain, 20 KB gzip) |
+| 1.43 | Live check | With the pools on, a Japanese account played a Japanese words run through to a saved result, an English account played an English paragraph (capitals, line breaks), and an English account saw no Japanese text, was sent home from `/ja`, and was refused with 403 by the API for the Japanese pools, history, and play look; switching the display language to Japanese brought the track and its settings in at once |
+

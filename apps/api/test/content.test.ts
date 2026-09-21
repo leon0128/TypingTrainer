@@ -103,6 +103,9 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
         'typescript',
         'java',
         'python',
+        'en-word',
+        'en-line',
+        'en-paragraph',
       ]);
     });
 
@@ -124,7 +127,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
         url: '/api/languages',
         headers: { cookie: await cookieFor(app) },
       });
-      expect(LanguagesResponseSchema.parse(response.json()).languages).toHaveLength(4);
+      expect(LanguagesResponseSchema.parse(response.json()).languages).toHaveLength(7);
     });
   },
 );

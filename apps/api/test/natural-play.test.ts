@@ -11,6 +11,7 @@ import {
   type StartSessionResponse,
 } from '@typing-trainer/contracts';
 import { cpuScore, cpuTimeline, drawBlockIds, runBlockCount } from '@typing-trainer/typing-engine';
+import { gzipSync } from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createApp } from '../src/app';
@@ -30,8 +31,8 @@ const nextAddress = () => `198.51.100.${String((counter += 1) % 250)}`;
 
 /**
  * Runs of the natural-language pools (§13.7): the blocks a run takes, the opponent's and the
- * limits' dependence on the track, and Japanese spelled the longest way. The pools are disabled in
- * production until the web can show them, so the test database turns them on.
+ * limits' dependence on the track, and Japanese spelled the longest way. They are enabled by
+ * their own migration, so every test database has them on.
  */
 describe.runIf(TEST_DATABASE_URL !== undefined)('natural-language runs (TEST_DATABASE_URL)', () => {
   let database: TestDatabase;
@@ -91,7 +92,6 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('natural-language runs (TEST_DAT
 
   beforeAll(async () => {
     database = await createTestDatabase(TEST_DATABASE_URL ?? '');
-    await query(`UPDATE languages SET enabled = true WHERE track <> 'code'`);
     app = await createApp(testEnv({ DATABASE_URL: database.url, REGISTRATION_DAILY_LIMIT: '500' }));
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
@@ -254,5 +254,18 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('natural-language runs (TEST_DAT
       expect(ghost.ghostScore).toBe(stored.score);
       expect(ghost.blocks).toHaveLength(runBlockCount('paragraph'));
     });
+  });
+
+  it('issues a run no bigger than the code runs are, plain or compressed', async () => {
+    // Measured when the pools were enabled (§13.7): plain 31 to 94 KB and gzip 2.7 to 7.3 KB, against
+    // 85 KB and 5.3 KB for a Python run. The bounds are loose on purpose: they catch a pool whose
+    // blocks grow several times over, not the small changes an edit of the content makes.
+    const token = await signedIn();
+    for (const language of POOLS) {
+      const response = await start(token, { language, mode: 'single' });
+      expect(response.statusCode, language).toBe(201);
+      expect(Buffer.byteLength(response.body), language).toBeLessThan(200_000);
+      expect(gzipSync(response.body).length, language).toBeLessThan(20_000);
+    }
   });
 });

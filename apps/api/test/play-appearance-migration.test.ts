@@ -32,6 +32,8 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       )[0]?.id ?? '';
 
     it('gives a saved look to the code track, and rolls back to the one row', async () => {
+      // Past the migration that enables the natural-language pools, then this one.
+      await database.dataSource.undoLastMigration();
       await database.dataSource.undoLastMigration();
       const columns = await query<{ column_name: string }[]>(
         `SELECT column_name FROM information_schema.columns WHERE table_name = 'user_preferences'`,
@@ -81,6 +83,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
         `UPDATE user_play_appearance SET font_size = 14 WHERE user_id = $1 AND track = 'code'`,
         [chosen],
       );
+      await database.dataSource.undoLastMigration();
       await database.dataSource.undoLastMigration();
       const [back] = await query<{ font: string; font_size: number; color_preset: string }[]>(
         'SELECT font, font_size, color_preset FROM user_preferences WHERE user_id = $1',

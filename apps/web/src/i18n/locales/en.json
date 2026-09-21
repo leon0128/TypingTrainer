@@ -189,6 +189,7 @@
     "statusPlaying": "Playing",
     "statusPaused": "Paused.",
     "statusEnded": "Game over.",
+    "capsLock": "Caps Lock is on. Turn it off to type.",
     "overlayIme": "Turn off your IME (Japanese input) to type.",
     "overlayResume": "Paused — click to resume",
     "confirmLeave": "Quit this game? Your progress will be lost.",

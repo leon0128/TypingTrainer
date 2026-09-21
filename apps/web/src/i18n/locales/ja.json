@@ -188,6 +188,7 @@
     "statusPlaying": "プレイ中",
     "statusPaused": "ポーズ中。",
     "statusEnded": "ゲーム終了。",
+    "capsLock": "Caps Lock がオンです。オフにして入力してください。",
     "overlayIme": "入力するには IME(日本語入力)をオフにしてください。",
     "overlayResume": "ポーズ中 — クリックで再開",
     "confirmLeave": "このプレイをやめますか?ここまでの進行は失われます。",

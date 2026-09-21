@@ -99,3 +99,28 @@ describe('attachKeyboardInput', () => {
     expect(other.value).toBe('leftover');
   });
 });
+
+describe('Caps Lock', () => {
+  it('is reported once when it changes, from the key that saw it', () => {
+    const target = new EventTarget() as unknown as { value: string } & EventTarget;
+    target.value = '';
+    const seen: boolean[] = [];
+    attachKeyboardInput(target, {
+      onKey: () => undefined,
+      onImeChange: () => undefined,
+      onCapsLock: (on) => seen.push(on),
+      onBlur: () => undefined,
+      onFocus: () => undefined,
+    });
+    const key = (caps: boolean) => {
+      const event = new Event('keydown', { cancelable: true });
+      Object.assign(event, { key: 'a', code: 'KeyA', getModifierState: () => caps });
+      target.dispatchEvent(event);
+    };
+    key(false);
+    key(true);
+    key(true);
+    key(false);
+    expect(seen).toEqual([true, false]);
+  });
+});

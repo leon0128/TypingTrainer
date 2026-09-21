@@ -14,12 +14,14 @@ export interface CodeViewProps {
   readonly engine: EngineState | null;
   readonly missSeq: number;
   readonly lastMiss: { readonly atomIndex: number; readonly charIndex: number } | null;
+  /** Long lines wrap instead of scrolling: English prose (§13.6). */
+  readonly wrap?: boolean;
 }
 
 /** Nothing typed, no caret: every cell renders in its resting state. */
 const UNTOUCHED: LineView = { typedUntil: 0, cursorHere: false, filledAutoKey: '' };
 
-export function CodeView({ layout, engine, missSeq, lastMiss }: CodeViewProps) {
+export function CodeView({ layout, engine, missSeq, lastMiss, wrap = false }: CodeViewProps) {
   const { t } = useTranslation();
   const preRef = useRef<HTMLPreElement>(null);
   const views = useMemo(
@@ -41,7 +43,11 @@ export function CodeView({ layout, engine, missSeq, lastMiss }: CodeViewProps) {
       : 0;
 
   return (
-    <pre ref={preRef} className="code" aria-label={t('play.codeToType')}>
+    <pre
+      ref={preRef}
+      className={wrap ? 'code code-wrap' : 'code'}
+      aria-label={t('play.codeToType')}
+    >
       {layout.lines.map((line, index) => {
         const view = views[index];
         if (!view) return null;

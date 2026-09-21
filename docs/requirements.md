@@ -1296,6 +1296,10 @@ Japanese text and the Japanese track are shown **only when the account's display
 
 The exact hues of the accents and the grid, the initial content itself, and the real speed of the CPU curve are settled while implementing; the curve is provisional (§13.7).
 
+### 13.13 Play screen
+
+Japanese is drawn as two lines: the text above and the romaji below it. Each text (a kana, or a kanji with the units of its reading) is one column, as wide as the wider of the text and its romaji, and a line wraps between columns. The caret is the unit being typed, and its romaji is redrawn along the spelling the keys typed so far have settled on (`si` continues as `si`, not `shi`); a unit already left shows its first spelling. English sentences and paragraphs wrap at the panel's edge instead of scrolling. After the current block, three blocks are shown for words and sentences and one for paragraphs; code keeps one. A Caps Lock that is on is announced above the text in the natural-language tracks, since every letter would miss. The result screen's button returns to the start screen of the track played.
+
 ---
 
 ## Appendix A — Sources for the Speed Figures
@@ -1554,3 +1558,6 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.43 | Old addresses | `/conquests`, `/rankings`, `/dashboard`, and `/history` redirect to the code track's screens, so a bookmark still works |
 | 1.43 | Play-history grid shades | Four shades by the runs of a kind in a day (1, 2 to 3, 4 to 6, 7 or more), green for code and one violet for both natural-language tracks, with a day of both split along its diagonal; the days are also written as a table for a reader who does not use the picture |
 | 1.43 | Header row | With the track switch in the header, the settings (the only place that belongs to no track) sit at the right of the first row beside the player, instead of a row of their own |
+| 1.43 | Kanji column width | A text is drawn over all the units of its reading and its column is as wide as the wider of the two, so a kanji never overlaps the next column |
+| 1.43 | English wrapping | Sentences and paragraphs wrap; code keeps its sideways scroll, since its columns carry meaning |
+| 1.43 | Caps Lock notice | Shown in the natural-language tracks only, from the modifier state of the latest key |

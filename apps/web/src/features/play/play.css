@@ -286,3 +286,59 @@ body {
     align-items: start;
   }
 }
+
+/* Japanese: the text above, the romaji below it, one column per group (§13.6). */
+.ja-block {
+  white-space: normal;
+  font-family: var(--ja-font, 'M PLUS 1 Code', 'BIZ UDGothic', ui-monospace, monospace);
+}
+
+.ja-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 4px 0.6em;
+  min-height: 3.2em;
+}
+
+.ja-group {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.ja-text {
+  font-size: 1em;
+  line-height: 1.5;
+  white-space: pre;
+}
+
+.ja-text.ja-typed {
+  color: var(--typed);
+}
+
+.ja-text.ja-pending {
+  color: var(--pending);
+}
+
+.ja-text.ja-cursor {
+  color: var(--fg);
+  border-bottom: 2px solid var(--caret);
+}
+
+.ja-romaji {
+  font-size: 0.75em;
+  line-height: 1.4;
+  white-space: pre;
+}
+
+/* English sentences and paragraphs wrap instead of scrolling sideways (§13.6). */
+.code-wrap {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.caps-warning {
+  margin: 8px 0;
+  color: var(--error);
+  font-size: 14px;
+}

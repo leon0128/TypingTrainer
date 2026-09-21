@@ -1,4 +1,9 @@
-import { trackOf, type ContentLanguage, type TypingProgram } from '@typing-trainer/contracts';
+import {
+  poolKindOf,
+  trackOf,
+  type ContentLanguage,
+  type TypingProgram,
+} from '@typing-trainer/contracts';
 import { PLAY_DURATION_MS, type SessionState } from '@typing-trainer/typing-engine';
 import type { TFunction } from 'i18next';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react';

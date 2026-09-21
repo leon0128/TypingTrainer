@@ -10,6 +10,8 @@ export interface KeyboardCallbacks {
   onKey(key: string, timeStamp: number): void;
   /** Whether an IME is composing; the screen asks the player to turn it off. */
   onImeChange(active: boolean): void;
+  /** Caps Lock as the latest key saw it; reported only when it changes. */
+  onCapsLock?(on: boolean): void;
   onBlur(now: number): void;
   onFocus(now: number): void;
 }
@@ -23,8 +25,16 @@ export function attachKeyboardInput(
   callbacks: KeyboardCallbacks,
   now: () => number = () => performance.now(),
 ): () => void {
+  let capsLock = false;
   const onKeyDown = (event: Event) => {
     const keyboard = event as KeyboardEvent;
+    if (typeof keyboard.getModifierState === 'function') {
+      const caps = keyboard.getModifierState('CapsLock');
+      if (caps !== capsLock) {
+        capsLock = caps;
+        callbacks.onCapsLock?.(caps);
+      }
+    }
     const disposition = classifyKey(keyboard);
     switch (disposition.type) {
       case 'engine':

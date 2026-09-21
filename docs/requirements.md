@@ -454,7 +454,7 @@ The rating is the player's standing among CPU opponents, meant to give a reason 
 | Rank of a language | None: languages show a rating, and only the overall rating has a rank |
 | Stored | `language_ratings (user_id, language_id, rating, games_played)`, one row from a player's first vs CPU run in a language. The overall rating and the rank are derived when read, never stored |
 | Shown | Home and Status: the rank's icon and name, the overall rating, and a bar towards the next rank; the rating of each language on the language buttons (Home), beside each language (CPU battles), and as a list with unplayed languages marked (Status). After a vs CPU match: the language's and the overall rating before and after with signs, the rank now held, a promotion or demotion when it changed, and the bar. No win rate or expected gain is shown before a match, and the language's record is not shown after it |
-| Icons | 31 rank icons in `apps/web/public/ranks/` (`rank-<tier>-<division>.svg`, `rank-master.svg`); the files there are placeholders, replaced by putting a file of the same name in place |
+| Icons | 31 rank icons in two looks, `apps/web/public/ranks/{light,dark}/` (`rank-<tier>-<division>.svg`, `rank-master.svg`); the light look shows on light themes and the dark one on dark and high-contrast |
 
 ### 4.4 Ghost 🔵
 

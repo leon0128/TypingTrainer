@@ -3,20 +3,29 @@ import { RATING_LANGUAGE_MAX, type Rank, type RankStanding } from '@typing-train
 import type { ReactElement } from 'react';
 
 import { useTranslation } from '../../i18n';
-import { rankIconSrc, rankName, standingOf } from './standing';
+import { ICON_THEMES, rankIconSrc, rankName, standingOf } from './standing';
 import './rating.css';
 
-/** The icon of a rank; decorative, since the rank's name is always written beside it. */
+/**
+ * The icon of a rank; decorative, since the rank's name is always written beside it. Both looks
+ * are in the page and the theme decides which shows (rating.css), so the icon follows the
+ * player's own choice of theme and not only the system's.
+ */
 export function RankIcon({ rank, size }: { rank: Rank; size: number }): ReactElement {
   return (
-    <img
-      className="rank-icon"
-      src={rankIconSrc(rank)}
-      alt=""
-      width={size}
-      height={size}
-      draggable={false}
-    />
+    <>
+      {ICON_THEMES.map((theme) => (
+        <img
+          key={theme}
+          className={`rank-icon rank-icon-${theme}`}
+          src={rankIconSrc(rank, theme)}
+          alt=""
+          width={size}
+          height={size}
+          draggable={false}
+        />
+      ))}
+    </>
   );
 }
 

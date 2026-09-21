@@ -40,11 +40,15 @@ export function rankName(t: TFunction, rank: Rank): string {
   return rank.division === null ? tier : t('rating.rank', { tier, division: rank.division });
 }
 
-/** Where the placeholder (and later the real) icon of a rank lives, under `public/ranks`. */
-export function rankIconSrc(rank: Rank): string {
-  return rank.division === null
-    ? `/ranks/rank-${rank.tier}.svg`
-    : `/ranks/rank-${rank.tier}-${String(rank.division)}.svg`;
+/** The two looks of a rank's icon: one for light themes and one for dark, under `public/ranks`. */
+export const ICON_THEMES = ['light', 'dark'] as const;
+export type IconTheme = (typeof ICON_THEMES)[number];
+
+/** Where a rank's icon lives for a theme. */
+export function rankIconSrc(rank: Rank, theme: IconTheme): string {
+  const name =
+    rank.division === null ? `rank-${rank.tier}` : `rank-${rank.tier}-${String(rank.division)}`;
+  return `/ranks/${theme}/${name}.svg`;
 }
 
 /** 1 when `after` is a higher rank than `before`, -1 when lower, 0 when the same. */

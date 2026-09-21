@@ -51,10 +51,22 @@ describe('standing', () => {
     const steps = rankSteps();
     expect(steps).toHaveLength(31);
     for (const rank of steps) {
-      const file = resolve(__dirname, '../public', rankIconSrc(rank).slice(1));
-      expect(existsSync(file), rankIconSrc(rank)).toBe(true);
+      for (const theme of ['light', 'dark'] as const) {
+        const src = rankIconSrc(rank, theme);
+        expect(existsSync(resolve(__dirname, '../public', src.slice(1))), src).toBe(true);
+      }
     }
     expect(RANK_TIERS).toHaveLength(7);
+  });
+});
+
+describe('RankIcon', () => {
+  it('has a light and a dark icon for the rank, and the stylesheet shows one', () => {
+    const { container } = render(<RatingSummary languages={[language('python', 0)]} />);
+    const icons = [...container.querySelectorAll('img.rank-icon')].map((icon) =>
+      icon.getAttribute('src'),
+    );
+    expect(icons).toEqual(['/ranks/light/rank-beginner-1.svg', '/ranks/dark/rank-beginner-1.svg']);
   });
 });
 

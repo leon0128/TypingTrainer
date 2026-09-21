@@ -7,6 +7,19 @@
   object-fit: contain;
 }
 
+/* The light icon on light themes, the dark one on dark and high-contrast (data-theme is always
+   the resolved theme). */
+.rank-icon-dark,
+[data-theme='dark'] .rank-icon-light,
+[data-theme='high-contrast'] .rank-icon-light {
+  display: none;
+}
+
+[data-theme='dark'] .rank-icon-dark,
+[data-theme='high-contrast'] .rank-icon-dark {
+  display: block;
+}
+
 .rating-summary,
 .rating-result-body {
   display: flex;

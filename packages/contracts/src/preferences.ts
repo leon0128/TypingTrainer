@@ -1,16 +1,20 @@
 import { z } from 'zod';
 
+import { TRACKS, type Track } from './tracks';
+
 /** The display languages (§8.4). */
 export const LOCALES = ['en', 'ja'] as const;
 export const LocaleSchema = z.enum(LOCALES);
 
-/** Code fonts (§8.2): all open source, self-hosted. */
+/** Fonts for the play screen (§8.2, §13.10): all open source, self-hosted, all monospaced. */
 export const FONTS = [
   'jetbrains-mono',
   'fira-code',
   'source-code-pro',
   'ibm-plex-mono',
   'noto-sans-mono',
+  'm-plus-1-code',
+  'biz-ud-gothic',
 ] as const;
 export const FontSchema = z.enum(FONTS);
 
@@ -30,14 +34,34 @@ export const SkinSchema = z.enum(SKINS);
 export const COLOR_PRESETS = ['standard', 'okabe-ito', 'monochrome'] as const;
 export const ColorPresetSchema = z.enum(COLOR_PRESETS);
 
+/**
+ * The fonts a track offers (§13.10): the five Latin ones for code and English, and two that also
+ * draw Japanese for the Japanese track, whose romaji line is Latin in the same font.
+ */
+export const TRACK_FONTS: Record<Track, readonly Font[]> = {
+  code: FONTS.slice(0, 5),
+  'natural-en': FONTS.slice(0, 5),
+  'natural-ja': FONTS.slice(5),
+};
+
+/** The play screen's look, kept for each track (§13.10). */
+export const PlayAppearanceSchema = z.object({
+  font: FontSchema,
+  fontSize: FontSizeSchema,
+  colorPreset: ColorPresetSchema,
+});
+
 /** What an account has until it chooses otherwise. */
 export const DEFAULT_APPEARANCE = {
-  font: 'jetbrains-mono',
-  fontSize: 18,
   theme: 'system',
-  colorPreset: 'standard',
   skin: 'classic',
 } as const;
+
+export const DEFAULT_PLAY_APPEARANCE: Record<Track, PlayAppearance> = {
+  code: { font: 'jetbrains-mono', fontSize: 18, colorPreset: 'standard' },
+  'natural-en': { font: 'jetbrains-mono', fontSize: 18, colorPreset: 'standard' },
+  'natural-ja': { font: 'm-plus-1-code', fontSize: 18, colorPreset: 'standard' },
+};
 
 /** Key sound packs (§8.3): three, plus off. */
 export const SOUND_PACKS = ['off', 'mechanical', 'soft', 'beep'] as const;
@@ -58,11 +82,18 @@ export const SoundSchema = z.object({
 });
 
 export const AppearanceSchema = z.object({
-  font: FontSchema,
-  fontSize: FontSizeSchema,
   theme: ThemeSchema,
-  colorPreset: ColorPresetSchema,
   skin: SkinSchema,
+});
+
+/**
+ * The play look of every track the account may use. The Japanese track is left out for an account
+ * whose display language is not Japanese, so nothing Japanese reaches it (§13.11).
+ */
+export const PlayAppearancesSchema = z.object({
+  code: PlayAppearanceSchema,
+  'natural-en': PlayAppearanceSchema,
+  'natural-ja': PlayAppearanceSchema.optional(),
 });
 
 /**
@@ -72,7 +103,32 @@ export const AppearanceSchema = z.object({
 export const PreferencesSchema = AppearanceSchema.extend(SoundSchema.shape).extend({
   timezone: z.string(),
   locale: LocaleSchema,
+  play: PlayAppearancesSchema,
 });
+
+/** A change to one track's play look; a font the track does not offer is refused. */
+export const PlayChangeSchema = z
+  .object({
+    track: z.enum(TRACKS),
+    font: FontSchema.optional(),
+    fontSize: FontSizeSchema.optional(),
+    colorPreset: ColorPresetSchema.optional(),
+  })
+  .strict()
+  .refine(
+    (change) => change.font === undefined || TRACK_FONTS[change.track].includes(change.font),
+    {
+      message: 'this track does not offer that font',
+      path: ['font'],
+    },
+  )
+  .refine(
+    (change) =>
+      change.font !== undefined ||
+      change.fontSize !== undefined ||
+      change.colorPreset !== undefined,
+    { message: 'send at least one setting' },
+  );
 
 /**
  * Body of `PUT /api/preferences`: only the fields sent are changed, and at least one is required.
@@ -82,13 +138,11 @@ export const PreferencesSchema = AppearanceSchema.extend(SoundSchema.shape).exte
 export const UpdatePreferencesRequestSchema = z
   .object({
     locale: LocaleSchema.optional(),
-    font: FontSchema.optional(),
-    fontSize: FontSizeSchema.optional(),
     theme: ThemeSchema.optional(),
-    colorPreset: ColorPresetSchema.optional(),
     skin: SkinSchema.optional(),
     soundPack: SoundPackSchema.optional(),
     soundVolume: SoundVolumeSchema.optional(),
+    play: PlayChangeSchema.optional(),
   })
   .strict()
   .refine((value) => Object.values(value).some((setting) => setting !== undefined), {
@@ -100,6 +154,9 @@ export type Font = z.infer<typeof FontSchema>;
 export type FontSize = z.infer<typeof FontSizeSchema>;
 export type Theme = z.infer<typeof ThemeSchema>;
 export type Skin = z.infer<typeof SkinSchema>;
+export type PlayAppearance = z.infer<typeof PlayAppearanceSchema>;
+export type PlayAppearances = z.infer<typeof PlayAppearancesSchema>;
+export type PlayChange = z.infer<typeof PlayChangeSchema>;
 export type ColorPreset = z.infer<typeof ColorPresetSchema>;
 export type Appearance = z.infer<typeof AppearanceSchema>;
 export type SoundPack = z.infer<typeof SoundPackSchema>;

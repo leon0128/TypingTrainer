@@ -18,6 +18,7 @@ import { useRunSession } from './run-session';
 import { onRunClock, type RunPhase, type RunStore } from './run-store';
 import './play.css';
 import { Icon } from '../../components/Icon';
+import { usePlayLook } from '../appearance/use-play-look';
 import { useLeaveGuard } from '../nav/leave-guard';
 
 const noSubscribe = () => () => undefined;
@@ -50,6 +51,7 @@ function RunView({ run }: { run: RunStore }) {
   const [imeActive, setImeActive] = useState(false);
   const [capsLock, setCapsLock] = useState(false);
   const track = trackOf(run.issued.language);
+  const look = usePlayLook(track);
 
   // One layout per block, built when the block is first shown rather than for all 20 at once.
   const layouts = useMemo(() => new Map<string, Layout>(), []);
@@ -139,7 +141,7 @@ function RunView({ run }: { run: RunStore }) {
   const overlay = overlayText(snapshot.phase, focused, imeActive, t);
 
   return (
-    <main className="play" data-track={track}>
+    <main className="play" data-track={track} data-preset={look.preset} style={look.style}>
       <header className="play-header">
         <span className="block-name">
           {languageLabel(t, run.issued.language, run.issued.language)}

@@ -1,9 +1,12 @@
 import {
   DEFAULT_APPEARANCE,
+  DEFAULT_PLAY_APPEARANCE,
   DEFAULT_SOUND,
   type Appearance,
   type Locale,
+  type PlayAppearance,
   type Sound,
+  type Track,
 } from '@typing-trainer/contracts';
 import { create } from 'zustand';
 
@@ -16,8 +19,12 @@ import { applyAppearance } from './apply';
 /** What `PUT /api/preferences` changes that the browser applies: how it looks, sounds, and reads. */
 export type Settings = Appearance & Sound & { readonly locale: Locale };
 
+/** The play look of every track; one the server did not send is at its defaults. */
+export type PlayLooks = Record<Track, PlayAppearance>;
+
 interface AppearanceState {
   readonly appearance: Appearance;
+  readonly play: PlayLooks;
   readonly sound: Sound;
   /** The interface language (§8.4). */
   readonly locale: Locale;
@@ -27,6 +34,8 @@ interface AppearanceState {
   load: () => Promise<void>;
   /** Applies a change at once and saves it; goes back to what it was if saving fails. */
   change: (patch: Partial<Settings>) => Promise<void>;
+  /** Changes one track's play look the same way: at once, saved in order, undone on failure. */
+  changePlay: (track: Track, patch: Partial<PlayAppearance>) => Promise<void>;
   /** Changes the language for this visit only, for the sign-in and registration screens. */
   setLocaleLocally: (locale: Locale) => void;
   /** Goes back to the defaults, for when nobody is signed in. */
@@ -44,8 +53,8 @@ function pick(source: Settings, patch: Partial<Settings>): Partial<Settings> {
   );
 }
 
-function appearanceOf({ font, fontSize, theme, colorPreset, skin }: Settings): Appearance {
-  return { font, fontSize, theme, colorPreset, skin };
+function appearanceOf({ theme, skin }: Settings): Appearance {
+  return { theme, skin };
 }
 
 function soundOf({ soundPack, soundVolume }: Settings): Sound {
@@ -74,21 +83,27 @@ export const useAppearance = create<AppearanceState>()((set, get) => {
   });
 
   /** Puts values on screen and in the player, leaving settings changed since untouched. */
-  const show = (values: Partial<Settings>, error: string | null = null) => {
+  const show = (
+    values: Partial<Settings>,
+    error: string | null = null,
+    play: PlayLooks = get().play,
+  ) => {
     const merged = { ...current(), ...values };
     set({
       appearance: appearanceOf(merged),
       sound: soundOf(merged),
       locale: merged.locale,
+      play,
       ...(error === null ? {} : { error }),
     });
-    applyAppearance(appearanceOf(merged), systemDark());
+    applyAppearance(appearanceOf(merged), play.code, systemDark());
     applySound(soundOf(merged));
     void applyLocale(merged.locale);
   };
 
   return {
     appearance: DEFAULT_APPEARANCE,
+    play: DEFAULT_PLAY_APPEARANCE,
     sound: DEFAULT_SOUND,
     locale: browserLocale(),
     error: null,
@@ -97,7 +112,11 @@ export const useAppearance = create<AppearanceState>()((set, get) => {
       try {
         const saved = await getPreferences();
         set({ error: null });
-        show(saved);
+        show(saved, null, {
+          code: saved.play.code,
+          'natural-en': saved.play['natural-en'],
+          'natural-ja': saved.play['natural-ja'] ?? DEFAULT_PLAY_APPEARANCE['natural-ja'],
+        });
       } catch (cause) {
         // The defaults stay in place: an unloadable setting must not stop anyone from playing.
         set({ error: describeError(cause) });
@@ -123,6 +142,34 @@ export const useAppearance = create<AppearanceState>()((set, get) => {
       return saving;
     },
 
+    changePlay(track, patch) {
+      const before = get().play[track];
+      set({ error: null });
+      show({}, null, { ...get().play, [track]: { ...before, ...patch } });
+      const saving = queue.then(async () => {
+        try {
+          const saved = (await updatePreferences({ play: { track, ...patch } })).play[track];
+          // Only what this request carried is taken from the answer, as `change` does.
+          if (saved !== undefined) {
+            const kept = Object.fromEntries(
+              (Object.keys(patch) as (keyof PlayAppearance)[]).map((key) => [key, saved[key]]),
+            );
+            show({}, null, { ...get().play, [track]: { ...get().play[track], ...kept } });
+          }
+        } catch (cause) {
+          const undone = Object.fromEntries(
+            (Object.keys(patch) as (keyof PlayAppearance)[]).map((key) => [key, before[key]]),
+          );
+          show({}, describeError(cause), {
+            ...get().play,
+            [track]: { ...get().play[track], ...undone },
+          });
+        }
+      });
+      queue = saving;
+      return saving;
+    },
+
     setLocaleLocally(locale) {
       set({ locale });
       void applyLocale(locale);
@@ -130,7 +177,11 @@ export const useAppearance = create<AppearanceState>()((set, get) => {
 
     reset() {
       set({ error: null });
-      show({ ...DEFAULT_APPEARANCE, ...DEFAULT_SOUND, locale: browserLocale() });
+      show(
+        { ...DEFAULT_APPEARANCE, ...DEFAULT_SOUND, locale: browserLocale() },
+        null,
+        DEFAULT_PLAY_APPEARANCE,
+      );
     },
   };
 });
@@ -140,8 +191,8 @@ export function followSystemTheme(): () => void {
   if (typeof window.matchMedia !== 'function') return () => undefined;
   const query = window.matchMedia('(prefers-color-scheme: dark)');
   const onChange = () => {
-    const { appearance } = useAppearance.getState();
-    if (appearance.theme === 'system') applyAppearance(appearance, query.matches);
+    const { appearance, play } = useAppearance.getState();
+    if (appearance.theme === 'system') applyAppearance(appearance, play.code, query.matches);
   };
   query.addEventListener('change', onChange);
   return () => {

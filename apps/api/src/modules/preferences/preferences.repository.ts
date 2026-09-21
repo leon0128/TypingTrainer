@@ -1,19 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import type { UpdatePreferencesRequest } from '@typing-trainer/contracts';
+import { DEFAULT_PLAY_APPEARANCE, type UpdatePreferencesRequest } from '@typing-trainer/contracts';
 import type { DataSource, EntityManager } from 'typeorm';
 
 /** A user's settings as stored; the appearance columns are null while no row exists. */
 export interface PreferencesRow {
   readonly timezone: string;
   readonly locale: string;
-  readonly font: string | null;
-  readonly font_size: number | null;
   readonly theme: string | null;
-  readonly color_preset: string | null;
   readonly skin: string | null;
   readonly sound_pack: string | null;
   readonly sound_volume: number | null;
+}
+
+/** One track's stored play look. */
+export interface PlayAppearanceRow {
+  readonly track: string;
+  readonly font: string;
+  readonly font_size: number;
+  readonly color_preset: string;
 }
 
 @Injectable()
@@ -22,6 +27,14 @@ export class PreferencesRepository {
 
   find(userId: string): Promise<PreferencesRow | undefined> {
     return this.select(this.dataSource.manager, userId);
+  }
+
+  /** The tracks the user has changed the play look of; the others have their defaults. */
+  findPlay(userId: string): Promise<PlayAppearanceRow[]> {
+    return this.dataSource.manager.query<PlayAppearanceRow[]>(
+      `SELECT track, font, font_size, color_preset FROM user_play_appearance WHERE user_id = $1`,
+      [userId],
+    );
   }
 
   /**
@@ -34,8 +47,8 @@ export class PreferencesRepository {
       if (patch.locale !== undefined) {
         await manager.query(`UPDATE users SET locale = $2 WHERE id = $1`, [userId, patch.locale]);
       }
-      const { font, fontSize, theme, colorPreset, skin, soundPack, soundVolume } = patch;
-      const stored = [font, fontSize, theme, colorPreset, skin, soundPack, soundVolume];
+      const { theme, skin, soundPack, soundVolume } = patch;
+      const stored = [theme, skin, soundPack, soundVolume];
       if (stored.some((setting) => setting !== undefined)) {
         await manager.query(
           `INSERT INTO user_preferences (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING`,
@@ -43,23 +56,34 @@ export class PreferencesRepository {
         );
         await manager.query(
           `UPDATE user_preferences SET
-             font = COALESCE($2, font),
-             font_size = COALESCE($3, font_size),
-             theme = COALESCE($4, theme),
-             color_preset = COALESCE($5, color_preset),
-             skin = COALESCE($6, skin),
-             sound_pack = COALESCE($7, sound_pack),
-             sound_volume = COALESCE($8, sound_volume)
+             theme = COALESCE($2, theme),
+             skin = COALESCE($3, skin),
+             sound_pack = COALESCE($4, sound_pack),
+             sound_volume = COALESCE($5, sound_volume)
            WHERE user_id = $1`,
+          [userId, theme ?? null, skin ?? null, soundPack ?? null, soundVolume ?? null],
+        );
+      }
+      const { play } = patch;
+      if (play !== undefined) {
+        // A track's row is created by its first change, from the defaults for what was not sent.
+        await manager.query(
+          `INSERT INTO user_play_appearance (user_id, track, font, font_size, color_preset)
+           VALUES ($1, $2, COALESCE($3::text, $6::text), COALESCE($4::smallint, $7::smallint),
+                  COALESCE($5::text, $8::text))
+           ON CONFLICT (user_id, track) DO UPDATE SET
+             font = COALESCE($3::text, user_play_appearance.font),
+             font_size = COALESCE($4::smallint, user_play_appearance.font_size),
+             color_preset = COALESCE($5::text, user_play_appearance.color_preset)`,
           [
             userId,
-            font ?? null,
-            fontSize ?? null,
-            theme ?? null,
-            colorPreset ?? null,
-            skin ?? null,
-            soundPack ?? null,
-            soundVolume ?? null,
+            play.track,
+            play.font ?? null,
+            play.fontSize ?? null,
+            play.colorPreset ?? null,
+            DEFAULT_PLAY_APPEARANCE[play.track].font,
+            DEFAULT_PLAY_APPEARANCE[play.track].fontSize,
+            DEFAULT_PLAY_APPEARANCE[play.track].colorPreset,
           ],
         );
       }
@@ -72,8 +96,7 @@ export class PreferencesRepository {
     userId: string,
   ): Promise<PreferencesRow | undefined> {
     const rows = await manager.query<PreferencesRow[]>(
-      `SELECT u.timezone, u.locale, p.font, p.font_size, p.theme, p.color_preset, p.skin, p.sound_pack,
-              p.sound_volume
+      `SELECT u.timezone, u.locale, p.theme, p.skin, p.sound_pack, p.sound_volume
        FROM users u LEFT JOIN user_preferences p ON p.user_id = u.id
        WHERE u.id = $1`,
       [userId],

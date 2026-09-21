@@ -1,5 +1,10 @@
 // @vitest-environment jsdom
-import { DEFAULT_APPEARANCE, type Appearance } from '@typing-trainer/contracts';
+import {
+  DEFAULT_APPEARANCE,
+  DEFAULT_PLAY_APPEARANCE,
+  type Appearance,
+  type PlayAppearance,
+} from '@typing-trainer/contracts';
 import { cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -21,12 +26,20 @@ const USER = {
   locale: 'en',
 };
 
-const preferences = (appearance: Appearance) => ({
+const LATIN = DEFAULT_PLAY_APPEARANCE.code;
+
+/** What the server answers with: the page's look and the play look of the two Latin tracks. */
+const preferences = (
+  appearance: Appearance,
+  code: Partial<PlayAppearance> = {},
+  english: Partial<PlayAppearance> = {},
+) => ({
   timezone: 'UTC',
   locale: 'en',
   soundPack: 'off',
   soundVolume: 30,
   ...appearance,
+  play: { code: { ...LATIN, ...code }, 'natural-en': { ...LATIN, ...english } },
 });
 
 /** What a server fault reads as: the API's status text is not shown (§8.4). */
@@ -41,6 +54,7 @@ const property = (name: string) => root().style.getPropertyValue(name);
 beforeEach(() => {
   useAppearance.setState({
     appearance: DEFAULT_APPEARANCE,
+    play: DEFAULT_PLAY_APPEARANCE,
     sound: { soundPack: 'off', soundVolume: 30 },
     locale: 'en',
     error: null,
@@ -71,13 +85,8 @@ describe('resolveTheme', () => {
 describe('applyAppearance', () => {
   it('sets every colour of the palette, the font, the size, and the theme markers', () => {
     applyAppearance(
-      {
-        font: 'fira-code',
-        fontSize: 24,
-        theme: 'high-contrast',
-        colorPreset: 'okabe-ito',
-        skin: 'pixel',
-      },
+      { theme: 'high-contrast', skin: 'pixel' },
+      { font: 'fira-code', fontSize: 24, colorPreset: 'okabe-ito' },
       false,
     );
     const palette = PALETTES['okabe-ito']['high-contrast'];
@@ -96,10 +105,10 @@ describe('applyAppearance', () => {
   });
 
   it('uses the operating system for the system theme', () => {
-    applyAppearance(DEFAULT_APPEARANCE, true);
+    applyAppearance(DEFAULT_APPEARANCE, LATIN, true);
     expect(root().getAttribute('data-theme')).toBe('dark');
     expect(property('--panel')).toBe(PALETTES.standard.dark.panel);
-    applyAppearance(DEFAULT_APPEARANCE, false);
+    applyAppearance(DEFAULT_APPEARANCE, LATIN, false);
     expect(root().getAttribute('data-theme')).toBe('light');
   });
 
@@ -110,16 +119,25 @@ describe('applyAppearance', () => {
 
 describe('the appearance store', () => {
   it('loads and applies what the server has', async () => {
-    const stored = {
-      font: 'ibm-plex-mono',
-      fontSize: 20,
-      theme: 'dark',
-      colorPreset: 'monochrome',
-      skin: 'fantasy',
-    };
-    vi.stubGlobal('fetch', () => Promise.resolve(json(preferences(stored as Appearance))));
+    const stored = { theme: 'dark', skin: 'fantasy' };
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve(
+        json(
+          preferences(
+            stored as Appearance,
+            { font: 'ibm-plex-mono', fontSize: 20, colorPreset: 'monochrome' },
+            { fontSize: 24 },
+          ),
+        ),
+      ),
+    );
     await useAppearance.getState().load();
     expect(useAppearance.getState().appearance).toEqual(stored);
+    expect(useAppearance.getState().play['natural-en'].fontSize).toBe(24);
+    // No Japanese track was sent, so it stays at its own defaults.
+    expect(useAppearance.getState().play['natural-ja']).toEqual(
+      DEFAULT_PLAY_APPEARANCE['natural-ja'],
+    );
     expect(property('--code-size')).toBe('20px');
     expect(root().getAttribute('data-preset')).toBe('monochrome');
     expect(root().getAttribute('data-skin')).toBe('fantasy');
@@ -142,16 +160,16 @@ describe('the appearance store', () => {
       });
     });
 
-    const saving = useAppearance.getState().change({ fontSize: 24 });
+    const saving = useAppearance.getState().changePlay('code', { fontSize: 24 });
     expect(property('--code-size')).toBe('24px');
-    expect(useAppearance.getState().appearance.fontSize).toBe(24);
+    expect(useAppearance.getState().play.code.fontSize).toBe(24);
     await vi.waitFor(() => {
       expect(bodies).toHaveLength(1);
     });
 
-    release(json(preferences({ ...DEFAULT_APPEARANCE, fontSize: 24 })));
+    release(json(preferences(DEFAULT_APPEARANCE, { fontSize: 24 })));
     await saving;
-    expect(JSON.parse(bodies[0] ?? '{}')).toEqual({ fontSize: 24 });
+    expect(JSON.parse(bodies[0] ?? '{}')).toEqual({ play: { track: 'code', fontSize: 24 } });
   });
 
   it('sends quick changes one after the other, in order', async () => {
@@ -164,21 +182,21 @@ describe('the appearance store', () => {
       });
     });
 
-    const first = useAppearance.getState().change({ fontSize: 24 });
+    const first = useAppearance.getState().changePlay('code', { fontSize: 24 });
     const second = useAppearance.getState().change({ theme: 'dark' });
     await vi.waitFor(() => {
       expect(bodies).toHaveLength(1);
     });
     // The second waits for the first to be answered, however long that takes.
     await new Promise((resolve) => setTimeout(resolve, 30));
-    expect(bodies).toEqual([{ fontSize: 24 }]);
+    expect(bodies).toEqual([{ play: { track: 'code', fontSize: 24 } }]);
 
-    releases[0]?.(json(preferences({ ...DEFAULT_APPEARANCE, fontSize: 24 })));
+    releases[0]?.(json(preferences(DEFAULT_APPEARANCE, { fontSize: 24 })));
     await first;
     await vi.waitFor(() => {
-      expect(bodies).toEqual([{ fontSize: 24 }, { theme: 'dark' }]);
+      expect(bodies).toEqual([{ play: { track: 'code', fontSize: 24 } }, { theme: 'dark' }]);
     });
-    releases[1]?.(json(preferences({ ...DEFAULT_APPEARANCE, fontSize: 24, theme: 'dark' })));
+    releases[1]?.(json(preferences({ ...DEFAULT_APPEARANCE, theme: 'dark' }, { fontSize: 24 })));
     await second;
   });
 
@@ -190,26 +208,26 @@ describe('the appearance store', () => {
       });
     });
 
-    const first = useAppearance.getState().change({ fontSize: 24 });
-    const second = useAppearance.getState().change({ colorPreset: 'monochrome' });
+    const first = useAppearance.getState().changePlay('code', { fontSize: 24 });
+    const second = useAppearance.getState().changePlay('code', { colorPreset: 'monochrome' });
     await vi.waitFor(() => {
       expect(releases).toHaveLength(1);
     });
     // The first answer describes a server that has not yet heard of the second change.
-    releases[0]?.(json(preferences({ ...DEFAULT_APPEARANCE, fontSize: 24 })));
+    releases[0]?.(json(preferences(DEFAULT_APPEARANCE, { fontSize: 24 })));
     await first;
-    expect(useAppearance.getState().appearance.colorPreset).toBe('monochrome');
+    expect(useAppearance.getState().play.code.colorPreset).toBe('monochrome');
     expect(root().getAttribute('data-preset')).toBe('monochrome');
 
     await vi.waitFor(() => {
       expect(releases).toHaveLength(2);
     });
     releases[1]?.(
-      json(preferences({ ...DEFAULT_APPEARANCE, fontSize: 24, colorPreset: 'monochrome' })),
+      json(preferences(DEFAULT_APPEARANCE, { fontSize: 24, colorPreset: 'monochrome' })),
     );
     await second;
-    expect(useAppearance.getState().appearance).toEqual({
-      ...DEFAULT_APPEARANCE,
+    expect(useAppearance.getState().play.code).toEqual({
+      ...LATIN,
       fontSize: 24,
       colorPreset: 'monochrome',
     });
@@ -222,17 +240,14 @@ describe('the appearance store', () => {
       return Promise.resolve(
         calls === 1
           ? json({ statusCode: 500, error: 'Internal Server Error', message: 'try again' }, 500)
-          : json(preferences({ ...DEFAULT_APPEARANCE, colorPreset: 'monochrome' })),
+          : json(preferences(DEFAULT_APPEARANCE, { colorPreset: 'monochrome' })),
       );
     });
     await Promise.all([
-      useAppearance.getState().change({ fontSize: 24 }),
-      useAppearance.getState().change({ colorPreset: 'monochrome' }),
+      useAppearance.getState().changePlay('code', { fontSize: 24 }),
+      useAppearance.getState().changePlay('code', { colorPreset: 'monochrome' }),
     ]);
-    expect(useAppearance.getState().appearance).toEqual({
-      ...DEFAULT_APPEARANCE,
-      colorPreset: 'monochrome',
-    });
+    expect(useAppearance.getState().play.code).toEqual({ ...LATIN, colorPreset: 'monochrome' });
     expect(useAppearance.getState().error).toBe(SERVER_PROBLEM);
   });
 
@@ -250,10 +265,36 @@ describe('the appearance store', () => {
 
   it('shows what the server stored rather than what was asked for', async () => {
     vi.stubGlobal('fetch', () =>
-      Promise.resolve(json(preferences({ ...DEFAULT_APPEARANCE, fontSize: 16 }))),
+      Promise.resolve(json(preferences(DEFAULT_APPEARANCE, { fontSize: 16 }))),
     );
-    await useAppearance.getState().change({ fontSize: 24 });
-    expect(useAppearance.getState().appearance.fontSize).toBe(16);
+    await useAppearance.getState().changePlay('code', { fontSize: 24 });
+    expect(useAppearance.getState().play.code.fontSize).toBe(16);
+  });
+
+  it("changes one track's look without touching another's", async () => {
+    vi.stubGlobal('fetch', (_url: string, init: { body?: string }) => {
+      const { play } = JSON.parse(init.body ?? '{}') as { play: { fontSize: 14 } };
+      return Promise.resolve(
+        json(preferences(DEFAULT_APPEARANCE, {}, { fontSize: play.fontSize })),
+      );
+    });
+    await useAppearance.getState().changePlay('natural-en', { fontSize: 14 });
+    expect(useAppearance.getState().play['natural-en'].fontSize).toBe(14);
+    expect(useAppearance.getState().play.code).toEqual(LATIN);
+    expect(property('--code-size')).toBe('18px');
+  });
+
+  it('keeps the Japanese look when the server does not send it, and undoes a failed change', async () => {
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve(
+        json({ statusCode: 403, error: 'Forbidden', message: 'track is not available' }, 403),
+      ),
+    );
+    await useAppearance.getState().changePlay('natural-ja', { fontSize: 24 });
+    expect(useAppearance.getState().play['natural-ja']).toEqual(
+      DEFAULT_PLAY_APPEARANCE['natural-ja'],
+    );
+    expect(useAppearance.getState().error).not.toBeNull();
   });
 });
 
@@ -272,13 +313,10 @@ describe('the app', () => {
           ? json({ user: USER })
           : url.endsWith('/preferences')
             ? json(
-                preferences({
-                  font: 'source-code-pro',
-                  fontSize: 14,
-                  theme: 'light',
-                  colorPreset: 'okabe-ito',
-                  skin: 'classic',
-                }),
+                preferences(
+                  { theme: 'light', skin: 'classic' },
+                  { font: 'source-code-pro', fontSize: 14, colorPreset: 'okabe-ito' },
+                ),
               )
             : json({ languages: [] }),
       ),
@@ -293,13 +331,8 @@ describe('the app', () => {
 
   it('drops it on the sign-in screen when nobody is signed in', async () => {
     applyAppearance(
-      {
-        font: 'fira-code',
-        fontSize: 24,
-        theme: 'dark',
-        colorPreset: 'monochrome',
-        skin: 'classic',
-      },
+      { theme: 'dark', skin: 'classic' },
+      { font: 'fira-code', fontSize: 24, colorPreset: 'monochrome' },
       false,
     );
     vi.stubGlobal('fetch', () =>
@@ -317,9 +350,7 @@ describe('the app', () => {
 
 describe('key sounds in the store', () => {
   const stored = (soundPack: string, soundVolume: number) => ({
-    timezone: 'UTC',
-    locale: 'en',
-    ...DEFAULT_APPEARANCE,
+    ...preferences(DEFAULT_APPEARANCE),
     soundPack,
     soundVolume,
   });
@@ -380,13 +411,7 @@ describe('the language in the store (§8.4)', () => {
     vi.restoreAllMocks();
   });
 
-  const stored = (locale: string) => ({
-    timezone: 'UTC',
-    ...DEFAULT_APPEARANCE,
-    soundPack: 'off',
-    soundVolume: 30,
-    locale,
-  });
+  const stored = (locale: string) => ({ ...preferences(DEFAULT_APPEARANCE), locale });
 
   it("switches to the account's language on load, and marks the document", async () => {
     vi.stubGlobal('fetch', () => Promise.resolve(json(stored('ja'))));

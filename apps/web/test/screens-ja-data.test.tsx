@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { DEFAULT_APPEARANCE } from '@typing-trainer/contracts';
+import { DEFAULT_APPEARANCE, DEFAULT_PLAY_APPEARANCE } from '@typing-trainer/contracts';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
@@ -263,6 +263,10 @@ describe('the appearance screen in Japanese', () => {
         soundPack: 'off',
         soundVolume: 30,
         locale: 'en',
+        play: {
+          code: DEFAULT_PLAY_APPEARANCE.code,
+          'natural-en': DEFAULT_PLAY_APPEARANCE['natural-en'],
+        },
       },
     });
     renderScreen('/settings', <SettingsScreen />);

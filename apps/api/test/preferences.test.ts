@@ -3,8 +3,9 @@ import {
   ApiErrorSchema,
   AuthResponseSchema,
   COLOR_PRESETS,
-  FONTS,
   FONT_SIZES,
+  TRACKS,
+  TRACK_FONTS,
   SKINS,
   PreferencesSchema,
   SOUND_PACKS,
@@ -19,13 +20,13 @@ import { TEST_DATABASE_URL, createTestDatabase, type TestDatabase } from './supp
 const PASSWORD = 'correct horse battery staple';
 const COOKIE = 'tt_session';
 
-const APPEARANCE_DEFAULTS = {
-  font: 'jetbrains-mono',
-  fontSize: 18,
-  theme: 'system',
-  colorPreset: 'standard',
-  skin: 'classic',
-};
+const APPEARANCE_DEFAULTS = { theme: 'system', skin: 'classic' };
+
+const LATIN_PLAY = { font: 'jetbrains-mono', fontSize: 18, colorPreset: 'standard' };
+const JAPANESE_PLAY = { font: 'm-plus-1-code', fontSize: 18, colorPreset: 'standard' };
+
+/** What an account whose display language is not Japanese has: no Japanese track at all (§13.11). */
+const ENGLISH_PLAY = { code: LATIN_PLAY, 'natural-en': LATIN_PLAY };
 
 /** Silent until chosen, and low when it is (§8.3). */
 const SOUND_DEFAULTS = { soundPack: 'off', soundVolume: 30 };
@@ -83,6 +84,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
       locale: 'en',
       ...APPEARANCE_DEFAULTS,
       ...SOUND_DEFAULTS,
+      play: ENGLISH_PLAY,
     });
   });
 
@@ -95,6 +97,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
       locale: 'ja',
       ...APPEARANCE_DEFAULTS,
       ...SOUND_DEFAULTS,
+      play: { ...ENGLISH_PLAY, 'natural-ja': JAPANESE_PLAY },
     });
 
     expect(PreferencesSchema.parse((await call(me.token, 'GET')).json()).locale).toBe('ja');
@@ -123,11 +126,21 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
     ['a time zone, which is not editable', { timezone: 'Asia/Tokyo' }],
     ['a language together with a time zone', { locale: 'ja', timezone: 'Asia/Tokyo' }],
     ['an unknown setting', { locale: 'ja', sound: 'beep' }],
-    ['an unknown font', { font: 'comic-sans' }],
-    ['a size that is not offered', { fontSize: 17 }],
-    ['a size sent as text', { fontSize: '18' }],
+    ['an unknown font', { play: { track: 'code', font: 'comic-sans' } }],
+    ['a size that is not offered', { play: { track: 'code', fontSize: 17 } }],
+    ['a size sent as text', { play: { track: 'code', fontSize: '18' } }],
+    ['a font sent for no track', { font: 'fira-code' }],
+    ['a play change for no track', { play: { font: 'fira-code' } }],
+    ['a play change of nothing', { play: { track: 'code' } }],
+    ['an unknown track', { play: { track: 'natural-fr', fontSize: 16 } }],
+    ['a Japanese font for the code track', { play: { track: 'code', font: 'm-plus-1-code' } }],
+    [
+      'a Japanese font for the English track',
+      { play: { track: 'natural-en', font: 'biz-ud-gothic' } },
+    ],
+    ['a Latin font for the Japanese track', { play: { track: 'natural-ja', font: 'fira-code' } }],
     ['an unknown theme', { theme: 'sepia' }],
-    ['an unknown color preset', { colorPreset: 'neon' }],
+    ['an unknown color preset', { play: { track: 'code', colorPreset: 'neon' } }],
     ['an unknown skin', { skin: 'sepia' }],
     ['an unknown sound pack', { soundPack: 'thunder' }],
     ['a volume above 100', { soundVolume: 101 }],
@@ -145,6 +158,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
       locale: 'en',
       ...APPEARANCE_DEFAULTS,
       ...SOUND_DEFAULTS,
+      play: ENGLISH_PLAY,
     });
   });
 
@@ -183,12 +197,11 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
     it('leaves the appearance alone, and the sound alone when the appearance changes', async () => {
       const me = await signedIn('UTC');
       await call(me.token, 'PUT', { soundPack: 'mechanical', soundVolume: 60 });
-      await call(me.token, 'PUT', { theme: 'dark', fontSize: 24 });
+      await call(me.token, 'PUT', { theme: 'dark', play: { track: 'code', fontSize: 24 } });
       expect(await sound(me.token)).toEqual({ soundPack: 'mechanical', soundVolume: 60 });
-      expect(PreferencesSchema.parse((await call(me.token, 'GET')).json())).toMatchObject({
-        theme: 'dark',
-        fontSize: 24,
-      });
+      const saved = PreferencesSchema.parse((await call(me.token, 'GET')).json());
+      expect(saved).toMatchObject({ theme: 'dark' });
+      expect(saved.play.code.fontSize).toBe(24);
     });
 
     it("keeps one player's sound from another's", async () => {
@@ -216,45 +229,26 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
 
   describe('appearance', () => {
     const appearance = async (token: string) => {
-      const { font, fontSize, theme, colorPreset, skin } = PreferencesSchema.parse(
-        (await call(token, 'GET')).json(),
-      );
-      return { font, fontSize, theme, colorPreset, skin };
+      const { theme, skin } = PreferencesSchema.parse((await call(token, 'GET')).json());
+      return { theme, skin };
     };
 
     it('stores each setting and keeps the ones not sent', async () => {
       const me = await signedIn('UTC');
-      const first = await call(me.token, 'PUT', { font: 'fira-code', fontSize: 24 });
+      const first = await call(me.token, 'PUT', { theme: 'high-contrast' });
       expect(first.statusCode).toBe(200);
       expect(PreferencesSchema.parse(first.json())).toMatchObject({
-        font: 'fira-code',
-        fontSize: 24,
-        theme: 'system',
-        colorPreset: 'standard',
+        theme: 'high-contrast',
         skin: 'classic',
       });
-
-      await call(me.token, 'PUT', {
-        theme: 'high-contrast',
-        colorPreset: 'okabe-ito',
-        skin: 'pixel',
-      });
-      expect(await appearance(me.token)).toEqual({
-        font: 'fira-code',
-        fontSize: 24,
-        theme: 'high-contrast',
-        colorPreset: 'okabe-ito',
-        skin: 'pixel',
-      });
+      await call(me.token, 'PUT', { skin: 'pixel' });
+      expect(await appearance(me.token)).toEqual({ theme: 'high-contrast', skin: 'pixel' });
     });
 
     it('accepts every offered value', async () => {
       const me = await signedIn('UTC');
       for (const body of [
-        ...FONTS.map((font) => ({ font })),
-        ...FONT_SIZES.map((fontSize) => ({ fontSize })),
         ...THEMES.map((theme) => ({ theme })),
-        ...COLOR_PRESETS.map((colorPreset) => ({ colorPreset })),
         ...SKINS.map((skin) => ({ skin })),
       ]) {
         expect((await call(me.token, 'PUT', body)).statusCode, JSON.stringify(body)).toBe(200);
@@ -270,14 +264,8 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
     it("keeps one player's appearance from another's", async () => {
       const me = await signedIn('UTC');
       const other = await signedIn('UTC');
-      await call(me.token, 'PUT', { font: 'ibm-plex-mono', fontSize: 14, theme: 'light' });
-      expect(await appearance(other.token)).toEqual({
-        font: 'jetbrains-mono',
-        fontSize: 18,
-        theme: 'system',
-        colorPreset: 'standard',
-        skin: 'classic',
-      });
+      await call(me.token, 'PUT', { theme: 'light', skin: 'neon' });
+      expect(await appearance(other.token)).toEqual({ theme: 'system', skin: 'classic' });
     });
 
     it('creates a row only when something is changed', async () => {
@@ -307,10 +295,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
     });
 
     it.each([
-      ['font', 'comic-sans'],
-      ['font_size', 17],
       ['theme', 'sepia'],
-      ['color_preset', 'neon'],
       ['skin', 'sepia'],
     ])('refuses %s = %s in the database, whatever wrote it', async (column, value) => {
       const me = await signedIn('UTC');
@@ -322,6 +307,127 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
         ]),
       ).rejects.toThrow(/chk_user_preferences_/);
     });
+  });
+
+  describe('the play screen look of each track (§13.10)', () => {
+    const play = async (token: string) =>
+      PreferencesSchema.parse((await call(token, 'GET')).json()).play;
+    const japanese = async () => {
+      const me = await signedIn('Asia/Tokyo');
+      await call(me.token, 'PUT', { locale: 'ja' });
+      return me;
+    };
+
+    it('starts every track from its own defaults, and the Japanese font is a Japanese one', async () => {
+      const me = await japanese();
+      expect(await play(me.token)).toEqual({
+        ...ENGLISH_PLAY,
+        'natural-ja': JAPANESE_PLAY,
+      });
+    });
+
+    it('changes one track and keeps the others, and the settings not sent', async () => {
+      const me = await japanese();
+      await call(me.token, 'PUT', { play: { track: 'natural-en', font: 'fira-code' } });
+      await call(me.token, 'PUT', { play: { track: 'natural-en', fontSize: 24 } });
+      await call(me.token, 'PUT', {
+        play: { track: 'natural-ja', font: 'biz-ud-gothic', colorPreset: 'monochrome' },
+      });
+      expect(await play(me.token)).toEqual({
+        code: LATIN_PLAY,
+        'natural-en': { font: 'fira-code', fontSize: 24, colorPreset: 'standard' },
+        'natural-ja': { font: 'biz-ud-gothic', fontSize: 18, colorPreset: 'monochrome' },
+      });
+    });
+
+    it('accepts every font a track offers, every size and every colour set', async () => {
+      const me = await japanese();
+      for (const track of TRACKS) {
+        const bodies = [
+          ...TRACK_FONTS[track].map((font) => ({ font })),
+          ...FONT_SIZES.map((fontSize) => ({ fontSize })),
+          ...COLOR_PRESETS.map((colorPreset) => ({ colorPreset })),
+        ];
+        for (const body of bodies) {
+          const response = await call(me.token, 'PUT', { play: { track, ...body } });
+          expect(response.statusCode, JSON.stringify({ track, ...body })).toBe(200);
+        }
+      }
+    });
+
+    it("keeps one player's look from another's", async () => {
+      const me = await signedIn('UTC');
+      const other = await signedIn('UTC');
+      await call(me.token, 'PUT', { play: { track: 'code', font: 'ibm-plex-mono', fontSize: 14 } });
+      expect(await play(other.token)).toEqual(ENGLISH_PLAY);
+    });
+
+    it('is deleted with the account', async () => {
+      const me = await signedIn('UTC');
+      await call(me.token, 'PUT', { play: { track: 'code', fontSize: 20 } });
+      await database.dataSource.query('DELETE FROM users WHERE id = $1', [me.id]);
+      const rows = await database.dataSource.query<unknown[]>(
+        'SELECT 1 FROM user_play_appearance WHERE user_id = $1',
+        [me.id],
+      );
+      expect(rows).toHaveLength(0);
+    });
+
+    describe('for an account whose display language is not Japanese (§13.11)', () => {
+      it('has no Japanese track in what it reads, and refuses to change it with 403', async () => {
+        const me = await signedIn('UTC');
+        const response = await call(me.token, 'PUT', {
+          play: { track: 'natural-ja', font: 'biz-ud-gothic' },
+        });
+        expect(response.statusCode).toBe(403);
+        expect(await play(me.token)).toEqual(ENGLISH_PLAY);
+        expect(JSON.stringify((await call(me.token, 'GET')).json())).not.toContain('natural-ja');
+        const rows = await database.dataSource.query<unknown[]>(
+          'SELECT 1 FROM user_play_appearance WHERE user_id = $1',
+          [me.id],
+        );
+        expect(rows).toHaveLength(0);
+      });
+
+      it('has the Japanese look it saved hidden again after leaving Japanese, and back after returning', async () => {
+        const me = await japanese();
+        await call(me.token, 'PUT', { play: { track: 'natural-ja', fontSize: 24 } });
+        await call(me.token, 'PUT', { locale: 'en' });
+        expect(await play(me.token)).toEqual(ENGLISH_PLAY);
+        await call(me.token, 'PUT', { locale: 'ja' });
+        expect((await play(me.token))['natural-ja']?.fontSize).toBe(24);
+      });
+
+      it('is refused a change together with a language change, and nothing is applied', async () => {
+        const me = await signedIn('UTC');
+        const response = await call(me.token, 'PUT', {
+          locale: 'ja',
+          play: { track: 'natural-ja', fontSize: 24 },
+        });
+        expect(response.statusCode).toBe(403);
+        expect(PreferencesSchema.parse((await call(me.token, 'GET')).json()).locale).toBe('en');
+      });
+    });
+
+    it.each([
+      ['a font of the other script for a track', 'natural-ja', 'jetbrains-mono', 18, 'standard'],
+      ['a Japanese font for the code track', 'code', 'm-plus-1-code', 18, 'standard'],
+      ['a size that is not offered', 'code', 'jetbrains-mono', 17, 'standard'],
+      ['a colour set that is not offered', 'code', 'jetbrains-mono', 18, 'neon'],
+      ['an unknown track', 'natural-fr', 'jetbrains-mono', 18, 'standard'],
+    ])(
+      'refuses %s in the database, whatever wrote it',
+      async (_name, track, font, size, preset) => {
+        const me = await signedIn('UTC');
+        await expect(
+          database.dataSource.query(
+            `INSERT INTO user_play_appearance (user_id, track, font, font_size, color_preset)
+           VALUES ($1, $2, $3, $4, $5)`,
+            [me.id, track, font, size, preset],
+          ),
+        ).rejects.toThrow(/chk_user_play_appearance_/);
+      },
+    );
   });
 
   it('requires a session', async () => {

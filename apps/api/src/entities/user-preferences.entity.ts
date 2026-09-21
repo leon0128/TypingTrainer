@@ -3,20 +3,11 @@ import { Check, Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'type
 import { User } from './user.entity';
 
 /**
- * Appearance and sound settings (§8.2, §8.3, §9.3), one row per user, created by the first change;
+ * Theme, skin, and sound settings (the play screen's look is per track, §13.10) (§8.2, §8.3, §9.3), one row per user, created by the first change;
  * an account with no row has the defaults.
  */
 @Entity({ name: 'user_preferences' })
-@Check(
-  'chk_user_preferences_font',
-  `"font" IN ('jetbrains-mono', 'fira-code', 'source-code-pro', 'ibm-plex-mono', 'noto-sans-mono')`,
-)
-@Check('chk_user_preferences_font_size', `"font_size" IN (14, 16, 18, 20, 24)`)
 @Check('chk_user_preferences_theme', `"theme" IN ('system', 'light', 'dark', 'high-contrast')`)
-@Check(
-  'chk_user_preferences_color_preset',
-  `"color_preset" IN ('standard', 'okabe-ito', 'monochrome')`,
-)
 @Check('chk_user_preferences_skin', `"skin" IN ('classic', 'neon', 'pixel', 'fantasy', 'pop')`)
 @Check('chk_user_preferences_sound_pack', `"sound_pack" IN ('off', 'mechanical', 'soft', 'beep')`)
 @Check('chk_user_preferences_sound_volume', `"sound_volume" BETWEEN 0 AND 100`)
@@ -28,17 +19,8 @@ export class UserPreferences {
   @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'fk_user_preferences_user' })
   user?: User;
 
-  @Column({ name: 'font', type: 'text', default: 'jetbrains-mono' })
-  font!: string;
-
-  @Column({ name: 'font_size', type: 'smallint', default: 18 })
-  fontSize!: number;
-
   @Column({ name: 'theme', type: 'text', default: 'system' })
   theme!: string;
-
-  @Column({ name: 'color_preset', type: 'text', default: 'standard' })
-  colorPreset!: string;
 
   @Column({ name: 'skin', type: 'text', default: 'classic' })
   skin!: string;

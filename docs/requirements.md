@@ -1288,6 +1288,8 @@ CREATE TABLE user_play_appearance (
 
 Existing accounts' values migrate to the `code` row. The Japanese track adds monospace fonts with Japanese glyphs (M PLUS 1 Code, BIZ UDGothic; both SIL OFL), self-hosted and loaded on demand as in §8.2. The English track uses the existing Latin fonts. Proportional fonts are not offered: the caret position depends on a fixed character width (§8.2).
 
+🟡 (v1.43) **As built.** `GET /api/preferences` returns the page's `theme` and `skin`, the sound, and `play`: the look of each track the account may use. The Japanese track is left out for an account whose display language is not Japanese, and `PUT` with `play: { track: 'natural-ja', ... }` from such an account is refused with 403 (§13.11). A change is `play: { track, font?, fontSize?, colorPreset? }`; a font the track does not offer is refused with 400, and the database checks the same pairing. The Japanese fonts' Japanese slices are fetched only when the Japanese track is used. The page around the play screen keeps the code track's colour set; each track's own set is put on its play screen and on the settings preview, so a track's look never leaks into another's.
+
 ### 13.11 Japanese for Japanese accounts only
 
 Japanese text and the Japanese track are shown **only when the account's display language is Japanese** (`users.locale = 'ja'`, changed in settings at any time). For any other account the track is absent from the header, the home screen, and every list, and the API answers 403 for its pools (§13.8). Nothing is deleted when the display language changes: Japanese ratings and history are kept and shown again when it is switched back to Japanese. Deleting a run by its id is not gated, since it names no pool and shows nothing. A Japanese run issued and not yet sent when the display language is changed away from Japanese is **forfeited**: submitting it answers 403, the run is used up, and the loss charged when it was issued (§4.3.5) stays. The home grid still counts those runs under the natural-language color, because it shows only that a run happened, and no Japanese text appears.
@@ -1561,3 +1563,8 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.43 | Kanji column width | A text is drawn over all the units of its reading and its column is as wide as the wider of the two, so a kanji never overlaps the next column |
 | 1.43 | English wrapping | Sentences and paragraphs wrap; code keeps its sideways scroll, since its columns carry meaning |
 | 1.43 | Caps Lock notice | Shown in the natural-language tracks only, from the modifier state of the latest key |
+| 1.43 | Old preference columns | `font`, `font_size`, and `color_preset` are dropped from `user_preferences` in the migration that adds `user_play_appearance` (the service was in maintenance, so no client needs the old shape); what an account had chosen becomes its code track's look |
+| 1.43 | Preferences response shape | The top-level `font`, `fontSize`, and `colorPreset` are gone; the play look is under `play`, keyed by track |
+| 1.43 | English track fonts | The same five monospaced fonts as code, since the caret needs a fixed width |
+| 1.43 | Colour sets for the Japanese track | The same three sets as code |
+| 1.43 | Settings tabs | The settings screen shows a track chooser only when the account is offered more than one track, taken from the language list like the header's track switch |

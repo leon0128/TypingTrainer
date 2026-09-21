@@ -1,17 +1,21 @@
 import {
   COLOR_PRESETS,
-  FONTS,
   FONT_SIZES,
   SKINS,
   SOUND_PACKS,
   THEMES,
+  TRACK_FONTS,
+  type Track,
   type TypingProgram,
 } from '@typing-trainer/contracts';
 import { createEngineState, handleKey } from '@typing-trainer/typing-engine';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { LOCALES, type Locale } from '@typing-trainer/contracts';
 import { CodeView } from '../play/CodeView';
+import { JaView } from '../play/JaView';
+import { useAvailableTracks } from '../tracks/use-track';
+import { usePlayLook } from './use-play-look';
 import { useTranslation } from '../../i18n';
 import { soundPlayer } from '../sound/sound';
 import { buildLayout } from '../play/layout';
@@ -43,12 +47,47 @@ const SAMPLE: TypingProgram = {
   canonicalKeystrokes: 15,
 };
 
-/** The sample as it looks part-way through: the first block of it typed, then the cursor. */
-function sampleEngine() {
-  let state = createEngineState(SAMPLE);
-  for (const key of ['i', 'f', '(', 'r', 'e', 'a', 'd', 'y', ' ', '{']) {
-    state = handleKey(state, key).state;
-  }
+/** English prose for the English track's preview. */
+const ENGLISH_SAMPLE: TypingProgram = {
+  blockId: 'settings-sample-en',
+  atoms: [
+    ...Array.from('The quick brown').map((text) => ({ kind: 'literal' as const, text })),
+    { kind: 'separator', canonical: ' ', required: false },
+    ...Array.from('fox jumps over the lazy dog.').map((text) => ({
+      kind: 'literal' as const,
+      text,
+    })),
+  ],
+  canonicalKeystrokes: 43,
+};
+
+/** 今日はいい天気, for the Japanese track's preview: text above, romaji below. */
+const JAPANESE_SAMPLE: TypingProgram = {
+  blockId: 'settings-sample-ja',
+  atoms: [
+    { kind: 'romaji', display: '今日', alternatives: ['kyo'] },
+    { kind: 'romaji', display: '', alternatives: ['u'] },
+    { kind: 'romaji', display: 'は', alternatives: ['ha'] },
+    { kind: 'romaji', display: 'い', alternatives: ['i'] },
+    { kind: 'romaji', display: 'い', alternatives: ['i'] },
+    { kind: 'romaji', display: '天気', alternatives: ['te'] },
+    { kind: 'romaji', display: '', alternatives: ['nn'] },
+    { kind: 'romaji', display: '', alternatives: ['ki'] },
+  ],
+  canonicalKeystrokes: 13,
+};
+
+const SAMPLES: Record<Track, { program: TypingProgram; keys: string[] }> = {
+  code: { program: SAMPLE, keys: ['i', 'f', '(', 'r', 'e', 'a', 'd', 'y', ' ', '{'] },
+  'natural-en': { program: ENGLISH_SAMPLE, keys: Array.from('The quick ') },
+  'natural-ja': { program: JAPANESE_SAMPLE, keys: Array.from('kyoha') },
+};
+
+/** A sample as it looks part-way through: the first part of it typed, then the cursor. */
+function sampleEngine(track: Track) {
+  const { program, keys } = SAMPLES[track];
+  let state = createEngineState(program);
+  for (const key of keys) state = handleKey(state, key).state;
   return state;
 }
 
@@ -66,14 +105,23 @@ export function SettingsScreen() {
   const sound = useAppearance((state) => state.sound);
   const error = useAppearance((state) => state.error);
   const change = useAppearance((state) => state.change);
+  const changePlay = useAppearance((state) => state.changePlay);
 
-  // Each font is shown in itself, so all five are needed here; elsewhere only the chosen one is.
+  // The play look is kept for each track (§13.10): the tabs choose which one is being changed, and
+  // list only the tracks this account may use.
+  const offered = useAvailableTracks() ?? (['code'] as Track[]);
+  const [chosen, setChosen] = useState<Track>('code');
+  const track = offered.includes(chosen) ? chosen : 'code';
+  const play = useAppearance((state) => state.play[track]);
+  const look = usePlayLook(track);
+
+  // Each font is shown in itself, so all of the track's are needed here; elsewhere only the chosen one is.
   useEffect(() => {
-    for (const font of FONTS) void loadFont(font);
-  }, []);
+    for (const font of TRACK_FONTS[track]) void loadFont(font);
+  }, [track]);
 
-  const layout = useMemo(() => buildLayout(SAMPLE), []);
-  const engine = useMemo(() => sampleEngine(), []);
+  const layout = useMemo(() => buildLayout(SAMPLES[track].program), [track]);
+  const engine = useMemo(() => sampleEngine(track), [track]);
 
   return (
     <main className="ui-page mx-auto flex max-w-5xl flex-col gap-6 p-6">
@@ -91,8 +139,42 @@ export function SettingsScreen() {
       )}
 
       <section aria-label={t('settings.preview')} className="flex flex-col gap-2">
-        <div className="code-panel">
-          <CodeView layout={layout} engine={engine} missSeq={0} lastMiss={null} />
+        {offered.length > 1 && (
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t('settings.playTrack')}>
+            {offered.map((entry) => (
+              <button
+                key={entry}
+                type="button"
+                aria-pressed={entry === track}
+                className={choiceClass(entry === track)}
+                onClick={() => {
+                  setChosen(entry);
+                }}
+              >
+                {t(`tracks.${entry}`)}
+              </button>
+            ))}
+          </div>
+        )}
+        <div data-preset={look.preset} style={look.style}>
+          <div className="code-panel">
+            {track === 'natural-ja' ? (
+              <JaView
+                program={SAMPLES[track].program}
+                engine={engine}
+                missSeq={0}
+                lastMiss={null}
+              />
+            ) : (
+              <CodeView
+                layout={layout}
+                engine={engine}
+                missSeq={0}
+                lastMiss={null}
+                wrap={track === 'natural-en'}
+              />
+            )}
+          </div>
         </div>
         <p className="flex flex-wrap gap-3 text-sm">
           <span style={{ color: 'var(--typed)' }}>{t('settings.typed')}</span>
@@ -132,14 +214,14 @@ export function SettingsScreen() {
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 font-medium">{t('settings.font')}</legend>
         <div className="flex flex-wrap gap-2">
-          {FONTS.map((font) => (
+          {TRACK_FONTS[track].map((font) => (
             <button
               key={font}
               type="button"
-              aria-pressed={font === appearance.font}
-              className={choiceClass(font === appearance.font)}
+              aria-pressed={font === play.font}
+              className={choiceClass(font === play.font)}
               style={{ fontFamily: fontStack(font) }}
-              onClick={() => void change({ font })}
+              onClick={() => void changePlay(track, { font })}
             >
               {FONT_LABELS[font]}
             </button>
@@ -154,9 +236,9 @@ export function SettingsScreen() {
             <button
               key={size}
               type="button"
-              aria-pressed={size === appearance.fontSize}
-              className={choiceClass(size === appearance.fontSize)}
-              onClick={() => void change({ fontSize: size })}
+              aria-pressed={size === play.fontSize}
+              className={choiceClass(size === play.fontSize)}
+              onClick={() => void changePlay(track, { fontSize: size })}
             >
               {t('settings.sizeValue', { size })}
             </button>
@@ -207,9 +289,9 @@ export function SettingsScreen() {
               <button
                 key={preset}
                 type="button"
-                aria-pressed={preset === appearance.colorPreset}
-                className={`${choiceClass(preset === appearance.colorPreset)} flex items-center gap-2`}
-                onClick={() => void change({ colorPreset: preset })}
+                aria-pressed={preset === play.colorPreset}
+                className={`${choiceClass(preset === play.colorPreset)} flex items-center gap-2`}
+                onClick={() => void changePlay(track, { colorPreset: preset })}
               >
                 <span aria-hidden className="flex">
                   {[swatch.typed, swatch.pending, swatch.cursorBg, swatch.error].map((color) => (

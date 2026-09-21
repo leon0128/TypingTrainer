@@ -289,6 +289,7 @@
     "loading": "撃破状況をロード中..."
   },
   "settings": {
+    "playTrack": "プレイ画面の設定対象",
     "title": "設定",
     "language": "言語",
     "font": "フォント",

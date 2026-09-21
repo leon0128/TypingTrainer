@@ -37,6 +37,25 @@ const FONT_DEFINITIONS: Record<Font, FontDefinition> = {
     family: 'Noto Sans Mono',
     load: () => import('@fontsource/noto-sans-mono/latin-400.css'),
   },
+  // The Japanese track's fonts (§13.10): their Latin part draws the romaji, their Japanese part the
+  // text above it. The Japanese stylesheet is many small slices that the browser fetches only for
+  // the characters it draws, so a block costs a few of them, not the whole font.
+  'm-plus-1-code': {
+    family: 'M PLUS 1 Code',
+    load: () =>
+      Promise.all([
+        import('@fontsource/m-plus-1-code/latin-400.css'),
+        import('@fontsource/m-plus-1-code/japanese-400.css'),
+      ]),
+  },
+  'biz-ud-gothic': {
+    family: 'BIZ UDGothic',
+    load: () =>
+      Promise.all([
+        import('@fontsource/biz-udgothic/latin-400.css'),
+        import('@fontsource/biz-udgothic/japanese-400.css'),
+      ]),
+  },
 };
 
 /** The value of `font-family` for a font. */
@@ -50,6 +69,8 @@ export const FONT_LABELS: Record<Font, string> = {
   'source-code-pro': 'Source Code Pro',
   'ibm-plex-mono': 'IBM Plex Mono',
   'noto-sans-mono': 'Noto Sans Mono',
+  'm-plus-1-code': 'M PLUS 1 Code',
+  'biz-ud-gothic': 'BIZ UDGothic',
 };
 
 const loading = new Map<Font, Promise<unknown>>();

@@ -1,4 +1,4 @@
-import type { Appearance, Theme } from '@typing-trainer/contracts';
+import type { Appearance, PlayAppearance, Theme } from '@typing-trainer/contracts';
 
 import { loadSkinFonts } from '../../skins/fonts';
 import { fontStack, loadFont } from './fonts';
@@ -28,26 +28,41 @@ const PROPERTIES: Record<keyof Palette, string> = {
 };
 
 /**
- * Applies an appearance to the document: the colours as custom properties (which the play screen's
- * stylesheet reads), the font and size, and `data-theme` / `data-preset`, which Tailwind's `dark:`
- * variant and the preset-specific rules key on. High contrast counts as dark for Tailwind.
+ * What one track's play look sets: its colours, font and size, as custom properties. The play
+ * screen and the settings preview put these on their own element, so a track's look never leaks to
+ * the page around it (§13.10).
+ */
+export function playProperties(play: PlayAppearance, theme: ResolvedTheme): Record<string, string> {
+  const palette = PALETTES[play.colorPreset][theme];
+  const properties: Record<string, string> = {
+    '--code-font': fontStack(play.font),
+    '--code-size': `${String(play.fontSize)}px`,
+  };
+  for (const [key, property] of Object.entries(PROPERTIES)) {
+    properties[property] = palette[key as keyof Palette];
+  }
+  return properties;
+}
+
+/**
+ * Applies the page's appearance to the document: the theme and skin, and the colours as custom
+ * properties. The page around the play screen is coloured by the code track's set, the one every
+ * account has always had; each track's own look is `playProperties` on its screen.
  */
 export function applyAppearance(
   appearance: Appearance,
+  codePlay: PlayAppearance,
   systemPrefersDark: boolean,
   root: HTMLElement = document.documentElement,
 ): void {
   const resolved = resolveTheme(appearance.theme, systemPrefersDark);
-  const palette = PALETTES[appearance.colorPreset][resolved];
-  for (const [key, property] of Object.entries(PROPERTIES)) {
-    root.style.setProperty(property, palette[key as keyof Palette]);
+  for (const [property, value] of Object.entries(playProperties(codePlay, resolved))) {
+    root.style.setProperty(property, value);
   }
-  root.style.setProperty('--code-font', fontStack(appearance.font));
-  root.style.setProperty('--code-size', `${String(appearance.fontSize)}px`);
   root.setAttribute('data-theme', resolved);
-  root.setAttribute('data-preset', appearance.colorPreset);
+  root.setAttribute('data-preset', codePlay.colorPreset);
   root.setAttribute('data-skin', appearance.skin);
   root.style.colorScheme = resolved === 'light' ? 'light' : 'dark';
-  void loadFont(appearance.font);
+  void loadFont(codePlay.font);
   void loadSkinFonts(appearance.skin);
 }

@@ -86,7 +86,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('DELETE /api/auth/me (TEST_DATAB
       method: 'PUT',
       url: '/api/preferences',
       headers: headers(account.token),
-      payload: { theme: 'dark' },
+      payload: { theme: 'dark', play: { track: 'code', fontSize: 20 } },
     });
     await app.inject({
       method: 'POST',
@@ -169,6 +169,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('DELETE /api/auth/me (TEST_DATAB
       'issued_runs',
       'language_ratings',
       'play_sessions',
+      'user_play_appearance',
       'user_preferences',
     ]);
 

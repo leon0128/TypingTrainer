@@ -290,7 +290,6 @@ body {
 /* Japanese: the text above, the romaji below it, one column per group (§13.6). */
 .ja-block {
   white-space: normal;
-  font-family: var(--ja-font, 'M PLUS 1 Code', 'BIZ UDGothic', ui-monospace, monospace);
 }
 
 .ja-line {

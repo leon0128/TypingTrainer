@@ -40,6 +40,8 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       )[0]?.definition ?? '';
 
     it('rolls back the block count check, and then to the old table without the tracks', async () => {
+      // The newest migration is the per-track play look, which has its own test below.
+      await database.dataSource.undoLastMigration();
       expect(await blockCheck()).toMatch(/>= 1\).*<= 300/);
       await database.dataSource.undoLastMigration();
       expect(await blockCheck()).toContain('= 20');

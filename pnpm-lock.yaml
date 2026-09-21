@@ -260,6 +260,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@fontsource/biz-udgothic':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/cinzel':
         specifier: ^5.3.0
         version: 5.3.0
@@ -276,6 +279,9 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@fontsource/jetbrains-mono':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/m-plus-1-code':
         specifier: ^5.3.0
         version: 5.3.0
       '@fontsource/noto-sans-mono':
@@ -784,6 +790,9 @@ packages:
   '@fastify/proxy-addr@5.1.0':
     resolution: {integrity: sha512-INS+6gh91cLUjB+PVHfu1UqcB76Sqtpyp7bnL+FYojhjygvOPA9ctiD/JDKsyD9Xgu4hUhCSJBPig/w7duNajw==}
 
+  '@fontsource/biz-udgothic@5.3.0':
+    resolution: {integrity: sha512-1jccDNmjsrgfxXa4MiBQzvhg+z8McslunaiSUl3OWB9QrUYzbp88tD78soiwqp2U5ZFXG/BvBT1Rhgd6tOgGwQ==}
+
   '@fontsource/cinzel@5.3.0':
     resolution: {integrity: sha512-KEOYTsrRppW0uRIPWBDPrQgunCS6f8u4nzZxYRBfo9SCknKojLYjK7B0ZoVmJhyVLefz271ZQRF9EOpHZlfhRw==}
 
@@ -801,6 +810,9 @@ packages:
 
   '@fontsource/jetbrains-mono@5.3.0':
     resolution: {integrity: sha512-fqDfB5I9f1p1TV486aUgB9t8zP84P0O1FtQR5Ol9vjwPy+S+EIGlVYm1cvj2W5shcZMTg2nZFdVMoH5wFu8a1A==}
+
+  '@fontsource/m-plus-1-code@5.3.0':
+    resolution: {integrity: sha512-v7X67lQVj7HUg0ihRaDfq4EIKm64NWIuorzzFCxYixkBsmNePZiMta7ga6JML1b2z74M9F+giu2eH4Lb4hXTrg==}
 
   '@fontsource/noto-sans-mono@5.3.0':
     resolution: {integrity: sha512-DPZ+/Ng9HP5UKiALCKtoeGfA7zJzEjHFB/18OU/c3+4I9zZ3eMVAuFZb0SqzT89Yj7KNhJFYnYjyDaVKhdRuUg==}
@@ -3042,6 +3054,8 @@ snapshots:
       '@fastify/forwarded': 3.0.2
       ipaddr.js: 2.5.0
 
+  '@fontsource/biz-udgothic@5.3.0': {}
+
   '@fontsource/cinzel@5.3.0': {}
 
   '@fontsource/dotgothic16@5.3.0': {}
@@ -3053,6 +3067,8 @@ snapshots:
   '@fontsource/ibm-plex-mono@5.3.0': {}
 
   '@fontsource/jetbrains-mono@5.3.0': {}
+
+  '@fontsource/m-plus-1-code@5.3.0': {}
 
   '@fontsource/noto-sans-mono@5.3.0': {}
 

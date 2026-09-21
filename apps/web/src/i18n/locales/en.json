@@ -290,6 +290,7 @@
     "loading": "Loading conquests…"
   },
   "settings": {
+    "playTrack": "Play screen for",
     "title": "Settings",
     "language": "Language",
     "font": "Font",

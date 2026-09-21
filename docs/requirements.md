@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.42 |
+| Version | 1.43 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.41 — a rating and ranks from vs CPU results (§4.3.5, §9.3, §9.5, Appendix B); v1.40 — a display name can be set from the Account screen (§7, §9.3, Appendix B); v1.39 — the account can be erased from the Account screen (§7, §10, Appendix B) |
+| Supersedes | v1.42 — natural-language tracks: Japanese and English typing beside code, each with its own rating and rank (§13, §2, §4.3.2, §4.3.5, §9.3, §9.5, Appendix B); v1.41 — a rating and ranks from vs CPU results (§4.3.5, §9.3, §9.5, Appendix B); v1.40 — a display name can be set from the Account screen (§7, §9.3, Appendix B); v1.39 — the account can be erased from the Account screen (§7, §10, Appendix B) |
 
 **Legend**
 
@@ -18,7 +18,7 @@
 
 ### 1.1 Purpose
 
-A typing trainer for programmers. Unlike general typing sites, which measure English prose, TypingTrainer measures **code keystrokes** — symbols, camel-case identifiers, brackets, and operators — and reports progress over time.
+A typing trainer for programmers. 🟡 (v1.43) Beside code, it now also trains Japanese and English text as separate tracks (§13); everything in §1–§12 that is not said otherwise describes the code track, and the natural-language tracks share its engine, modes, and account. Unlike general typing sites, which measure English prose, TypingTrainer measures **code keystrokes** — symbols, camel-case identifiers, brackets, and operators — and reports progress over time.
 
 This is worth training separately: a developer's code typing speed typically lands at 55–70% of their prose speed, and the gap is caused almost entirely by symbol keys.
 
@@ -61,6 +61,8 @@ This is worth training separately: a developer's code typing speed typically lan
 | **Miss** | An incorrect keystroke, deduplicated per cursor position |
 | **KPM** | Keystrokes per minute: `effective keystrokes / 2` for a 120-second run |
 | **Ghost** | A simulated opponent reproducing one of the player's own past records |
+| **Track** | 🟡 (v1.43) One of `code`, `natural-ja`, `natural-en`: a group of pools with its own rating, rank, and play-screen settings (§13.1) |
+| **Pool** | A set of blocks a run is drawn from. `languages.slug` and `ContentLanguage` name a pool: a programming language, or a kind of natural-language text in one language (§13.1) |
 
 ---
 
@@ -84,6 +86,7 @@ This is worth training separately: a developer's code typing speed typically lan
 | F-14 | Localization (en / ja) | Should | P3 |
 | F-15 | Account deletion (erases all data) | Should | P3 |
 | F-16 | Content expansion to 150+ blocks per language | Should | P4 |
+| F-17 | Natural-language tracks (Japanese, English): word, sentence, and paragraph typing with per-track rating and rank, and a play-history grid (§13) | Should | P5 |
 
 ---
 
@@ -301,6 +304,8 @@ Each separator is credited exactly once — when consumed, or when passed from U
 
 ### 3.5 Scoring Fairness Rule 🟡
 
+🟡 (v1.43) **Exception: Japanese romaji.** A kana can be typed several ways (`si`/`shi`), so a Japanese block's effective keystrokes depend on the spelling the player chooses; §13.5 states the rule. Code and English blocks are unchanged.
+
 **Problem.** Optional separators may be skipped. If only physically pressed keys were counted, skipping them would *lower* the keystroke count and therefore the score — punishing the player for using a permitted shortcut.
 
 **Rule.** A separator credits **one effective keystroke when it is passed**, whether or not a space was actually pressed.
@@ -387,6 +392,8 @@ Published speed figures, converted at the conventional 5 keystrokes per word:
 
 #### 4.3.2 Level → Speed
 
+🟡 (v1.43) The table and formula below are the **code** track's. The natural-language tracks use the same geometric form with a top of 1200 KPM instead of 800 (§13.7).
+
 Geometric interpolation, because skill scales multiplicatively.
 
 ```
@@ -442,6 +449,8 @@ The RNG seed is issued by the server and stored on the session row, so any match
 
 #### 4.3.5 Rating and Ranks 🟡 (v1.42)
 
+🟡 (v1.43) **Per track.** Everything below holds inside one track: the overall rating and the rank of the code track weigh only the code pools, and each natural-language track has its own, computed from its own three pools (§13.3). `RATING_LANGUAGE_COUNT` becomes a count per track.
+
 The rating is the player's standing among CPU opponents, meant to give a reason to keep playing: it is computed from vs CPU results only, in every language, and rewards playing several languages over one.
 
 | Item | Rule |
@@ -479,6 +488,8 @@ which makes the Ghost's final score exactly equal to the record, so "beat the Gh
 ## 5. Content
 
 ### 5.1 Block Requirements 🔵
+
+🟡 (v1.43) This section states the rules for **code** blocks. Natural-language blocks have their own (§13.4): they are not code, may contain non-ASCII text in Japanese, and are authored in one file per pool.
 
 | Item | Rule |
 | --- | --- |
@@ -698,6 +709,8 @@ rewritten to fit. A wider browser window does not help, since the panel is cappe
 limit for existing and future content, not an aspiration.
 
 ### 8.2 Appearance Settings 🔵
+
+🟡 (v1.43) Font, size, and color preset are kept **per track** (§13.10); theme, skin, sound, and display language stay shared. The tables below describe the code track's choices.
 
 | Setting | Options |
 | --- | --- |
@@ -1063,6 +1076,7 @@ Ordered to retire the largest technical risk (the typing engine) first.
 | **P2 — Visibility and competition** | Dashboard, vs CPU with conquest records | G3 and G4 met |
 | **P3 — Polish** ✅ Complete (v1.40) | Ghost, appearance settings, key sounds, en/ja localization, account deletion | Presentable to others |
 | **P4 — Content** | Grow from the P1 initial content to 150+ blocks per language; add languages | Pool target of 150+ per language met (Q22) |
+| **P5 — Natural language** | Japanese and English tracks (§13): romaji engine, content pipeline and initial content, per-track rating, home screen with the play-history grid, per-track appearance | Both tracks playable in all three modes, with a rating and rank of their own |
 
 If P0 shows the engine cannot be built to specification or does not feel right, §3 is narrowed — most likely the space flexibility and the scope of automatic insertion. Leaving that ambiguous past P0 would propagate rework into the score definition, the schema, and CPU balance simultaneously.
 
@@ -1086,6 +1100,175 @@ If P0 shows the engine cannot be built to specification or does not feel right, 
 ## 12. Open Items
 
 None. All questions raised during specification review are resolved; see Appendix B.
+
+---
+
+## 13. Natural-Language Tracks 🟡 (v1.43)
+
+Japanese and English typing beside code (F-17). The engine, the three play modes, the run rules of §4.1, result validation (§9.8), rankings, dashboard, history, and conquests are the code track's, applied to more pools. This section lists only what differs.
+
+### 13.1 Tracks and pools
+
+| Track | Shown as | Pools (`ContentLanguage`) | Languages in the rating | Overall-rating ceiling |
+| --- | --- | --- | --- | --- |
+| `code` | Code | `typescript`, `go`, `java`, `python` | 4 | 2952 |
+| `natural-ja` | 日本語 / Japanese | `ja-word`, `ja-line`, `ja-paragraph` | 3 | 2440 |
+| `natural-en` | English | `en-word`, `en-line`, `en-paragraph` | 3 | 2440 |
+
+The ceiling is `5000 × (1 − 0.8^N)` (§4.3.5) with `N` the languages of the track. On screen the tracks are called Code, Japanese, and English. `ContentLanguage` grows from 4 to 10 values: it names a pool, whatever the track. Every table and query keyed by it (`play_sessions`, `issued_runs`, `language_ratings`, rankings, dashboard, history, conquests) therefore works for the new pools without a change of shape.
+
+Kinds of natural-language pool: **word** (one word), **line** (one sentence on one line), **paragraph** (several lines). A pool's name on screen comes from its kind (word, sentence, paragraph), by i18n; `display_name` in the table is an English fallback only.
+
+### 13.2 Data model
+
+`programming_languages` is renamed `languages`, since it no longer holds only programming languages, and gains a track and a kind. Foreign keys and constraints are renamed with it.
+
+```sql
+ALTER TABLE programming_languages RENAME TO languages;
+ALTER TABLE languages ADD COLUMN track text NOT NULL DEFAULT 'code';
+ALTER TABLE languages ADD COLUMN kind  text;          -- natural pools only: word | line | paragraph
+ALTER TABLE languages ADD CONSTRAINT chk_languages_track
+  CHECK (track IN ('code', 'natural-ja', 'natural-en'));
+ALTER TABLE languages ADD CONSTRAINT chk_languages_kind
+  CHECK ((track = 'code' AND kind IS NULL)
+      OR (track <> 'code' AND kind IN ('word', 'line', 'paragraph')));
+-- ids 5-7 ja-word, ja-line, ja-paragraph; 8-10 en-word, en-line, en-paragraph
+```
+
+`issued_runs`'s `CHECK (cardinality(block_ids) = 20)` becomes `BETWEEN 1 AND 300`; the exact count is set by the pool's kind (§13.7) and enforced by the service.
+
+`user_preferences.font`, `font_size`, and `color_preset` move to a new table keyed by track (§13.10). `language_ratings` is unchanged.
+
+### 13.3 Rating and rank per track
+
+The rating of §4.3.5 is computed independently for each track. The languages in a track's overall rating are its pools (the three kinds), so playing several kinds is rewarded as playing several programming languages is. Ranks are the same 31 steps, scaled to each track's own ceiling. A track's rating, rank, and history never influence another's. `RATING_LANGUAGE_COUNTS` (in `typing-engine`) holds the count per track, and a test keeps it equal to the pools of each track.
+
+### 13.4 Content
+
+Natural-language blocks are short, so one file holds many, one block per line (paragraphs separated by a blank line):
+
+```
+content/natural/en/{word,line,paragraph}.txt
+content/natural/ja/{word,line,paragraph}.txt     # each kanji is followed by its reading: 今日[きょう]は晴[は]れです
+```
+
+`blockId` is `<pool>/<number>` (`ja-line/0001`). The output is one bundle per pool, `content/dist/<pool>.bundle.json`, with the revision computed as for code. Authoring is offline, as in §5.2: drafted with an LLM, committed, and reviewed in a pull request.
+
+| Check | Rule |
+| --- | --- |
+| Characters, English | Printable ASCII only |
+| Characters, Japanese | Hiragana, katakana, the 2,136 jōyō kanji, and `ー、。`; every kanji is annotated with a reading that is kana only |
+| Punctuation | Only **paragraph** blocks contain commas and periods (`,` `.` in English, `、` `。` in Japanese); words and sentences contain none |
+| Shape | Word: one word. Sentence: one sentence on one line, at most 88 columns. Paragraph: 2–10 lines, each at most 88 columns |
+| Duplicates | Content hash, plus token 4-gram similarity across the pool (§5.2) |
+| Compile | The reading must convert to romaji (§13.5) |
+
+Initial size is 500 words, 200 sentences, and 60 paragraphs per language.
+
+### 13.5 Japanese romaji
+
+The screen shows the text above and its romaji below, as on common Japanese typing sites. The player types romaji; there is no IME and no kanji conversion, and an IME still blocks input (§3.7).
+
+**Atom.** A new atom kind carries one typing unit:
+
+```ts
+| { kind: 'romaji';
+    display: string;                     // the text shown above (kanji included); '' for the later units of one reading
+    alternatives: readonly string[];     // accepted romaji; the shortest first, which is also what the lower line shows
+  }
+```
+
+`TypingProgramSchema` gains a `romaji` atom, allowed in Japanese pools only, and `maxKeystrokes`: the length of the longest route (`canonicalKeystrokes` is the shortest).
+
+**Units.** The reading is split into units, so each has a small closed set of spellings:
+
+| Case | Unit | Example |
+| --- | --- | --- |
+| `っ` | Joined with the following kana | `っか` → `kka`, `xtuka`, `ltuka`, `xtsuka`, `ltsuka` |
+| `ん` followed by a vowel, a `な`-row kana, a `や`-row kana, or another `ん` | Joined with the following kana | `んあ` → `nna`, `n'a`, `xna` |
+| `ん` at the end of a block | Alone | `nn`, `n'` |
+| `ん` otherwise | Alone | `n`, `nn`, `n'` |
+| A kana with a small `ゃゅょ` | Joined with the kana before | `しゃ` → `sha`, `sya` |
+| `ー` `、` `。` | Alone | `-` `,` `.` |
+| Any other kana | Alone | `し` → `si`, `shi` |
+
+Accepted spellings include `si/shi`, `ti/chi`, `tu/tsu`, `zi/ji`, `hu/fu`, `wo` for `を`, and `we` (also `whe`) for `うぇ`. Typing a small kana on its own (`xya`, `xtu` outside the rule above) is **not supported**.
+
+**Matching.** Let `typed` be the keys entered in the current unit. A key is judged as:
+
+1. If some alternative starts with `typed + key`, the key is `CORRECT` and is appended. When `typed` equals an alternative and no longer alternative is still possible, the cursor moves to the next unit.
+2. Otherwise, if `typed` already equals an alternative, the unit is complete: the cursor moves on and **the same key is judged again at the next unit** (so `ん` typed as `n`, then `k`, works).
+3. Otherwise the key is a `MISS`, deduplicated per cursor position as in §3.4.
+
+The lower line shows the shortest spelling, redrawn to the route actually taken once a key rules out the others.
+
+**Keystrokes 🟡.** Every key the player presses counts, so `shi` is three effective keystrokes and `si` two. This breaks §3.5 for Japanese pools on purpose: the score measures real key speed, and a Japanese block's total depends on the spelling. `canonicalKeystrokes` is the shortest route, used for a block's nominal length and for the CPU and Ghost pace; `maxKeystrokes` bounds what a submission may claim (§9.8). **Accepted consequence:** the same text can score a little higher for a player who spells `shi`, `chi`, `tsu` than for one who spells `si`, `ti`, `tu`. Rankings show only the player's own runs (§6.1), so nobody is disadvantaged relative to another.
+
+**Line breaks.** A multi-line Japanese block ends each line with a required Enter separator, exactly as code does (§3.3.2). There are no in-line space separators in Japanese.
+
+### 13.6 English
+
+English needs no new atom. A word is a `literal`; a space between words is a required in-line separator; a line break in a paragraph is a required Enter separator. There is no auto insertion, so a paragraph is only literals and separators. Case matters: a capital is the shifted key (§3.7).
+
+### 13.7 Play
+
+| Item | Rule |
+| --- | --- |
+| Blocks in a run | Word 300, sentence 80, paragraph 20 (code stays at 20) |
+| Blocks shown | Word and sentence: the current block and the next 3; paragraph: the current block and the next 1, as code |
+| vs CPU speed | `baseKpm(level) = 50 × (1200 / 50) ^ ((level − 1) / 99)` for the natural-language tracks; code keeps 800 at level 100. The top is a design figure, not a measurement: prose is typed faster than code, and the curve is to be re-tuned against real play |
+| CPU rating | Unchanged: `20 × level` (§4.3.5) |
+| Plausibility (§9.8) | Natural-language tracks: at most 3,200 KPM in any 10-second window and 2,400 KPM over the run; effective keystrokes may not exceed the `maxKeystrokes` of the blocks reached. Code keeps 2,400 and 1,600 |
+| Character-class weights | The CPU's per-key weights (§4.3.3) are 1.0 for lowercase letters, digits, and romaji keys, 1.5 for shifted keys, 1.3 for other symbols, 0.8 for separators; the CPU types the shortest spelling |
+| Modes | Single, vs CPU, and Ghost are all available in every track; the rating comes from vs CPU only |
+
+### 13.8 API
+
+| Endpoint | Change |
+| --- | --- |
+| `GET /api/languages` | Each entry gains `track` and `kind`. Pools of `natural-ja` are left out unless the account's display language is Japanese (§13.11) |
+| `GET /api/ratings` | Grouped by track: `tracks: [{ track, languages[] }]`; the overall rating and the rank are derived per track |
+| `GET /api/activity` | New. `?from=&to=` (inclusive local dates, default the last 365 days) returns, per local date played, the number of runs in the code pools and in the natural-language pools: `{ date, code, natural }[]` |
+| `POST /api/play/sessions`, rankings, dashboard, history, conquests | Same shape; `language` may be any pool. A request that names a `natural-ja` pool answers **403** unless the account's display language is Japanese |
+
+### 13.9 Screens
+
+| Route | Screen |
+| --- | --- |
+| `/` | **Home.** A card per track with its rank icon and name, overall rating, and the bar towards the next rank; and the play-history grid |
+| `/code`, `/ja`, `/en` | The track's start screen: mode, the pools with their ratings. This is what `/` showed before |
+| `/<track>/rankings`, `/dashboard`, `/history`, `/conquests` | The existing screens, limited to the current track's pools |
+
+The logo returns to Home. The header of every track screen has a switch between Code, 日本語 (when available), and English. Each track has its own accent color through one CSS custom property, `--track-accent`, selected by a `data-track` attribute on top of the theme and skin, so the player can tell at a glance which track is being played.
+
+**Play-history grid.** As on GitHub: one column per week, one row per day, for the last year. A cell is colored when a run was played on that day, in four steps of shade by the number of runs. Code runs use one hue and natural-language runs another; a day with both shows both (the cell split in two). Colors are never the only signal: each cell has a text title with the date and counts.
+
+**Japanese play screen.** Text above, romaji below, the cursor on the current unit; the character-width logic accounts for full-width characters so the caret stays aligned.
+
+### 13.10 Settings
+
+Theme, skin, key sound, sound volume, and display language are shared by all tracks. **Font, size, and color preset are separate for each of the three tracks**, so the code and Japanese screens can differ.
+
+```sql
+CREATE TABLE user_play_appearance (
+  user_id      uuid     NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  track        text     NOT NULL CHECK (track IN ('code', 'natural-ja', 'natural-en')),
+  font         text     NOT NULL,
+  font_size    smallint NOT NULL,
+  color_preset text     NOT NULL,
+  PRIMARY KEY (user_id, track)
+);
+```
+
+Existing accounts' values migrate to the `code` row. The Japanese track adds monospace fonts with Japanese glyphs (M PLUS 1 Code, BIZ UDGothic; both SIL OFL), self-hosted and loaded on demand as in §8.2. The English track uses the existing Latin fonts. Proportional fonts are not offered: the caret position depends on a fixed character width (§8.2).
+
+### 13.11 Japanese for Japanese accounts only
+
+Japanese text and the Japanese track are shown **only when the account's display language is Japanese** (`users.locale = 'ja'`, changed in settings at any time). For any other account the track is absent from the header, the home screen, and every list, and the API answers 403 for its pools (§13.8). Nothing is deleted when the display language changes: Japanese ratings and history are kept and shown again when it is switched back to Japanese. The home grid still counts those runs under the natural-language color, because it shows only that a run happened, and no Japanese text appears.
+
+### 13.12 Not decided here
+
+The exact hues of the accents and the grid, the initial content itself, and the real speed of the CPU curve are settled while implementing; the curve is provisional (§13.7).
 
 ---
 
@@ -1302,3 +1485,14 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.42 | Abandoning is a loss, by charging at issue | A vs CPU run costs its loss the moment it is issued (`issued_runs.rating_before`, `games_before`, `rating_charged`, in the same transaction as the run), and the result replaces the charge with the real outcome, computed from the rating and match count the run started with, so overlapping runs are worth what they were worth when issued. Nothing has to detect abandonment. A run the server cannot judge through no fault of the player (content changed) is given back (§4.3.5, §9.8) |
 | 1.42 | Ratings are stored, unlike conquests | An Elo rating depends on the order of results, so it cannot be derived from `play_sessions` as conquests are: deleting a run from the history does not change the rating. The overall rating and the rank are derived when read (§4.3.5, §9.3) |
 | 1.42 | Rank thresholds rounded | The thresholds are the announced fractions of the ceiling rounded to whole points; for four languages Platinum 1 starts at 1624 (1623.6), not 1623 (§4.3.5) |
+| 1.43 | Natural-language tracks | Japanese and English typing are added as tracks beside code (§13). A track has its own rating, rank, and play-screen settings; the pools of a track are the `ContentLanguage` values it owns |
+| 1.43 | Rating unit of a natural-language track | The three kinds (word, sentence, paragraph) play the part languages play for code, so a track's overall rating has 3 languages and a ceiling of 2440. Rejected: one language per track, whose ceiling of 1000 would leave the upper ranks unreachable |
+| 1.43 | Table layout | `programming_languages` is renamed `languages` and gains `track` and `kind`; `play_sessions`, `issued_runs`, and `language_ratings` keep their shape and their queries do not change |
+| 1.43 | Romaji keystrokes | **§3.5 does not hold for Japanese pools.** Every pressed key counts, so `shi` scores as three and `si` as two. `canonicalKeystrokes` is the shortest route and a new `maxKeystrokes` the longest. Rejected: crediting the shortest route whatever was typed, which would make careful spelling look like a loss. Consequence accepted: the same text can score slightly differently by spelling, which rankings (own data only) tolerate |
+| 1.43 | Romaji coverage | `si/shi`, `ti/chi`, `tu/tsu`, `zi/ji`, `hu/fu`, `wo`, `we`, youon, sokuon, hatsuon (`n`, `nn`, `n'`), and `ー` `、` `。` as `-` `,` `.`. Standalone small kana are not supported |
+| 1.43 | Multi-line natural language | Enter is required at each line end, as for code |
+| 1.43 | Blocks per run | Word 300, sentence 80, paragraph 20; word and sentence show the next 3 blocks, paragraph the next 1 |
+| 1.43 | CPU curve for prose | 50 to 1200 KPM for the natural-language tracks (code keeps 800). Provisional: no measured data yet |
+| 1.43 | Settings per track | Font, size, and color preset are stored per track in `user_play_appearance`; theme, skin, sound, and language are shared |
+| 1.43 | Japanese only for Japanese accounts | Judged by `users.locale = 'ja'`; hidden in the UI and answered with 403 by the API otherwise. Data is kept, not deleted, when the language is switched |
+| 1.43 | Play-history grid | A GitHub-style year grid on Home, two hues (code, natural language) with four shades, a day with both split in two; served by the new `GET /api/activity` |

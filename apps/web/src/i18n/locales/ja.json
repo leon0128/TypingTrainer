@@ -106,6 +106,15 @@
     "ghost": "vs ゴースト"
   },
   "home": {
+    "tracksHeading": "トラック",
+    "activityHeading": "この1年",
+    "activityTotals": "プレイ回数: {{runs}} · プレイした日: {{days}}",
+    "activityDay": "{{date}} — コード: {{code}}、自然言語: {{natural}}",
+    "activityList": "一覧で見る",
+    "listDate": "日付",
+    "legendCode": "コード",
+    "legendNatural": "自然言語",
+    "legendBoth": "同じ日に両方",
     "heading": "ステージを選ぶ",
     "cpuLevel": "CPU の強さ({{min}}–{{max}})",
     "aboutKpm": "約 {{kpm}} KPM",

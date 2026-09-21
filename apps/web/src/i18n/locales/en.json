@@ -107,6 +107,15 @@
     "ghost": "vs Ghost"
   },
   "home": {
+    "tracksHeading": "Your tracks",
+    "activityHeading": "Last year",
+    "activityTotals": "Runs: {{runs}} · Days played: {{days}}",
+    "activityDay": "{{date}} — code: {{code}}, natural language: {{natural}}",
+    "activityList": "Show as a list",
+    "listDate": "Date",
+    "legendCode": "Code",
+    "legendNatural": "Natural language",
+    "legendBoth": "Both on one day",
     "heading": "Select your stage",
     "cpuLevel": "CPU level ({{min}}–{{max}})",
     "aboutKpm": "about {{kpm}} KPM",

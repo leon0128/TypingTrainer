@@ -453,12 +453,14 @@
   padding: 16px 24px 0;
 }
 
+/* What belongs to no track (the settings) sits at the right of the first row, beside the player. */
 .app-nav {
-  order: 3;
+  order: 2;
   display: flex;
-  flex: 1 0 100%;
+  flex: 0 1 auto;
   flex-wrap: wrap;
   gap: 8px;
+  margin-left: auto;
   font-size: 0.9rem;
 }
 
@@ -474,8 +476,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  order: 2;
-  margin-left: auto;
+  order: 3;
   padding: 6px 16px;
   border: var(--sk-bw) dashed var(--sk-accent2);
   border-radius: 999px;

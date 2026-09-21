@@ -1,0 +1,207 @@
+/* The home screen (§13.9): a card for each track, and the play-history grid. */
+
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 12px 16px 14px;
+  border: var(--sk-bw, 1px) solid var(--border);
+  border-top: 4px solid var(--track-accent);
+  border-radius: var(--sk-radius, 8px);
+  background: var(--sk-tile-bg, var(--panel));
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.home-card:hover,
+.home-card:focus-visible {
+  border-color: var(--track-accent);
+}
+
+.home-card-name {
+  margin: 0;
+  color: var(--track-accent);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.home-card-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.home-card-numbers {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* ---- the play-history grid ---- */
+
+.activity {
+  --cell: 12px;
+  --gap: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activity-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.activity-totals {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* A narrow window scrolls the grid sideways: it is for looking at, and play needs a wide one. */
+.activity-scroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.activity-frame {
+  display: flex;
+  gap: 6px;
+  width: max-content;
+}
+
+.activity-weekdays {
+  display: grid;
+  grid-template-rows: 14px repeat(7, var(--cell));
+  row-gap: var(--gap);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: var(--cell);
+}
+
+.activity-months {
+  display: grid;
+  height: 14px;
+  column-gap: var(--gap);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+.activity-grid {
+  display: grid;
+  grid-template-rows: repeat(7, var(--cell));
+  grid-auto-flow: column;
+  gap: var(--gap);
+  margin-top: 2px;
+}
+
+.activity-cell {
+  --c: transparent;
+  --n: transparent;
+  display: inline-block;
+  width: var(--cell);
+  height: var(--cell);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
+.activity-cell.is-blank {
+  background: transparent;
+}
+
+.activity-cell[data-code='1'] {
+  --c: color-mix(in srgb, var(--track-code) 32%, transparent);
+}
+.activity-cell[data-code='2'] {
+  --c: color-mix(in srgb, var(--track-code) 55%, transparent);
+}
+.activity-cell[data-code='3'] {
+  --c: color-mix(in srgb, var(--track-code) 78%, transparent);
+}
+.activity-cell[data-code='4'] {
+  --c: var(--track-code);
+}
+.activity-cell[data-natural='1'] {
+  --n: color-mix(in srgb, var(--track-natural) 32%, transparent);
+}
+.activity-cell[data-natural='2'] {
+  --n: color-mix(in srgb, var(--track-natural) 55%, transparent);
+}
+.activity-cell[data-natural='3'] {
+  --n: color-mix(in srgb, var(--track-natural) 78%, transparent);
+}
+.activity-cell[data-natural='4'] {
+  --n: var(--track-natural);
+}
+
+.activity-cell.has-code {
+  background: var(--c);
+}
+
+.activity-cell.has-natural {
+  background: var(--n);
+}
+
+/* A day with both kinds of run shows both colours, the cell split along its diagonal. */
+.activity-cell.has-code.has-natural {
+  background: linear-gradient(135deg, var(--c) 50%, var(--n) 50%);
+}
+
+.activity-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.activity-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.activity-swatches {
+  display: inline-flex;
+  gap: var(--gap);
+}
+
+.activity-list {
+  font-size: 13px;
+}
+
+.activity-list summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.activity-list table {
+  margin-top: 6px;
+  border-collapse: collapse;
+}
+
+.activity-list th,
+.activity-list td {
+  padding: 2px 14px 2px 0;
+  text-align: left;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}

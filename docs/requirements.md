@@ -1173,12 +1173,12 @@ The pipeline is the stages of §5.2 that apply, with one more, `parse`, for the 
 | Sentence | English: 3–15 words, single spaces, every word with a letter. Japanese: at least 6 kana of reading. No `, .` or `、。` |
 | Paragraph | 2–10 lines; English lines of 2–15 words; at least one comma or period (`、` or `。`), because only paragraphs have them |
 | Width | Every line is at most 88 columns (§8.1). Japanese: 44 characters of text (full-width is 2 columns) and 88 columns of romaji, counted on the spelling shown |
-| Duplicates | Identical blocks in a pool (text lowercased for English) in every pool; for sentences and paragraphs also a Jaccard similarity of 0.5 or more, of word 3-grams (English) or reading 4-grams (Japanese). Measured on the English pools: the most similar distinct sentences score 0.167 and distinct paragraphs 0.040, and a copy of a 15-word sentence with one word changed scores 0.625 to 0.857; the Japanese pools are measured with their own content |
+| Duplicates | Identical blocks in a pool (text lowercased for English) in every pool; for sentences and paragraphs also a Jaccard similarity of 0.5 or more, of word 3-grams (English) or reading 4-grams (Japanese). Measured on the English pools: the most similar distinct sentences score 0.167 and distinct paragraphs 0.040, and a copy of a 15-word sentence with one word changed scores 0.625 to 0.857; on the Japanese pools the most similar distinct sentences score 0.313 (reading 4-grams, two sentences sharing a frame) and distinct paragraphs 0.066 |
 | Compile | English: §13.6. Japanese: §13.5; text that cannot be typed is an error at its position |
 
 **Word pools move on by themselves.** A word block is a word with no space after it: the next block starts as soon as one is finished, since a trailing space that could be skipped would still be credited as a keystroke (§3.5).
 
-Initial size is 500 words, 200 sentences, and 60 paragraphs per language, added a language at a time.
+Initial size is 500 words, 200 sentences, and 60 paragraphs per language, added a language at a time. Both languages have it.
 
 ### 13.5 Japanese romaji
 
@@ -1529,4 +1529,5 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.43 | English characters | Letters, spaces, `'`, and `-`; `,` and `.` only in paragraphs; no digits. A word is letters only |
 | 1.43 | Words advance without a space | A word block has no trailing space, because an optional trailing separator would be credited as a keystroke when passed (§3.5); the next word starts as soon as one is finished |
 | 1.43 | Similarity threshold | 0.5, from the English pools: the most similar pair of distinct sentences scores 0.167 and of paragraphs 0.040, so 0.5 keeps three times the margin and still catches a copy of a long sentence with a word changed (§13.4) |
+| 1.43 | Similarity threshold, Japanese | Measured on the Japanese pools: the most similar pair of distinct sentences scores 0.313 and of paragraphs 0.066, so the one threshold of 0.5 holds for both languages (§13.4) |
 | 1.43 | Paragraph punctuation | A paragraph must contain at least one comma or period (`、` or `。`), since only paragraphs have them (§13.4) |

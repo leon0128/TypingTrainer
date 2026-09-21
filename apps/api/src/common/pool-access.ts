@@ -20,3 +20,10 @@ export function assertPoolAvailable(user: Pick<User, 'locale'>, language: Conten
     throw new ForbiddenException(`language "${language}" is not available for this account`);
   }
 }
+
+/** The same refusal for a track named directly (§13.11), such as the history's `track` filter. */
+export function assertTrackAvailable(user: Pick<User, 'locale'>, track: Track): void {
+  if (!availableTracks(user.locale).includes(track)) {
+    throw new ForbiddenException(`track "${track}" is not available for this account`);
+  }
+}

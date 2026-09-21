@@ -49,6 +49,11 @@ const RULES: readonly Rule[] = [
     key: 'errors.languageForbidden',
     values: (match) => ({ language: match[1] ?? '' }),
   },
+  {
+    pattern: /^track "(.*)" is not available for this account$/,
+    key: 'errors.trackForbidden',
+    values: (match) => ({ track: match[1] ?? '' }),
+  },
   { pattern: /^run not found$/, key: 'errors.runNotFound' },
   { pattern: /^no such run$/, key: 'errors.noSuchRun' },
   { pattern: /^this run is too old to submit; play again$/, key: 'errors.runTooOld' },

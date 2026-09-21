@@ -607,7 +607,7 @@ Mode is deliberately *not* a partition key: all modes use the same engine, the s
 
 "Collapse the gaps" is implemented by treating the X axis as a **category axis** of played-date labels rather than a time axis: 100 played days out of 365 produce 100 points.
 
-🟡 The all-time series grows without bound, so add a **range filter** (last 30 / 90 / 365 days / all) and paging; several thousand points are unreadable and waste bandwidth. A summary strip sits above the charts: total runs, cumulative keystrokes, best score per language, and highest CPU level beaten.
+🟡 The all-time series grows without bound, so add a **range filter** (last 30 / 90 / 365 days / all) and paging; several thousand points are unreadable and waste bandwidth. A summary strip sits above the charts: total runs, cumulative keystrokes, best score per language, and highest CPU level beaten. 🟡 (v1.43) The summary is that of the track of the language shown, since each track stands on its own (§13.9).
 
 ### 6.3 Play History 🔵
 
@@ -980,7 +980,7 @@ Design points:
 | POST | `/api/play/sessions/:id/result` | Submit a result; validated server-side. 🟡 (v1.42) For a vs CPU run the body also carries `rating`: the language's rating before and after and every language's rating now (§4.3.5); `null` for other modes |
 | GET | `/api/rankings` | `?period=daily\|weekly\|total&language=` |
 | GET | `/api/dashboard` | `?period=daily\|weekly\|total&language=&from=&to=` (`from`/`to` are inclusive local dates; §6.2) |
-| GET | `/api/history` | Paged list |
+| GET | `/api/history` | Paged list. 🟡 (v1.43) `track` limits it to the pools of one track (403 for a track the account may not use; 400 with a `language` that is not on that track) |
 | GET | `/api/activity` | 🟡 (v1.43) The player's own runs by local date, for the play-history grid (§13.8, §13.9) |
 | DELETE | `/api/history/:id` | Delete one run |
 | GET | `/api/ghost-records` | 🟡 (v1.30) The player's best score per language in each period (null where there is none), which decides which Ghost options can be chosen (§4.4) |
@@ -1539,3 +1539,4 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.43 | Forfeiting a Japanese run on a language change | Submitting a Japanese run after the display language was changed away from Japanese is refused with 403 and the run is used up, the loss charged at issue staying: changing the display language is the player's own act, and the run's pool is one the account can no longer use |
 | 1.43 | Activity response | `GET /api/activity` returns the range it read with the days that have runs, `{ from, to, days: [{ date, code, natural }] }`, not a bare list, so the client can draw the year without working out the defaults. Only `from` or only `to` gives 365 days from or to it, and no more than 366 days can be asked for |
 | 1.43 | Bug found in `LocalDateSchema` | A month or day out of range (`2026-13-01`) made the schema throw a RangeError instead of failing, so a query with such a date answered 500 rather than 400 on the dashboard as well. Found by the activity tests and fixed with them |
+| 1.43 | History and dashboard by track | `GET /api/history` takes an optional `track`, and the dashboard summary (runs, keystrokes, best scores, highest CPU level) covers the track of the language shown instead of every track the account may use, so a track's screens never add up another track's play (§13.9) |

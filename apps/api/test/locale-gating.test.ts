@@ -154,6 +154,47 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       });
     });
 
+    describe('a track on its own (§13.9)', () => {
+      const history = async (search: string) =>
+        HistoryResponseSchema.parse((await call('GET', `/api/history${search}`)).json());
+      const summary = async (language: string) =>
+        DashboardResponseSchema.parse(
+          (await call('GET', `/api/dashboard?period=total&language=${language}`)).json(),
+        ).summary;
+
+      it('lists the history of one track, and the tracks add up to all of it', async () => {
+        await setLocale('ja');
+        const code = await history('?track=code');
+        const japanese = await history('?track=natural-ja');
+        const english = await history('?track=natural-en');
+        expect(code.entries.map((entry) => entry.language)).toEqual(['python']);
+        expect(japanese.entries.map((entry) => entry.language)).toEqual(['ja-word', 'ja-word']);
+        expect(english.entries.map((entry) => entry.language)).toEqual(['en-word']);
+        expect([code.total, japanese.total, english.total]).toEqual([1, 2, 1]);
+        expect((await history('')).total).toBe(4);
+      });
+
+      it('keeps the language filter inside the track, and refuses a language of another track', async () => {
+        await setLocale('ja');
+        expect((await history('?track=natural-ja&language=ja-word')).total).toBe(2);
+        const response = await call('GET', '/api/history?track=natural-en&language=ja-word');
+        expect(response.statusCode).toBe(400);
+      });
+
+      it('adds up the dashboard summary within the track of the language shown', async () => {
+        await setLocale('ja');
+        const japanese = await summary('ja-word');
+        expect(japanese.totalRuns).toBe(2);
+        expect(japanese.bestScores.map((entry) => entry.language)).toEqual(['ja-word']);
+        expect(japanese.highestCpuLevelBeaten).toBe(1);
+        const code = await summary('python');
+        expect(code.totalRuns).toBe(1);
+        expect(code.bestScores.map((entry) => entry.language)).toEqual(['python']);
+        expect(code.highestCpuLevelBeaten).toBeNull();
+        expect((await summary('en-word')).totalRuns).toBe(1);
+      });
+    });
+
     describe('for an account whose display language is not Japanese', () => {
       it('does not list a Japanese pool', async () => {
         await setLocale('en');
@@ -205,12 +246,20 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
         const dashboard = DashboardResponseSchema.parse(
           (await call('GET', '/api/dashboard?period=total&language=python')).json(),
         );
-        expect(dashboard.summary.totalRuns).toBe(2);
-        expect(dashboard.summary.bestScores.filter((entry) => isJapanese(entry.language))).toEqual(
-          [],
-        );
+        // The summary is that of the track of the language shown (§13.9): code has one run.
+        expect(dashboard.summary.totalRuns).toBe(1);
+        expect(dashboard.summary.bestScores.map((entry) => entry.language)).toEqual(['python']);
         // The only vs CPU win was in Japanese, so for this account there is none.
         expect(dashboard.summary.highestCpuLevelBeaten).toBeNull();
+      });
+
+      it('refuses the history of the Japanese track with 403', async () => {
+        await setLocale('en');
+        const response = await call('GET', '/api/history?track=natural-ja');
+        expect(response.statusCode).toBe(403);
+        expect(response.json()).toMatchObject({
+          message: expect.stringMatching(/is not available for this account/) as string,
+        });
       });
 
       it.each([

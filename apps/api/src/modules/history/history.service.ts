@@ -6,7 +6,7 @@ import type {
   User,
 } from '@typing-trainer/contracts';
 
-import { accountTracks, assertPoolAvailable } from '../../common/pool-access';
+import { accountTracks, assertPoolAvailable, assertTrackAvailable } from '../../common/pool-access';
 import { HistoryRepository, type HistoryRow } from './history.repository';
 
 /** The part of the repository the service needs, so tests can substitute it. */
@@ -18,7 +18,10 @@ export class HistoryService {
 
   async list(user: User, request: HistoryRequest): Promise<HistoryResponse> {
     if (request.language !== undefined) assertPoolAvailable(user, request.language);
-    const { rows, total } = await this.history.page(user.id, request, accountTracks(user));
+    // A named track limits the list to it; otherwise every track the account may use is listed.
+    if (request.track !== undefined) assertTrackAvailable(user, request.track);
+    const tracks = request.track === undefined ? accountTracks(user) : [request.track];
+    const { rows, total } = await this.history.page(user.id, request, tracks);
     return {
       entries: rows.map(toEntry),
       page: request.page,

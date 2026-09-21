@@ -1,14 +1,15 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import type {
-  ContentLanguage,
-  DashboardPoint,
-  DashboardRequest,
-  DashboardResponse,
-  User,
+import {
+  trackOf,
+  type ContentLanguage,
+  type DashboardPoint,
+  type DashboardRequest,
+  type DashboardResponse,
+  type User,
 } from '@typing-trainer/contracts';
 
 import { addDays } from '../../common/local-date';
-import { accountTracks, assertPoolAvailable } from '../../common/pool-access';
+import { assertPoolAvailable } from '../../common/pool-access';
 import { ConquestsRepository } from '../conquests/conquests.repository';
 import { LanguagesRepository } from '../languages/languages.repository';
 import { DashboardRepository } from './dashboard.repository';
@@ -73,7 +74,8 @@ export class DashboardService {
       points = best.map((row) => ({ x: row.day, score: row.score }));
     }
 
-    const tracks = accountTracks(user);
+    // The summary is that of the track of the language shown: each track stands on its own (§13.9).
+    const tracks = [trackOf(request.language)];
     const [totals, bests, highestCpuLevel] = await Promise.all([
       this.dashboard.totals(user.id, tracks),
       this.dashboard.bestPerLanguage(user.id, tracks),

@@ -3,23 +3,42 @@ import { z } from 'zod';
 import { ContentLanguageSchema } from './content-bundle';
 import { PlayModeSchema } from './play';
 import { RankingPeriodSchema } from './rankings';
+import { TrackSchema, trackOf } from './tracks';
 
 export const HISTORY_MAX_PAGE_SIZE = 50;
 export const HISTORY_DEFAULT_PAGE_SIZE = 20;
 
-/** Query of `GET /api/history` (§9.5, §6.3): every filter is optional. */
-export const HistoryRequestSchema = z.object({
-  period: RankingPeriodSchema.optional(),
-  mode: PlayModeSchema.optional(),
-  language: ContentLanguageSchema.optional(),
-  page: z.coerce.number().int().positive().default(1),
-  pageSize: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .max(HISTORY_MAX_PAGE_SIZE)
-    .default(HISTORY_DEFAULT_PAGE_SIZE),
-});
+/**
+ * Query of `GET /api/history` (§9.5, §6.3): every filter is optional. `track` limits the list to
+ * the pools of one track (§13.9); with a `language` too, the language must be on that track.
+ */
+export const HistoryRequestSchema = z
+  .object({
+    period: RankingPeriodSchema.optional(),
+    mode: PlayModeSchema.optional(),
+    language: ContentLanguageSchema.optional(),
+    track: TrackSchema.optional(),
+    page: z.coerce.number().int().positive().default(1),
+    pageSize: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(HISTORY_MAX_PAGE_SIZE)
+      .default(HISTORY_DEFAULT_PAGE_SIZE),
+  })
+  .superRefine((value, context) => {
+    if (
+      value.language !== undefined &&
+      value.track !== undefined &&
+      trackOf(value.language) !== value.track
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['track'],
+        message: 'must be the track of the language',
+      });
+    }
+  });
 
 /** One row of the history list (§6.3): timestamp, mode, language, KPM, accuracy, score, result. */
 export const HistoryEntrySchema = z.object({

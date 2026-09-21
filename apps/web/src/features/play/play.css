@@ -51,6 +51,12 @@ body {
 }
 
 .play-header {
+  padding: 10px 16px;
+  border: var(--sk-bw, 1px) solid var(--border);
+  border-radius: var(--sk-radius, 8px);
+  background: var(--sk-tile-bg, var(--panel));
+  box-shadow: var(--sk-shadow, none);
+  font-family: var(--sk-font, inherit);
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -198,9 +204,17 @@ body {
 .result-panel {
   margin-top: 16px;
   padding: 16px 20px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--panel);
+  border: var(--sk-bw, 1px) solid var(--border);
+  border-radius: var(--sk-radius, 8px);
+  background: var(--sk-tile-bg, var(--panel));
+  box-shadow: var(--sk-shadow, none);
+  font-family: var(--sk-font, inherit);
+}
+
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .result-panel h2 {

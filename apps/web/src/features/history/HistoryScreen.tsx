@@ -100,11 +100,11 @@ export function HistoryScreen() {
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 p-6">
+    <main className="ui-page mx-auto flex max-w-3xl flex-col gap-6 p-6">
       <Logo />
       <header className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-semibold">{t('history.title')}</h1>
-        <Link className="underline" to="/">
+        <h1 className="ui-title text-2xl font-semibold">{t('history.title')}</h1>
+        <Link className="ui-chip" to="/">
           {t('common.chooseLanguage')}
         </Link>
       </header>
@@ -122,7 +122,7 @@ export function HistoryScreen() {
         <label className="flex flex-col gap-1 text-sm">
           {t('history.period')}
           <select
-            className="rounded border border-slate-400 px-2 py-1"
+            className="ui-input px-2 py-1"
             value={filters.period}
             onChange={(event) => {
               setFilter('period', event.target.value as RankingPeriod | '');
@@ -139,7 +139,7 @@ export function HistoryScreen() {
         <label className="flex flex-col gap-1 text-sm">
           {t('history.mode')}
           <select
-            className="rounded border border-slate-400 px-2 py-1"
+            className="ui-input px-2 py-1"
             value={filters.mode}
             onChange={(event) => {
               setFilter('mode', event.target.value as PlayMode | '');
@@ -157,7 +157,7 @@ export function HistoryScreen() {
         <label className="flex flex-col gap-1 text-sm">
           {t('history.language')}
           <select
-            className="rounded border border-slate-400 px-2 py-1"
+            className="ui-input px-2 py-1"
             value={filters.language}
             onChange={(event) => {
               setFilter('language', event.target.value as ContentLanguage | '');
@@ -233,7 +233,7 @@ export function HistoryScreen() {
       <div className="flex items-center gap-3 text-sm">
         <button
           type="button"
-          className="rounded border border-slate-400 px-2 py-1 disabled:opacity-60"
+          className="ui-chip px-2 py-1"
           disabled={page <= 1}
           onClick={() => {
             setPage((current) => Math.max(1, current - 1));
@@ -244,7 +244,7 @@ export function HistoryScreen() {
         <span>{t('history.page', { page, last: lastPage })}</span>
         <button
           type="button"
-          className="rounded border border-slate-400 px-2 py-1 disabled:opacity-60"
+          className="ui-chip px-2 py-1"
           disabled={page >= lastPage}
           onClick={() => {
             setPage((current) => current + 1);

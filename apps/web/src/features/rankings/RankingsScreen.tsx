@@ -60,11 +60,11 @@ export function RankingsScreen() {
   const shown = entries?.key === entriesKey ? entries.rows : null;
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
+    <main className="ui-page mx-auto flex max-w-2xl flex-col gap-6 p-6">
       <Logo />
       <header className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-semibold">{t('rankings.title')}</h1>
-        <Link className="underline" to="/">
+        <h1 className="ui-title text-2xl font-semibold">{t('rankings.title')}</h1>
+        <Link className="ui-chip" to="/">
           {t('common.chooseLanguage')}
         </Link>
       </header>
@@ -92,11 +92,7 @@ export function RankingsScreen() {
                 key={entry.slug}
                 type="button"
                 aria-pressed={entry.slug === language}
-                className={
-                  entry.slug === language
-                    ? 'rounded bg-slate-800 px-3 py-1 text-white dark:bg-slate-200 dark:text-slate-900'
-                    : 'rounded border border-slate-400 px-3 py-1'
-                }
+                className={entry.slug === language ? 'ui-tab is-active' : 'ui-tab'}
                 onClick={() => {
                   setLanguage(entry.slug);
                 }}
@@ -112,11 +108,7 @@ export function RankingsScreen() {
                 key={entry}
                 type="button"
                 aria-pressed={entry === period}
-                className={
-                  entry === period
-                    ? 'rounded bg-slate-800 px-3 py-1 text-white dark:bg-slate-200 dark:text-slate-900'
-                    : 'rounded border border-slate-400 px-3 py-1'
-                }
+                className={entry === period ? 'ui-tab is-active' : 'ui-tab'}
                 onClick={() => {
                   setPeriod(entry);
                 }}

@@ -9,18 +9,17 @@ export function StartupScreen() {
   const load = useAuthStore((state) => state.load);
 
   return (
-    <main className="mx-auto flex max-w-sm flex-col gap-4 p-6" aria-busy={startupError === null}>
+    <main
+      className="ui-page mx-auto flex max-w-sm flex-col gap-4 p-6"
+      aria-busy={startupError === null}
+    >
       <Logo />
       {startupError === null ? (
         <p role="status">{t('common.loading')}</p>
       ) : (
         <>
           <p role="alert">{startupError}</p>
-          <button
-            className="self-start rounded bg-slate-800 px-3 py-2 text-white dark:bg-slate-200 dark:text-slate-900"
-            type="button"
-            onClick={() => void load()}
-          >
+          <button className="ui-btn self-start" type="button" onClick={() => void load()}>
             {t('common.tryAgain')}
           </button>
         </>

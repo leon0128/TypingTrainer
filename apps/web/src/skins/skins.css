@@ -401,3 +401,41 @@
     transform: none;
   }
 }
+
+/* ---- form fields and cards ---- */
+
+.ui-input {
+  border: var(--sk-bw) solid var(--border);
+  border-radius: var(--sk-radius);
+  background: var(--panel);
+  color: var(--fg);
+  font-family: var(--sk-font);
+}
+
+.ui-input:focus-visible {
+  outline: 3px solid var(--sk-accent2);
+  outline-offset: 1px;
+}
+
+.ui-card {
+  cursor: pointer;
+  font-family: var(--sk-font);
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.ui-card:hover:not(:disabled) {
+  border-color: var(--sk-accent);
+  box-shadow: var(--sk-shadow), var(--sk-glow);
+  transform: translateY(-2px);
+}
+
+.ui-card:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ui-chart {
+  color: var(--sk-accent);
+  filter: drop-shadow(var(--sk-glow));
+}

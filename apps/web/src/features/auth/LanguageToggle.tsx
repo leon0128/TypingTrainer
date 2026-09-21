@@ -25,11 +25,7 @@ export function LanguageToggle() {
           type="button"
           lang={entry}
           aria-pressed={entry === locale}
-          className={
-            entry === locale
-              ? 'rounded bg-slate-800 px-2 py-1 text-white dark:bg-slate-200 dark:text-slate-900'
-              : 'rounded border border-slate-400 px-2 py-1'
-          }
+          className={entry === locale ? 'ui-tab is-active' : 'ui-tab'}
           onClick={() => {
             setLocale(entry);
           }}

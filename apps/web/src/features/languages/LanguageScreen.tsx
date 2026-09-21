@@ -15,6 +15,7 @@ import { getGhostRecords } from '../../lib/api/ghost-records';
 import { listLanguages } from '../../lib/api/languages';
 import { startSession, type Opponent } from '../../lib/api/play';
 import { useRunSession } from '../play/run-session';
+import { Icon } from '../../components/Icon';
 import { Logo } from '../../components/Logo';
 
 type Mode = 'single' | 'cpu' | 'ghost';
@@ -24,8 +25,8 @@ const MODES: Mode[] = ['single', 'cpu', 'ghost'];
 /** The record a Ghost reproduces, by period (§4.4). */
 const GHOST_PERIODS: GhostPeriod[] = ['daily', 'weekly', 'total'];
 
-const SELECTED = 'rounded bg-slate-800 px-3 py-1 text-white dark:bg-slate-200 dark:text-slate-900';
-const UNSELECTED = 'rounded border border-slate-400 px-3 py-1';
+const SELECTED = 'ui-tab is-active';
+const UNSELECTED = 'ui-tab';
 
 /** Language selection (F-03): pick a language and the server issues a run of 20 blocks. */
 export function LanguageScreen() {
@@ -102,32 +103,38 @@ export function LanguageScreen() {
   };
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
+    <main className="ui-page mx-auto flex max-w-2xl flex-col gap-6 p-6">
       <Logo />
       <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-          <Link className="underline" to="/rankings">
+          <Link className="ui-chip" to="/rankings">
+            <Icon name="leaderboard" className="ui-icon" />
             {t('nav.rankings')}
           </Link>
-          <Link className="underline" to="/account">
+          <Link className="ui-chip" to="/account">
+            <Icon name="account_circle" className="ui-icon" />
             {t('nav.account')}
           </Link>
-          <Link className="underline" to="/settings">
+          <Link className="ui-chip" to="/settings">
+            <Icon name="palette" className="ui-icon" />
             {t('nav.appearance')}
           </Link>
-          <Link className="underline" to="/conquests">
+          <Link className="ui-chip" to="/conquests">
+            <Icon name="military_tech" className="ui-icon" />
             {t('nav.conquests')}
           </Link>
-          <Link className="underline" to="/dashboard">
+          <Link className="ui-chip" to="/dashboard">
+            <Icon name="insights" className="ui-icon" />
             {t('nav.dashboard')}
           </Link>
-          <Link className="underline" to="/history">
+          <Link className="ui-chip" to="/history">
+            <Icon name="history" className="ui-icon" />
             {t('nav.history')}
           </Link>
           {user !== null && (
             <p className="flex items-center gap-3">
               <span>{user.username}</span>
-              <button className="underline" type="button" onClick={() => void signOut()}>
+              <button className="ui-chip" type="button" onClick={() => void signOut()}>
                 {t('common.signOut')}
               </button>
             </p>
@@ -159,7 +166,7 @@ export function LanguageScreen() {
           <label className="flex items-center gap-2 text-sm">
             {t('home.cpuLevel', { min: CPU_MIN_LEVEL, max: CPU_MAX_LEVEL })}
             <input
-              className="w-20 rounded border border-slate-400 bg-transparent px-2 py-1"
+              className="ui-input w-20 px-2 py-1"
               inputMode="numeric"
               value={levelText}
               aria-invalid={!levelValid}
@@ -226,7 +233,7 @@ export function LanguageScreen() {
                 const noRecord = mode === 'ghost' && records !== null && record === null;
                 return (
                   <button
-                    className="w-full rounded border border-slate-400 px-3 py-4 disabled:opacity-60 hover:bg-slate-200 dark:hover:bg-slate-800"
+                    className="ui-tile ui-card w-full px-3 py-4"
                     type="button"
                     disabled={!canStart || (mode === 'ghost' && record === null)}
                     onClick={() => {

@@ -42,11 +42,11 @@ export function AccountScreen() {
   };
 
   return (
-    <main className="mx-auto flex max-w-xl flex-col gap-6 p-6">
+    <main className="ui-page mx-auto flex max-w-xl flex-col gap-6 p-6">
       <Logo />
       <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
-        <h1 className="text-2xl font-semibold">{t('account.title')}</h1>
-        <Link className="underline" to="/">
+        <h1 className="ui-title text-2xl font-semibold">{t('account.title')}</h1>
+        <Link className="ui-chip" to="/">
           {t('common.chooseLanguage')}
         </Link>
       </header>
@@ -72,7 +72,7 @@ export function AccountScreen() {
             <label htmlFor={passwordId}>{t('account.password')}</label>
             <input
               id={passwordId}
-              className="rounded border border-slate-400 bg-white px-3 py-2 dark:bg-slate-900"
+              className="ui-input px-3 py-2"
               type="password"
               value={password}
               onChange={(event) => {

@@ -66,11 +66,11 @@ export function ResultPanel({ metrics, submission, onRetry, onPlayAgain }: Resul
 
       <p className="result-actions">
         {submission.kind === 'failed' && submission.canRetry && (
-          <button type="button" onClick={onRetry}>
+          <button className="ui-tab" type="button" onClick={onRetry}>
             {t('result.sendAgain')}
           </button>
         )}
-        <button type="button" onClick={onPlayAgain}>
+        <button className="ui-btn" type="button" onClick={onPlayAgain}>
           {t('common.chooseLanguage')}
         </button>
       </p>

@@ -54,12 +54,10 @@ function sampleEngine() {
   return state;
 }
 
-const UNSELECTED = 'rounded border border-slate-400 px-3 py-1 disabled:opacity-50';
+const UNSELECTED = 'ui-chip';
 
 function choiceClass(active: boolean): string {
-  return active
-    ? 'rounded bg-slate-800 px-3 py-1 text-white dark:bg-slate-200 dark:text-slate-900'
-    : 'rounded border border-slate-400 px-3 py-1';
+  return active ? 'ui-tab is-active' : 'ui-tab';
 }
 
 /** Appearance settings (F-12, §8.2): font, size, theme, and colour set, with a live preview. */
@@ -80,11 +78,11 @@ export function SettingsScreen() {
   const engine = useMemo(() => sampleEngine(), []);
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
+    <main className="ui-page mx-auto flex max-w-2xl flex-col gap-6 p-6">
       <Logo />
       <header className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-semibold">{t('settings.title')}</h1>
-        <Link className="underline" to="/">
+        <h1 className="ui-title text-2xl font-semibold">{t('settings.title')}</h1>
+        <Link className="ui-chip" to="/">
           {t('common.chooseLanguage')}
         </Link>
       </header>

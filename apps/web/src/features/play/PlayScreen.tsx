@@ -18,6 +18,7 @@ import { ResultPanel } from './ResultPanel';
 import { useRunSession } from './run-session';
 import { onRunClock, type RunPhase, type RunStore } from './run-store';
 import './play.css';
+import { Icon } from '../../components/Icon';
 import { Logo } from '../../components/Logo';
 
 const noSubscribe = () => () => undefined;
@@ -151,7 +152,8 @@ function RunView({ run }: { run: RunStore }) {
           })}
         </span>
         <span className="stopwatch">
-          {t('play.left')} <span ref={remainingRef}>{formatSeconds(PLAY_DURATION_MS)}</span>
+          <Icon name="timer" className="ui-icon" /> {t('play.left')}{' '}
+          <span ref={remainingRef}>{formatSeconds(PLAY_DURATION_MS)}</span>
         </span>
       </header>
 

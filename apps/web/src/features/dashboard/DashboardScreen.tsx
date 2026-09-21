@@ -14,6 +14,7 @@ import { describeError } from '../../lib/api/describe-error';
 import { listLanguages } from '../../lib/api/languages';
 import { useAuthStore } from '../auth/auth-store';
 import { CHART_HEIGHT, CHART_PADDING, CHART_WIDTH, plot } from './chart';
+import { Icon } from '../../components/Icon';
 import { Logo } from '../../components/Logo';
 
 const PERIODS: { value: RankingPeriod; label: 'periodDaily' | 'periodWeekly' | 'periodTotal' }[] = [
@@ -55,7 +56,7 @@ function Chart({ points, period }: { points: DashboardPoint[]; period: RankingPe
   return (
     <svg
       viewBox={`0 0 ${String(CHART_WIDTH)} ${String(CHART_HEIGHT)}`}
-      className="w-full"
+      className="ui-chart w-full"
       role="img"
       aria-label={t('dashboard.chart')}
     >
@@ -167,17 +168,16 @@ export function DashboardScreen() {
   const move = (delta: number) => {
     if (shown?.from != null) setAnchor(addDays(shown.from, delta * step));
   };
-  const buttonClass = (active: boolean) =>
-    active
-      ? 'rounded bg-slate-800 px-3 py-1 text-white dark:bg-slate-200 dark:text-slate-900'
-      : 'rounded border border-slate-400 px-3 py-1';
+  const buttonClass = (active: boolean) => (active ? 'ui-tab is-active' : 'ui-tab');
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
+    <main className="ui-page mx-auto flex max-w-2xl flex-col gap-6 p-6">
       <Logo />
       <header className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
-        <Link className="underline" to="/">
+        <h1 className="ui-title text-2xl font-semibold">
+          <Icon name="insights" className="ui-icon" /> {t('dashboard.title')}
+        </h1>
+        <Link className="ui-chip" to="/">
           {t('common.chooseLanguage')}
         </Link>
       </header>
@@ -197,9 +197,13 @@ export function DashboardScreen() {
         <>
           {shown !== null && (
             <section aria-label={t('dashboard.summary')} className="grid grid-cols-2 gap-3 text-sm">
-              <p>{t('dashboard.totalRuns', { count: shown.summary.totalRuns })}</p>
-              <p>{t('dashboard.keystrokes', { count: shown.summary.totalKeystrokes })}</p>
-              <p className="col-span-2">
+              <p className="ui-tile p-3">
+                {t('dashboard.totalRuns', { count: shown.summary.totalRuns })}
+              </p>
+              <p className="ui-tile p-3">
+                {t('dashboard.keystrokes', { count: shown.summary.totalKeystrokes })}
+              </p>
+              <p className="ui-tile col-span-2 p-3">
                 {t('dashboard.bestScore')}{' '}
                 {shown.summary.bestScores.length === 0
                   ? '—'
@@ -210,7 +214,7 @@ export function DashboardScreen() {
                       )
                       .join(' · ')}
               </p>
-              <p className="col-span-2">
+              <p className="ui-tile col-span-2 p-3">
                 {t('dashboard.highestCpu', { level: shown.summary.highestCpuLevelBeaten ?? '—' })}
               </p>
             </section>
@@ -296,7 +300,9 @@ export function DashboardScreen() {
           ) : shown.points.every((point) => point.score === null) ? (
             <p role="status">{t('dashboard.empty')}</p>
           ) : (
-            <Chart points={shown.points} period={period} />
+            <div className="ui-panel p-3">
+              <Chart points={shown.points} period={period} />
+            </div>
           )}
         </>
       )}

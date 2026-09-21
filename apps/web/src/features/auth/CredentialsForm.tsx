@@ -54,7 +54,7 @@ export function CredentialsForm({
         <label htmlFor={usernameId}>{t('auth.username')}</label>
         <input
           id={usernameId}
-          className="rounded border border-slate-400 bg-white px-3 py-2 dark:bg-slate-900"
+          className="ui-input px-3 py-2"
           value={username}
           onChange={(event) => {
             setUsername(event.target.value);
@@ -70,7 +70,7 @@ export function CredentialsForm({
         <label htmlFor={passwordId}>{t('auth.password')}</label>
         <input
           id={passwordId}
-          className="rounded border border-slate-400 bg-white px-3 py-2 dark:bg-slate-900"
+          className="ui-input px-3 py-2"
           type="password"
           value={password}
           onChange={(event) => {
@@ -91,11 +91,7 @@ export function CredentialsForm({
         </p>
       )}
 
-      <button
-        className="rounded bg-slate-800 px-3 py-2 text-white disabled:opacity-60 dark:bg-slate-200 dark:text-slate-900"
-        type="submit"
-        disabled={busy}
-      >
+      <button className="ui-btn" type="submit" disabled={busy}>
         {busy ? t('common.working') : submitLabel}
       </button>
     </form>

@@ -69,28 +69,15 @@ describe('the shared header', () => {
     expect(await screen.findByText('home page')).toBeTruthy();
   });
 
-  it('names the player and offers to sign out, apart from the links', () => {
+  it('names the player, apart from the links, and has no sign-out', () => {
     renderAt('/');
     const menu = screen.getByRole('navigation', { name: 'Menu' });
     expect(within(menu).queryByText('ada')).toBeNull();
-    expect(within(menu).queryByRole('button', { name: 'Log out' })).toBeNull();
     expect(screen.getByRole('link', { name: /ada/ }).getAttribute('href')).toBe('/account');
-    // Sign-out is an icon: it has a name for assistive technology but no visible words.
-    const logout = screen.getByRole('button', { name: 'Log out' });
-    expect(logout.textContent).toBe('logout');
-  });
-
-  it('signs out', async () => {
-    const signOut = vi.fn(() => Promise.resolve());
-    useAuthStore.setState({ signOut });
-    renderAt('/');
-    await userEvent.click(screen.getByRole('button', { name: 'Log out' }));
-    expect(signOut).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: 'Log out' })).toBeNull();
   });
 
   it('asks first when the screen has something to lose, and stays on "cancel"', async () => {
-    const signOut = vi.fn(() => Promise.resolve());
-    useAuthStore.setState({ signOut });
     useLeaveGuard.getState().set('Leave?');
     const confirm = vi.spyOn(window, 'confirm');
     renderAt('/');
@@ -100,12 +87,8 @@ describe('the shared header', () => {
     expect(confirm).toHaveBeenLastCalledWith('Leave?');
     expect(screen.queryByText('rankings page')).toBeNull();
 
-    confirm.mockReturnValueOnce(false);
-    await userEvent.click(screen.getByRole('button', { name: 'Log out' }));
-    expect(signOut).not.toHaveBeenCalled();
-
     confirm.mockReturnValueOnce(true);
-    await userEvent.click(screen.getByRole('button', { name: 'Log out' }));
-    expect(signOut).toHaveBeenCalledTimes(1);
+    await userEvent.click(screen.getByRole('link', { name: 'High scores' }));
+    expect(await screen.findByText('rankings page')).toBeTruthy();
   });
 });

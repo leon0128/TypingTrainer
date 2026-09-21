@@ -103,6 +103,14 @@ describe('the account screen', () => {
     expect(screen.getByLabelText<HTMLInputElement>('Display name').value).toBe('');
   });
 
+  it('signs out from the bottom of the screen', async () => {
+    const signOut = vi.fn(() => Promise.resolve());
+    useAuthStore.setState({ signOut });
+    renderAccount();
+    await userEvent.click(screen.getByRole('button', { name: /Log out/ }));
+    expect(signOut).toHaveBeenCalledTimes(1);
+  });
+
   it('says why a display name was refused', async () => {
     vi.stubGlobal('fetch', () =>
       Promise.resolve(refusal(400, 'Bad Request', 'displayName: must be at most 24 characters')),

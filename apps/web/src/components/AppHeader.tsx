@@ -18,12 +18,11 @@ const LINKS = [
 
 /**
  * The header of every signed-in screen: the logo (home), the places to go, and — set apart from
- * them — who is playing and the way to sign out.
+ * them — who is playing.
  */
 export function AppHeader(): ReactElement {
   const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
-  const signOut = useAuthStore((state) => state.signOut);
   const guard = useLeaveGuard((state) => state.message);
 
   /** Asks first when the screen has something to lose, and stays put on "cancel". */
@@ -53,18 +52,6 @@ export function AppHeader(): ReactElement {
             <Icon name="person" className="ui-icon" />
             {user.displayName ?? user.username}
           </NavLink>
-          <button
-            className="ui-logout"
-            type="button"
-            aria-label={t('common.signOut')}
-            title={t('common.signOut')}
-            onClick={(event) => {
-              confirmLeave(event);
-              if (!event.defaultPrevented) void signOut();
-            }}
-          >
-            <Icon name="logout" className="ui-icon" />
-          </button>
         </div>
       )}
     </header>

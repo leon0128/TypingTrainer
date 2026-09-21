@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { useTranslation } from '../../i18n';
 import { deleteAccount, updateDisplayName } from '../../lib/api/auth';
 import { describeError } from '../../lib/api/describe-error';
+import { Icon } from '../../components/Icon';
 import { useAuthStore } from './auth-store';
 
 /**
@@ -15,6 +16,7 @@ export function AccountScreen() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const accountDeleted = useAuthStore((state) => state.accountDeleted);
+  const signOut = useAuthStore((state) => state.signOut);
   const signedIn = useAuthStore((state) => state.signedIn);
   const passwordId = useId();
   const displayNameId = useId();
@@ -177,6 +179,17 @@ export function AccountScreen() {
           </button>
         </form>
       </section>
+
+      <button
+        className="ui-logout self-start"
+        type="button"
+        onClick={() => {
+          void signOut();
+        }}
+      >
+        <Icon name="logout" className="ui-icon" />
+        {t('common.signOut')}
+      </button>
     </main>
   );
 }

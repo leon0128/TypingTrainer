@@ -271,7 +271,6 @@ describe('the language screen in Japanese', () => {
       'vs ゴースト',
     ]);
     expect(screen.getByRole('heading', { name: 'ステージを選ぶ' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'ログアウト' })).toBeTruthy();
     expectNoEnglish(container);
   });
 

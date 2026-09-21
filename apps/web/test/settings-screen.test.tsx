@@ -102,13 +102,16 @@ describe('the appearance settings screen', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Monochrome' }));
     await userEvent.click(screen.getByRole('button', { name: 'High contrast' }));
     await userEvent.click(screen.getByRole('button', { name: 'Fira Code' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Pixel' }));
 
     expect(requests.map((request) => request.body)).toEqual([
       { fontSize: 24 },
       { colorPreset: 'monochrome' },
       { theme: 'high-contrast' },
       { font: 'fira-code' },
+      { skin: 'pixel' },
     ]);
+    expect(document.documentElement.getAttribute('data-skin')).toBe('pixel');
     expect(document.documentElement.getAttribute('data-theme')).toBe('high-contrast');
     expect(document.documentElement.getAttribute('data-preset')).toBe('monochrome');
     expect(screen.getByRole('button', { name: '24 px' }).getAttribute('aria-pressed')).toBe('true');

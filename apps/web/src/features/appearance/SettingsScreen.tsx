@@ -2,6 +2,7 @@ import {
   COLOR_PRESETS,
   FONTS,
   FONT_SIZES,
+  SKINS,
   SOUND_PACKS,
   THEMES,
   type TypingProgram,
@@ -166,6 +167,23 @@ export function SettingsScreen() {
               onClick={() => void change({ fontSize: size })}
             >
               {t('settings.sizeValue', { size })}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1 font-medium">{t('settings.skin')}</legend>
+        <div className="flex flex-wrap gap-2">
+          {SKINS.map((skin) => (
+            <button
+              key={skin}
+              type="button"
+              aria-pressed={skin === appearance.skin}
+              className={choiceClass(skin === appearance.skin)}
+              onClick={() => void change({ skin })}
+            >
+              {t(`settings.skins.${skin}`)}
             </button>
           ))}
         </div>

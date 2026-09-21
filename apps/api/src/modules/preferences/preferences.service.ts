@@ -37,6 +37,7 @@ export class PreferencesService {
         fontSize: row.font_size ?? DEFAULT_APPEARANCE.fontSize,
         theme: row.theme ?? DEFAULT_APPEARANCE.theme,
         colorPreset: row.color_preset ?? DEFAULT_APPEARANCE.colorPreset,
+        skin: row.skin ?? DEFAULT_APPEARANCE.skin,
       }),
       ...SoundSchema.parse({
         soundPack: row.sound_pack ?? DEFAULT_SOUND.soundPack,

@@ -238,6 +238,14 @@
     "size": "Size",
     "sizeValue": "{{size}} px",
     "theme": "Theme",
+    "skin": "Style",
+    "skins": {
+      "classic": "Classic",
+      "neon": "Neon",
+      "pixel": "Pixel",
+      "fantasy": "Fantasy",
+      "pop": "Pop"
+    },
     "colors": "Colors",
     "sounds": "Key sounds",
     "soundPack": "Sound pack",

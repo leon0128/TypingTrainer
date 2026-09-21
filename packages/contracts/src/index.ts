@@ -114,6 +114,8 @@ export {
   SoundVolumeSchema,
   THEMES,
   ThemeSchema,
+  SKINS,
+  SkinSchema,
   UpdatePreferencesRequestSchema,
 } from './preferences';
 export type {
@@ -126,6 +128,7 @@ export type {
   Sound,
   SoundPack,
   Theme,
+  Skin,
   UpdatePreferencesRequest,
 } from './preferences';
 export { GhostRecordsResponseSchema, LanguageGhostRecordsSchema } from './ghost-records';

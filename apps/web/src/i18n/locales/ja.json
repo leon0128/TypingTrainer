@@ -237,6 +237,14 @@
     "size": "サイズ",
     "sizeValue": "{{size}} px",
     "theme": "テーマ",
+    "skin": "スタイル",
+    "skins": {
+      "classic": "クラシック",
+      "neon": "ネオン",
+      "pixel": "ピクセル",
+      "fantasy": "ファンタジー",
+      "pop": "ポップ"
+    },
     "colors": "配色",
     "sounds": "サウンド",
     "soundPack": "サウンドの種類",

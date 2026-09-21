@@ -951,7 +951,7 @@ Design points:
 | DELETE | `/api/history/:id` | Delete one run |
 | GET | `/api/ghost-records` | 🟡 (v1.30) The player's best score per language in each period (null where there is none), which decides which Ghost options can be chosen (§4.4) |
 | GET | `/api/cpu-conquests` | Conquest state of every enabled language: highest level beaten, the levels beaten, and their count (§4.3.4) |
-| GET / PUT | `/api/preferences` | 🟡 (v1.25, v1.26) `GET` returns the time zone (read only), the display language, and the appearance (`font`, `fontSize`, `theme`, `colorPreset`); `PUT` changes the settings sent (`locale`, those four, and 🟡 (v1.32) `soundPack` and `soundVolume`) and refuses anything else with 400 |
+| GET / PUT | `/api/preferences` | 🟡 (v1.25, v1.26) `GET` returns the time zone (read only), the display language, and the appearance (`font`, `fontSize`, `theme`, `colorPreset`, and 🟡 `skin`); `PUT` changes the settings sent (`locale`, those five, and 🟡 (v1.32) `soundPack` and `soundVolume`) and refuses anything else with 400 |
 
 🟡 (v1.13) Every route requires a signed-in session unless it is explicitly public; the public routes are the health checks, `GET /api/languages`, and register, login, and logout. Errors use one body shape, `{ statusCode, error, message }`, and server errors never include their cause.
 

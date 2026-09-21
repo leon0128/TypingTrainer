@@ -44,8 +44,8 @@ function pick(source: Settings, patch: Partial<Settings>): Partial<Settings> {
   );
 }
 
-function appearanceOf({ font, fontSize, theme, colorPreset }: Settings): Appearance {
-  return { font, fontSize, theme, colorPreset };
+function appearanceOf({ font, fontSize, theme, colorPreset, skin }: Settings): Appearance {
+  return { font, fontSize, theme, colorPreset, skin };
 }
 
 function soundOf({ soundPack, soundVolume }: Settings): Sound {

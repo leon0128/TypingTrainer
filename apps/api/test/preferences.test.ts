@@ -5,6 +5,7 @@ import {
   COLOR_PRESETS,
   FONTS,
   FONT_SIZES,
+  SKINS,
   PreferencesSchema,
   SOUND_PACKS,
   THEMES,
@@ -23,6 +24,7 @@ const APPEARANCE_DEFAULTS = {
   fontSize: 18,
   theme: 'system',
   colorPreset: 'standard',
+  skin: 'classic',
 };
 
 /** Silent until chosen, and low when it is (§8.3). */
@@ -126,6 +128,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
     ['a size sent as text', { fontSize: '18' }],
     ['an unknown theme', { theme: 'sepia' }],
     ['an unknown color preset', { colorPreset: 'neon' }],
+    ['an unknown skin', { skin: 'sepia' }],
     ['an unknown sound pack', { soundPack: 'thunder' }],
     ['a volume above 100', { soundVolume: 101 }],
     ['a negative volume', { soundVolume: -1 }],
@@ -213,10 +216,10 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
 
   describe('appearance', () => {
     const appearance = async (token: string) => {
-      const { font, fontSize, theme, colorPreset } = PreferencesSchema.parse(
+      const { font, fontSize, theme, colorPreset, skin } = PreferencesSchema.parse(
         (await call(token, 'GET')).json(),
       );
-      return { font, fontSize, theme, colorPreset };
+      return { font, fontSize, theme, colorPreset, skin };
     };
 
     it('stores each setting and keeps the ones not sent', async () => {
@@ -228,14 +231,20 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
         fontSize: 24,
         theme: 'system',
         colorPreset: 'standard',
+        skin: 'classic',
       });
 
-      await call(me.token, 'PUT', { theme: 'high-contrast', colorPreset: 'okabe-ito' });
+      await call(me.token, 'PUT', {
+        theme: 'high-contrast',
+        colorPreset: 'okabe-ito',
+        skin: 'pixel',
+      });
       expect(await appearance(me.token)).toEqual({
         font: 'fira-code',
         fontSize: 24,
         theme: 'high-contrast',
         colorPreset: 'okabe-ito',
+        skin: 'pixel',
       });
     });
 
@@ -246,6 +255,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
         ...FONT_SIZES.map((fontSize) => ({ fontSize })),
         ...THEMES.map((theme) => ({ theme })),
         ...COLOR_PRESETS.map((colorPreset) => ({ colorPreset })),
+        ...SKINS.map((skin) => ({ skin })),
       ]) {
         expect((await call(me.token, 'PUT', body)).statusCode, JSON.stringify(body)).toBe(200);
       }
@@ -266,6 +276,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
         fontSize: 18,
         theme: 'system',
         colorPreset: 'standard',
+        skin: 'classic',
       });
     });
 
@@ -300,6 +311,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('/api/preferences (TEST_DATABASE
       ['font_size', 17],
       ['theme', 'sepia'],
       ['color_preset', 'neon'],
+      ['skin', 'sepia'],
     ])('refuses %s = %s in the database, whatever wrote it', async (column, value) => {
       const me = await signedIn('UTC');
       await call(me.token, 'PUT', { theme: 'dark' });

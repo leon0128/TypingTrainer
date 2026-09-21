@@ -200,6 +200,7 @@ describe('the sign-in notice', () => {
               fontSize: 18,
               theme: 'system',
               colorPreset: 'standard',
+              skin: 'classic',
               soundPack: 'off',
               soundVolume: 30,
             },

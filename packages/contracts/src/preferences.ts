@@ -22,6 +22,10 @@ export const FontSizeSchema = z.union(FONT_SIZES.map((size) => z.literal(size)))
 export const THEMES = ['system', 'light', 'dark', 'high-contrast'] as const;
 export const ThemeSchema = z.enum(THEMES);
 
+/** Looks of the whole app, apart from the light or dark theme; `classic` is the plain original. */
+export const SKINS = ['classic', 'neon', 'pixel', 'fantasy', 'pop'] as const;
+export const SkinSchema = z.enum(SKINS);
+
 /** Color sets for typed, pending, cursor, and error text (§8.2). */
 export const COLOR_PRESETS = ['standard', 'okabe-ito', 'monochrome'] as const;
 export const ColorPresetSchema = z.enum(COLOR_PRESETS);
@@ -32,6 +36,7 @@ export const DEFAULT_APPEARANCE = {
   fontSize: 18,
   theme: 'system',
   colorPreset: 'standard',
+  skin: 'classic',
 } as const;
 
 /** Key sound packs (§8.3): three, plus off. */
@@ -57,6 +62,7 @@ export const AppearanceSchema = z.object({
   fontSize: FontSizeSchema,
   theme: ThemeSchema,
   colorPreset: ColorPresetSchema,
+  skin: SkinSchema,
 });
 
 /**
@@ -80,6 +86,7 @@ export const UpdatePreferencesRequestSchema = z
     fontSize: FontSizeSchema.optional(),
     theme: ThemeSchema.optional(),
     colorPreset: ColorPresetSchema.optional(),
+    skin: SkinSchema.optional(),
     soundPack: SoundPackSchema.optional(),
     soundVolume: SoundVolumeSchema.optional(),
   })
@@ -92,6 +99,7 @@ export type Locale = z.infer<typeof LocaleSchema>;
 export type Font = z.infer<typeof FontSchema>;
 export type FontSize = z.infer<typeof FontSizeSchema>;
 export type Theme = z.infer<typeof ThemeSchema>;
+export type Skin = z.infer<typeof SkinSchema>;
 export type ColorPreset = z.infer<typeof ColorPresetSchema>;
 export type Appearance = z.infer<typeof AppearanceSchema>;
 export type SoundPack = z.infer<typeof SoundPackSchema>;

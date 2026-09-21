@@ -45,6 +45,7 @@ export function applyAppearance(
   root.style.setProperty('--code-size', `${String(appearance.fontSize)}px`);
   root.setAttribute('data-theme', resolved);
   root.setAttribute('data-preset', appearance.colorPreset);
+  root.setAttribute('data-skin', appearance.skin);
   root.style.colorScheme = resolved === 'light' ? 'light' : 'dark';
   void loadFont(appearance.font);
 }

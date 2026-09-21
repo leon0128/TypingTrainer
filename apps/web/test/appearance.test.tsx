@@ -70,7 +70,13 @@ describe('resolveTheme', () => {
 describe('applyAppearance', () => {
   it('sets every colour of the palette, the font, the size, and the theme markers', () => {
     applyAppearance(
-      { font: 'fira-code', fontSize: 24, theme: 'high-contrast', colorPreset: 'okabe-ito' },
+      {
+        font: 'fira-code',
+        fontSize: 24,
+        theme: 'high-contrast',
+        colorPreset: 'okabe-ito',
+        skin: 'pixel',
+      },
       false,
     );
     const palette = PALETTES['okabe-ito']['high-contrast'];
@@ -108,12 +114,14 @@ describe('the appearance store', () => {
       fontSize: 20,
       theme: 'dark',
       colorPreset: 'monochrome',
+      skin: 'fantasy',
     };
     vi.stubGlobal('fetch', () => Promise.resolve(json(preferences(stored as Appearance))));
     await useAppearance.getState().load();
     expect(useAppearance.getState().appearance).toEqual(stored);
     expect(property('--code-size')).toBe('20px');
     expect(root().getAttribute('data-preset')).toBe('monochrome');
+    expect(root().getAttribute('data-skin')).toBe('fantasy');
   });
 
   it('keeps the defaults, and says so, when the settings cannot be loaded', async () => {
@@ -268,6 +276,7 @@ describe('the app', () => {
                   fontSize: 14,
                   theme: 'light',
                   colorPreset: 'okabe-ito',
+                  skin: 'classic',
                 }),
               )
             : json({ languages: [] }),
@@ -283,7 +292,13 @@ describe('the app', () => {
 
   it('drops it on the sign-in screen when nobody is signed in', async () => {
     applyAppearance(
-      { font: 'fira-code', fontSize: 24, theme: 'dark', colorPreset: 'monochrome' },
+      {
+        font: 'fira-code',
+        fontSize: 24,
+        theme: 'dark',
+        colorPreset: 'monochrome',
+        skin: 'classic',
+      },
       false,
     );
     vi.stubGlobal('fetch', () =>

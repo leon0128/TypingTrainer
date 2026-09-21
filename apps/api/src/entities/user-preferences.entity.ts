@@ -17,6 +17,7 @@ import { User } from './user.entity';
   'chk_user_preferences_color_preset',
   `"color_preset" IN ('standard', 'okabe-ito', 'monochrome')`,
 )
+@Check('chk_user_preferences_skin', `"skin" IN ('classic', 'neon', 'pixel', 'fantasy', 'pop')`)
 @Check('chk_user_preferences_sound_pack', `"sound_pack" IN ('off', 'mechanical', 'soft', 'beep')`)
 @Check('chk_user_preferences_sound_volume', `"sound_volume" BETWEEN 0 AND 100`)
 export class UserPreferences {
@@ -38,6 +39,9 @@ export class UserPreferences {
 
   @Column({ name: 'color_preset', type: 'text', default: 'standard' })
   colorPreset!: string;
+
+  @Column({ name: 'skin', type: 'text', default: 'classic' })
+  skin!: string;
 
   /** Key sound pack, `off` until chosen (§8.3). */
   @Column({ name: 'sound_pack', type: 'text', default: 'off' })

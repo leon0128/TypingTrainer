@@ -1,20 +1,21 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { CompileError, compileBlock, type Token } from '@typing-trainer/block-compiler';
 import {
   CODE_LANGUAGES,
-  type ContentBundle,
+  CONTENT_LANGUAGES,
   type CodeLanguage,
   type ContentLanguage,
   type TypingProgram,
 } from '@typing-trainer/contracts';
 
-import { buildBundle, bundlePath, serializeBundle } from './bundle';
+import { buildBundle, bundlePath, serializeBundle, type BuiltBundle } from './bundle';
 import { constraintDiagnostics } from './constraints';
 import { dedupeDiagnostics, type DedupeEntry } from './dedupe';
 import { SYNTAX_STAGES, type ContentDiagnostic } from './diagnostics';
 import { LANGUAGES } from './languages';
+import { GENERATED_FILES, runNaturalPipeline } from './natural/pipeline';
 import { toolchainDiagnostics, type ToolchainBlock } from './toolchains';
 import { parseWrapped, treeSitterDiagnostics } from './tree-sitter';
 import { prettierDiagnostics, typescriptSyntaxDiagnostics } from './typescript-checks';
@@ -31,15 +32,14 @@ export interface PipelineOptions {
   readonly toolchains?: boolean;
 }
 
-export interface BuiltBundle {
-  readonly bundle: ContentBundle;
-  readonly text: string;
-}
+export type { BuiltBundle };
 
 export interface PipelineResult {
   readonly diagnostics: readonly ContentDiagnostic[];
   /** One entry per language with at least one block; only complete when there are no diagnostics. */
   readonly bundles: ReadonlyMap<ContentLanguage, BuiltBundle>;
+  /** Generated files other than bundles, by repository-relative path (§13.4). */
+  readonly files: ReadonlyMap<string, string>;
 }
 
 /**
@@ -106,7 +106,11 @@ export async function runPipeline({
     }
   }
 
-  return { diagnostics, bundles };
+  const natural = runNaturalPipeline(root);
+  diagnostics.push(...natural.diagnostics);
+  for (const [pool, built] of natural.bundles) bundles.set(pool, built);
+
+  return { diagnostics, bundles, files: natural.files };
 }
 
 interface BlockResult {
@@ -162,11 +166,14 @@ async function checkBlock(
   }
 }
 
-/** Writes the bundles and removes bundles of languages that no longer have blocks. */
+/**
+ * Writes the bundles and the other generated files, and removes those whose sources are gone.
+ * Returns the paths written.
+ */
 export function writeBundles(root: string, result: PipelineResult): string[] {
   mkdirSync(join(root, 'content', 'dist'), { recursive: true });
   const written: string[] = [];
-  for (const language of CODE_LANGUAGES) {
+  for (const language of CONTENT_LANGUAGES) {
     const path = join(root, bundlePath(language));
     const built = result.bundles.get(language);
     if (built === undefined) {
@@ -176,13 +183,23 @@ export function writeBundles(root: string, result: PipelineResult): string[] {
       written.push(bundlePath(language));
     }
   }
+  for (const path of GENERATED_FILES) {
+    const text = result.files.get(path);
+    if (text === undefined) {
+      rmSync(join(root, path), { force: true });
+    } else {
+      mkdirSync(dirname(join(root, path)), { recursive: true });
+      writeFileSync(join(root, path), text);
+      written.push(path);
+    }
+  }
   return written;
 }
 
-/** Compares committed bundles with freshly built ones (§5.2 `content:check`). */
+/** Compares committed bundles and generated files with freshly built ones (§5.2 `content:check`). */
 export function bundleDiagnostics(root: string, result: PipelineResult): ContentDiagnostic[] {
   const diagnostics: ContentDiagnostic[] = [];
-  for (const language of CODE_LANGUAGES) {
+  for (const language of CONTENT_LANGUAGES) {
     const file = bundlePath(language);
     const path = join(root, file);
     const built = result.bundles.get(language);
@@ -196,6 +213,24 @@ export function bundleDiagnostics(root: string, result: PipelineResult): Content
       report('missing', 'the bundle has not been built; run pnpm content:build');
     } else if (built !== undefined && committed !== built.text) {
       report('stale', 'the bundle does not match the block sources; run pnpm content:build');
+    }
+  }
+  for (const file of GENERATED_FILES) {
+    const path = join(root, file);
+    const built = result.files.get(file);
+    const committed = existsSync(path) ? readFileSync(path, 'utf8') : undefined;
+    const report = (code: string, message: string): void => {
+      diagnostics.push({ file, line: 1, column: 1, stage: 'bundle', code, message });
+    };
+    if (built === undefined && committed !== undefined) {
+      report(
+        'unexpected',
+        'this file is generated and nothing is left to generate it from; run pnpm content:build',
+      );
+    } else if (built !== undefined && committed === undefined) {
+      report('missing', 'the file has not been generated; run pnpm content:build');
+    } else if (built !== undefined && committed !== built) {
+      report('stale', 'the file does not match the block sources; run pnpm content:build');
     }
   }
   return diagnostics;

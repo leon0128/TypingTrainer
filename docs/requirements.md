@@ -536,7 +536,7 @@ Because fragments such as "just a variable declaration" are legal blocks, the ch
 
 A block that tree-sitter wrongly rejects is rewritten rather than exempted, keeping the regular CI check simple.
 
-Review happens through pull requests: a block reaches production only when the bundle is rebuilt and merged. No draft/approval state machine is needed in the database.
+Natural-language pools are authored as one file each and have their own pipeline (§13.4). Review happens through pull requests: a block reaches production only when the bundle is rebuilt and merged. No draft/approval state machine is needed in the database.
 
 ### 5.3 Block Selection 🔵
 
@@ -1149,25 +1149,36 @@ The rating of §4.3.5 is computed independently for each track. The languages in
 
 ### 13.4 Content
 
-Natural-language blocks are short, so one file holds many, one block per line (paragraphs separated by a blank line):
+Natural-language blocks are short, so a pool is one file, not a file a block:
 
 ```
 content/natural/en/{word,line,paragraph}.txt
-content/natural/ja/{word,line,paragraph}.txt     # each kanji is followed by its reading: 今日[きょう]は晴[は]れです
+content/natural/ja/{word,line,paragraph}.txt     # a kanji is followed by its reading: 今日[きょう]は晴[は]れです
+content/natural/ja/readings.txt                  # generated: every kanji word with its reading
 ```
 
-`blockId` is `<pool>/<number>` (`ja-line/0001`). The output is one bundle per pool, `content/dist/<pool>.bundle.json`, with the revision computed as for code. Authoring is offline, as in §5.2: drafted with an LLM, committed, and reviewed in a pull request.
+A word or sentence file has a block on every line; a paragraph file has blocks of consecutive lines separated by blank lines. Lines starting with `#` are comments. Whitespace at either end of a line, tabs, and carriage returns are errors, since a block is typed as written. Authoring is offline, as in §5.2: drafted with an LLM, committed, and reviewed in a pull request.
+
+**Ids and bundles.** `blockId` is `<pool>/<first eight hex digits of the SHA-256 of the block's text>` (`ja-line/3f9a1c2e`), not a number: it does not depend on where in the file a block is, so adding or removing a block changes no other id and the bundle diff stays local. A hash shared by two different blocks is an error. The output is one bundle per pool, `content/dist/<pool>.bundle.json`, built and revised as for code.
+
+**Readings.** A reading in brackets follows the run of kanji before it and belongs to all of it (`学校[がっこう]`); every other character is its own reading. Every kanji needs one, and a reading is hiragana, katakana, or `ー`. Whether a reading is *right* cannot be checked without a dictionary, so `readings.txt` lists every distinct kanji word with the reading it is given, sorted, and `content:build` writes it and `content:check` finds it out of date: a reviewer reads only the pairs a change adds, and a word given two readings is easy to see. An automatic check against a morphological analyzer was considered and left out (a dictionary of about 20 MB, and false alarms on context-dependent readings that would need an allowlist).
+
+The pipeline is the stages of §5.2 that apply, with one more, `parse`, for the notation: discover (files and names), parse, constraints, compile, dedupe, and bundle. A pool with any diagnostic gets no bundle.
 
 | Check | Rule |
 | --- | --- |
-| Characters, English | Printable ASCII only |
-| Characters, Japanese | Hiragana, katakana, the 2,136 jōyō kanji, and `ー、。`; every kanji is annotated with a reading that is kana only |
-| Punctuation | Only **paragraph** blocks contain commas and periods (`,` `.` in English, `、` `。` in Japanese); words and sentences contain none |
-| Shape | Word: one word. Sentence: one sentence on one line, at most 88 columns. Paragraph: 2–10 lines, each at most 88 columns |
-| Duplicates | Content hash, plus token 4-gram similarity across the pool (§5.2) |
-| Compile | The reading must convert to romaji (§13.5) |
+| Characters, English | Letters; a sentence or paragraph also has spaces, `'`, and `-`; only a paragraph has `,` and `.`. No digits or other marks |
+| Characters, Japanese | Hiragana, katakana, `ー`, and kanji of the jōyō kanji table (2,136, listed in `joyo-kanji.txt`, copied from the table as published on ja.wikipedia.org, with the usual shapes 叱 填 剥 頬 for the four the table lists as 𠮟 塡 剝 頰, and 々); only a paragraph has `、` and `。` |
+| Word | English: 2–16 letters. Japanese: 2–12 kana of reading. No space and no marks |
+| Sentence | English: 3–15 words, single spaces, every word with a letter. Japanese: at least 6 kana of reading. No `, .` or `、。` |
+| Paragraph | 2–10 lines; English lines of 2–15 words; at least one comma or period (`、` or `。`), because only paragraphs have them |
+| Width | Every line is at most 88 columns (§8.1). Japanese: 44 characters of text (full-width is 2 columns) and 88 columns of romaji, counted on the spelling shown |
+| Duplicates | Identical blocks in a pool (text lowercased for English) in every pool; for sentences and paragraphs also a Jaccard similarity of 0.85 or more, of word 3-grams (English) or reading 4-grams (Japanese). The threshold is provisional, and set from the most similar pair of distinct blocks once there is content to measure |
+| Compile | English: §13.6. Japanese: §13.5; text that cannot be typed is an error at its position |
 
-Initial size is 500 words, 200 sentences, and 60 paragraphs per language.
+**Word pools move on by themselves.** A word block is a word with no space after it: the next block starts as soon as one is finished, since a trailing space that could be skipped would still be credited as a keystroke (§3.5).
+
+Initial size is 500 words, 200 sentences, and 60 paragraphs per language, added a language at a time.
 
 ### 13.5 Japanese romaji
 
@@ -1512,3 +1523,9 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.43 | Japanese bundle shape | A `ja-*` bundle holds only romaji units and line breaks, and no other pool holds a romaji unit, checked by `ContentBundleSchema` |
 | 1.43 | Shown spelling | Hepburn first (`shi`, `chi`, `tsu`, `fu`, `ji`); the shortest spelling sets `canonicalKeystrokes` and what the CPU types, which need not be the one shown |
 | 1.43 | Romaji compiler | `compileJapanese` in `block-compiler` turns lines of segments (a kanji with its reading, or kana) into a program; the pipeline that reads them from files is a later commit |
+| 1.43 | Block ids from a hash | A natural-language block's id is its pool and the first eight hex digits of the SHA-256 of its text, not a number in the file: inserting or removing a block would otherwise change every later id and the whole bundle. This replaces the `ja-line/0001` of the first v1.43 draft |
+| 1.43 | Readings file | `content/natural/ja/readings.txt` lists every kanji word with its reading, generated by `content:build` and compared by `content:check`, so a reviewer reads only the new pairs. An automatic reading check with a morphological analyzer was left out: a 20 MB dictionary and false alarms on readings that depend on context |
+| 1.43 | Jōyō kanji as data | The 2,136 kanji are a data file copied from the published table (checked for the count, uniqueness, the 2010 additions, and the five kanji removed in 2010), with 叱 填 剥 頬 accepted as the usual shapes of the four the table lists as 𠮟 塡 剝 頰, and 々 |
+| 1.43 | English characters | Letters, spaces, `'`, and `-`; `,` and `.` only in paragraphs; no digits. A word is letters only |
+| 1.43 | Words advance without a space | A word block has no trailing space, because an optional trailing separator would be credited as a keystroke when passed (§3.5); the next word starts as soon as one is finished |
+| 1.43 | Paragraph punctuation | A paragraph must contain at least one comma or period (`、` or `。`), since only paragraphs have them (§13.4) |

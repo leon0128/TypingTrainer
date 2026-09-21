@@ -14,3 +14,23 @@ export {
   toolchainVersions,
 } from './toolchains';
 export type { ToolchainBlock } from './toolchains';
+export { compileEnglish } from './natural/english';
+export { JOYO_KANJI, isAllowedKanji, isKana, isKanji } from './natural/joyo';
+export { parseRuby } from './natural/ruby';
+export type { RubyError, RubySegment } from './natural/ruby';
+export { blockSource, parsePoolFile } from './natural/source';
+export type { SourceBlock, SourceLine } from './natural/source';
+export {
+  GENERATED_FILES,
+  READINGS_FILE,
+  naturalBlockId,
+  poolSourcePath,
+  runNaturalPipeline,
+} from './natural/pipeline';
+export type { NaturalResult } from './natural/pipeline';
+export {
+  NATURAL_SIMILARITY_THRESHOLD,
+  englishGrams,
+  japaneseGrams,
+  naturalDedupeDiagnostics,
+} from './natural/dedupe';

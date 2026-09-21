@@ -1,6 +1,7 @@
 /** Pipeline stages of the content CLI, in order (§5.2). */
 export type ContentStage =
   | 'discover'
+  | 'parse'
   | 'format'
   | 'toolchain'
   | 'tree-sitter'

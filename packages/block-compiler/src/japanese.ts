@@ -32,9 +32,10 @@ export class JapaneseCompileError extends Error {
     readonly line: number,
     /** Zero-based position in the line's joined reading, or 0 when the whole line is at fault. */
     readonly column: number,
-    message: string,
+    /** What is wrong, without the position that the message adds. */
+    readonly detail: string,
   ) {
-    super(`line ${String(line + 1)}, reading position ${String(column + 1)}: ${message}`);
+    super(`line ${String(line + 1)}, reading position ${String(column + 1)}: ${detail}`);
     this.name = 'JapaneseCompileError';
   }
 }

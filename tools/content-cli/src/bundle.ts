@@ -8,6 +8,11 @@ import {
   type TypingProgram,
 } from '@typing-trainer/contracts';
 
+export interface BuiltBundle {
+  readonly bundle: ContentBundle;
+  readonly text: string;
+}
+
 /** Builds a bundle: blocks sorted by blockId and a revision hashing their canonical JSON. */
 export function buildBundle(
   language: ContentLanguage,

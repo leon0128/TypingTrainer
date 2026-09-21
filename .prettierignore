@@ -8,3 +8,5 @@ content/blocks/
 content/dist/
 # The specification is hand-formatted; keep Prettier from reflowing its tables.
 docs/
+# Natural-language pools are text whose exact characters are under test (§13.4).
+content/natural/

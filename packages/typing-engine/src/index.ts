@@ -9,7 +9,7 @@ export {
   withTypedClosers,
 } from './engine';
 export type { EngineState, KeyResult, KeystrokeCounters, Verdict } from './engine';
-export { RUN_BLOCK_COUNT, drawBlockIds } from './draw';
+export { RUN_BLOCK_COUNTS, drawBlockIds, runBlockCount } from './draw';
 export { classifyKey } from './key-classification';
 export type { KeyDisposition, KeyInput } from './key-classification';
 export { PLAY_DURATION_MS, computeAccuracy, computeMetrics } from './metrics';
@@ -42,6 +42,7 @@ export type {
 export {
   CPU_MAX_LEVEL,
   CPU_MIN_LEVEL,
+  CPU_TOP_KPM,
   cpuBaseKpm,
   cpuBlockMultipliers,
   cpuEffectiveKeystrokes,

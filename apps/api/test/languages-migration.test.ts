@@ -31,7 +31,18 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       await database.drop();
     });
 
-    it('rolls back to the old table, without the tracks', async () => {
+    const blockCheck = async () =>
+      (
+        await query<{ definition: string }[]>(
+          `SELECT pg_get_constraintdef(oid) AS definition FROM pg_constraint
+           WHERE conname = 'chk_issued_runs_blocks'`,
+        )
+      )[0]?.definition ?? '';
+
+    it('rolls back the block count check, and then to the old table without the tracks', async () => {
+      expect(await blockCheck()).toMatch(/>= 1\).*<= 300/);
+      await database.dataSource.undoLastMigration();
+      expect(await blockCheck()).toContain('= 20');
       await database.dataSource.undoLastMigration();
       expect(await tables()).toContain('programming_languages');
       expect(await tables()).not.toContain('languages');
@@ -66,6 +77,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       );
 
       await database.dataSource.runMigrations();
+      expect(await blockCheck()).toMatch(/>= 1\).*<= 300/);
 
       expect(await tables()).toContain('languages');
       expect(await tables()).not.toContain('programming_languages');

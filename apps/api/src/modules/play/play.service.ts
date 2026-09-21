@@ -14,6 +14,8 @@ import {
 } from '@nestjs/common';
 import {
   PlayModeSchema,
+  poolKindOf,
+  trackOf,
   type PlayMode,
   type MatchRating,
   type PlayRun,
@@ -27,13 +29,13 @@ import {
   IDLE_LIMIT_MS,
   MAX_SEED,
   PLAY_DURATION_MS,
-  RUN_BLOCK_COUNT,
   cpuScore,
   cpuTimeline,
   drawBlockIds,
   ghostTimeline,
   judgeMatch,
   replaySession,
+  runBlockCount,
 } from '@typing-trainer/typing-engine';
 
 import { SlidingWindowLimiter, enforce } from '../../common/rate-limit';
@@ -48,7 +50,7 @@ import {
   ISSUE_WINDOW_MS,
 } from './play.constants';
 import { checkPlausibility } from './play-validation';
-import { SUBMISSION_WINDOW_MS } from './plausibility-limits';
+import { SUBMISSION_WINDOW_MS, plausibilityLimits } from './plausibility-limits';
 
 /** The mode column as a mode: the database's CHECK allows nothing else. */
 function playMode(mode: string): PlayMode {
@@ -84,7 +86,8 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   /**
-   * Issues a run (§5.3, §9.5): 20 blocks drawn from the language's pool with a fresh seed. The
+   * Issues a run (§5.3, §9.5, §13.7): the blocks a run of the pool takes (20 for code, and by kind
+   * 300, 80, or 20 for natural language), drawn from its pool with a fresh seed. The
    * blocks, seed, and content revision are recorded so the submitted result can be replayed
    * against exactly what was issued.
    */
@@ -111,7 +114,11 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
     }
 
     const seed = newSeed();
-    const blockIds = drawBlockIds(bundle.blockIds, seed, RUN_BLOCK_COUNT);
+    const blockIds = drawBlockIds(
+      bundle.blockIds,
+      seed,
+      runBlockCount(poolKindOf(request.language)),
+    );
     const blocks = blockIds.map((blockId) => this.program(request.language, blockId));
 
     const issued = await this.issuedRuns.create({
@@ -163,7 +170,13 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
 
     const programs = run.blockIds.map((blockId) => this.program(run.language, blockId));
     const replay = replaySession(programs, body.log);
-    const rejection = checkPlausibility(body.log, replay, run.wallElapsedMs);
+    const track = trackOf(run.language);
+    const rejection = checkPlausibility(
+      body.log,
+      replay,
+      run.wallElapsedMs,
+      plausibilityLimits(track),
+    );
     if (rejection !== undefined) {
       this.logger.warn(
         `run ${run.id} of user ${user.id} rejected (${rejection.reason}): ${rejection.detail}`,
@@ -176,7 +189,7 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
     // record's score for the Ghost; nothing the client says about the match is used (§9.8).
     let opponent: number | null = null;
     if (run.mode === 'cpu' && run.cpuLevel !== null) {
-      opponent = cpuScore(cpuTimeline(programs, run.cpuLevel, BigInt(run.seed)));
+      opponent = cpuScore(cpuTimeline(programs, run.cpuLevel, BigInt(run.seed), track));
     } else if (run.mode === 'ghost' && run.ghostScore !== null) {
       opponent = cpuScore(ghostTimeline(programs, run.ghostScore));
     }

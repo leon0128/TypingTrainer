@@ -1,11 +1,16 @@
 import type { Atom, SessionLog, TypingProgram } from '@typing-trainer/contracts';
-import { IDLE_LIMIT_MS, replaySession, type SessionReplay } from '@typing-trainer/typing-engine';
+import {
+  CPU_TOP_KPM,
+  IDLE_LIMIT_MS,
+  replaySession,
+  type SessionReplay,
+} from '@typing-trainer/typing-engine';
 import { describe, expect, it } from 'vitest';
 
 import { checkPlausibility } from '../src/modules/play/play-validation';
 import { PLAUSIBILITY_LIMITS } from '../src/modules/play/plausibility-limits';
 
-const LIMITS = PLAUSIBILITY_LIMITS;
+const LIMITS = PLAUSIBILITY_LIMITS.code;
 
 /** One long block, so a run never finishes it and the speed windows can be filled. */
 const BLOCK_KEYS = 600;
@@ -33,39 +38,75 @@ function replayOf(count: number, stepMs: number): { log: SessionLog; replay: Ses
 const plain = () => replayOf(60, 100);
 
 describe('checkPlausibility', () => {
+  it('judges by the limits of the track: prose is allowed to be faster than code', () => {
+    const { log: submitted, replay } = plain();
+    // A burst between the peak limits of code and of prose.
+    const burst = { ...replay, intervals: { ...replay.intervals, peakKpm10s: 2700 } };
+    expect(checkPlausibility(submitted, burst, 10_000, PLAUSIBILITY_LIMITS.code)?.reason).toBe(
+      'speed',
+    );
+    for (const track of ['natural-ja', 'natural-en'] as const) {
+      expect(
+        checkPlausibility(submitted, burst, 10_000, PLAUSIBILITY_LIMITS[track]),
+      ).toBeUndefined();
+      const tooFast = { ...replay, intervals: { ...replay.intervals, peakKpm10s: 3300 } };
+      expect(
+        checkPlausibility(submitted, tooFast, 10_000, PLAUSIBILITY_LIMITS[track])?.reason,
+      ).toBe('speed');
+    }
+    const long = { ...replay, metrics: { ...replay.metrics, kpm: 2000 } };
+    expect(checkPlausibility(submitted, long, 10_000, PLAUSIBILITY_LIMITS.code)?.reason).toBe(
+      'speed',
+    );
+    expect(
+      checkPlausibility(submitted, long, 10_000, PLAUSIBILITY_LIMITS['natural-en']),
+    ).toBeUndefined();
+  });
+
+  it('has limits set from the speed of the top CPU: twice it over a run, and more in a window', () => {
+    for (const track of ['code', 'natural-ja', 'natural-en'] as const) {
+      expect(PLAUSIBILITY_LIMITS[track].maxRunKpm).toBe(2 * CPU_TOP_KPM[track]);
+      expect(PLAUSIBILITY_LIMITS[track].maxPeakKpm10s).toBeGreaterThan(
+        PLAUSIBILITY_LIMITS[track].maxRunKpm,
+      );
+    }
+  });
+
   it('accepts a run typed at a human pace', () => {
     const { log: submitted, replay } = plain();
     expect(replay.metrics.effective).toBe(60);
-    expect(checkPlausibility(submitted, replay, 10_000)).toBeUndefined();
+    expect(checkPlausibility(submitted, replay, 10_000, LIMITS)).toBeUndefined();
   });
 
   it('refuses a log whose first key is not at zero', () => {
     const { log: submitted, replay } = plain();
     const shifted = { ...submitted, deltas: [1, ...submitted.deltas.slice(1)] };
-    expect(checkPlausibility(shifted, replay, 10_000)?.reason).toBe('log-start');
+    expect(checkPlausibility(shifted, replay, 10_000, LIMITS)?.reason).toBe('log-start');
   });
 
   it('refuses keys logged after the run ended', () => {
     // The last key lands beyond the 120-second run, so the engine ignores it.
     const { log: submitted, replay } = replayOf(3, 60_000);
     expect(replay.expiredKeys).toBeGreaterThan(LIMITS.maxKeysAfterEnd);
-    expect(checkPlausibility(submitted, replay, 10_000_000)?.reason).toBe('keys-after-end');
+    expect(checkPlausibility(submitted, replay, 10_000_000, LIMITS)?.reason).toBe('keys-after-end');
   });
 
   it('refuses more run time than has passed since the run was issued', () => {
     const { log: submitted, replay } = replayOf(3, 20_000);
     const wall = replay.lastKeyMs - LIMITS.wallClockToleranceMs - 1;
-    expect(checkPlausibility(submitted, replay, wall)?.reason).toBe('run-time');
+    expect(checkPlausibility(submitted, replay, wall, LIMITS)?.reason).toBe('run-time');
     expect(
-      checkPlausibility(submitted, replay, replay.lastKeyMs + LIMITS.wallClockToleranceMs),
+      checkPlausibility(submitted, replay, replay.lastKeyMs + LIMITS.wallClockToleranceMs, LIMITS),
     ).toBeUndefined();
   });
 
   it('refuses a run left idle beyond the limit and its grace', () => {
     const { log: submitted, replay } = plain();
     const idle = (extraMs: number) => replay.lastKeyMs + IDLE_LIMIT_MS + extraMs;
-    expect(checkPlausibility(submitted, replay, idle(LIMITS.idleGraceMs))).toBeUndefined();
-    expect(checkPlausibility(submitted, replay, idle(LIMITS.idleGraceMs + 1))?.reason).toBe('idle');
+    expect(checkPlausibility(submitted, replay, idle(LIMITS.idleGraceMs), LIMITS)).toBeUndefined();
+    expect(checkPlausibility(submitted, replay, idle(LIMITS.idleGraceMs + 1), LIMITS)?.reason).toBe(
+      'idle',
+    );
   });
 
   it('refuses a burst faster than any human, and accepts the limit itself', () => {
@@ -73,23 +114,24 @@ describe('checkPlausibility', () => {
     const perWindow = LIMITS.maxPeakKpm10s / 6;
     const atLimit = replayOf(perWindow, 10_000 / perWindow);
     expect(atLimit.replay.intervals.peakKpm10s).toBe(LIMITS.maxPeakKpm10s);
-    expect(checkPlausibility(atLimit.log, atLimit.replay, 60_000)).toBeUndefined();
+    expect(checkPlausibility(atLimit.log, atLimit.replay, 60_000, LIMITS)).toBeUndefined();
 
     // One key more than the window allows, typed faster still.
     const tooFast = replayOf(perWindow + 1, Math.floor(10_000 / perWindow) - 5);
     expect(tooFast.replay.intervals.peakKpm10s).toBeGreaterThan(LIMITS.maxPeakKpm10s);
-    expect(checkPlausibility(tooFast.log, tooFast.replay, 60_000)?.reason).toBe('speed');
+    expect(checkPlausibility(tooFast.log, tooFast.replay, 60_000, LIMITS)?.reason).toBe('speed');
   });
 
   it('refuses a whole-run speed above the limit', () => {
     const { log: submitted, replay } = plain();
     const fast = { ...replay, metrics: { ...replay.metrics, kpm: LIMITS.maxRunKpm + 1 } };
-    expect(checkPlausibility(submitted, fast, 10_000)?.reason).toBe('speed');
+    expect(checkPlausibility(submitted, fast, 10_000, LIMITS)?.reason).toBe('speed');
     const atLimit = { ...replay, metrics: { ...replay.metrics, kpm: LIMITS.maxRunKpm } };
-    expect(checkPlausibility(submitted, atLimit, 10_000)).toBeUndefined();
+    expect(checkPlausibility(submitted, atLimit, 10_000, LIMITS)).toBeUndefined();
   });
 
   describe('a Japanese block, where a longer spelling is more keys (§13.5)', () => {
+    const JA_LIMITS = PLAUSIBILITY_LIMITS['natural-ja'];
     // 100 units of し: `si` is two keys and `shi` three, so a run may spell either.
     const SHI: Atom = { kind: 'romaji', display: 'し', alternatives: ['shi', 'si'] };
     const japanese: TypingProgram = {
@@ -112,7 +154,7 @@ describe('checkPlausibility', () => {
       expect(replay.counters.effective).toBe(300);
       expect(replay.counters.effective).toBeGreaterThan(replay.canonicalReached);
       expect(replay.maxReached).toBe(300);
-      expect(checkPlausibility(submitted, replay, 60_000)).toBeUndefined();
+      expect(checkPlausibility(submitted, replay, 60_000, JA_LIMITS)).toBeUndefined();
     });
 
     it('still refuses more effective keys than the longest spelling of the blocks reached', () => {
@@ -121,12 +163,12 @@ describe('checkPlausibility', () => {
         ...replay,
         counters: { ...replay.counters, effective: replay.maxReached + 1 },
       };
-      expect(checkPlausibility(submitted, inflated, 60_000)?.reason).toBe('progress');
+      expect(checkPlausibility(submitted, inflated, 60_000, JA_LIMITS)?.reason).toBe('progress');
       const atCeiling = {
         ...replay,
         counters: { ...replay.counters, effective: replay.maxReached },
       };
-      expect(checkPlausibility(submitted, atCeiling, 60_000)).toBeUndefined();
+      expect(checkPlausibility(submitted, atCeiling, 60_000, JA_LIMITS)).toBeUndefined();
     });
   });
 
@@ -136,13 +178,13 @@ describe('checkPlausibility', () => {
       ...replay,
       counters: { ...replay.counters, effective: replay.maxReached + 1 },
     };
-    expect(checkPlausibility(submitted, inflated, 10_000)?.reason).toBe('progress');
+    expect(checkPlausibility(submitted, inflated, 10_000, LIMITS)?.reason).toBe('progress');
   });
 
   it('reports the first failing check, so one rejection cannot hide another', () => {
     const { log: submitted, replay } = replayOf(3, 60_000);
     const shifted = { ...submitted, deltas: [7, ...submitted.deltas.slice(1)] };
     // Both the first delta and the keys after the end are wrong; the log start is reported.
-    expect(checkPlausibility(shifted, replay, 10_000)?.reason).toBe('log-start');
+    expect(checkPlausibility(shifted, replay, 10_000, LIMITS)?.reason).toBe('log-start');
   });
 });

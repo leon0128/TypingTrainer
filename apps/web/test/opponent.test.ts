@@ -29,7 +29,7 @@ const CPU_RUN: StartSessionResponse = {
   idleLimitMs: IDLE_LIMIT_MS,
 };
 
-const timeline = cpuTimeline(BLOCKS, 60, 42n);
+const timeline = cpuTimeline(BLOCKS, 60, 42n, 'code');
 /** The opponent of a run that has one; every run in these tests does. */
 function opponentOf(issued: StartSessionResponse): Opponent {
   const opponent = createOpponent(issued);
@@ -67,7 +67,7 @@ describe('the CPU opponent', () => {
     opponent.advanceTo(PLAY_DURATION_MS);
     expect(opponent.getSnapshot().endedBy).toBe('time');
     expect(opponent.liveMetrics().accuracy).toBe(1);
-    expect(opponent.liveMetrics().score).toBe(cpuScore(cpuTimeline(long.blocks, 1, 42n)));
+    expect(opponent.liveMetrics().score).toBe(cpuScore(cpuTimeline(long.blocks, 1, 42n, 'code')));
   });
 
   it('notifies once per advance, not once per key, and not when nothing changed', () => {

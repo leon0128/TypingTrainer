@@ -1,9 +1,5 @@
 import type { TypingProgram } from '@typing-trainer/contracts';
-import {
-  PLAY_DURATION_MS,
-  RUN_BLOCK_COUNT,
-  type SessionState,
-} from '@typing-trainer/typing-engine';
+import { PLAY_DURATION_MS, type SessionState } from '@typing-trainer/typing-engine';
 import type { TFunction } from 'i18next';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router';
@@ -143,7 +139,7 @@ function RunView({ run }: { run: RunStore }) {
           {run.issued.language}
           {opponent !== null && ` · ${t('play.versus', { opponent: opponent.label })}`} ·{' '}
           {t('play.block', {
-            current: Math.min(session.blockIndex + 1, RUN_BLOCK_COUNT),
+            current: Math.min(session.blockIndex + 1, session.programs.length),
             total: session.programs.length,
           })}
         </span>

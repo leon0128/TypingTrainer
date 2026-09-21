@@ -1,7 +1,18 @@
+import type { PoolKind } from '@typing-trainer/contracts';
+
 import { createSeededRandom, type SeededRandom } from './random';
 
-/** Blocks issued with every run (§5.3). */
-export const RUN_BLOCK_COUNT = 20;
+/**
+ * Blocks issued with every run (§5.3, §13.7): a word is short, so a run takes many of them, and a
+ * paragraph is long, like a block of code. Each is below the size of its smallest pool, so a run
+ * never has to repeat a block.
+ */
+export const RUN_BLOCK_COUNTS = { code: 20, word: 300, line: 80, paragraph: 20 } as const;
+
+/** The blocks a run of a pool takes: `null` is a programming language, otherwise the kind of text. */
+export function runBlockCount(kind: PoolKind | null): number {
+  return kind === null ? RUN_BLOCK_COUNTS.code : RUN_BLOCK_COUNTS[kind];
+}
 
 function swap(items: string[], first: number, second: number): void {
   const a = items[first];
@@ -25,11 +36,7 @@ function shuffled(items: readonly string[], random: SeededRandom): string[] {
  * moved off the front so the same block never appears twice in a row. Pool order does not matter:
  * ids are sorted before shuffling, so the seed alone determines the sequence.
  */
-export function drawBlockIds(
-  poolIds: readonly string[],
-  seed: bigint,
-  count: number = RUN_BLOCK_COUNT,
-): string[] {
+export function drawBlockIds(poolIds: readonly string[], seed: bigint, count: number): string[] {
   if (!Number.isInteger(count) || count < 1) {
     throw new RangeError(`A run draws at least one block, not ${String(count)}`);
   }

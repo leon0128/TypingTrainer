@@ -1,4 +1,4 @@
-import type { SessionLog, TypingProgram } from '@typing-trainer/contracts';
+import { shortestSpelling, type SessionLog, type TypingProgram } from '@typing-trainer/contracts';
 import {
   ENTER_KEY,
   SPACE_KEY,
@@ -15,7 +15,28 @@ export function canonicalKeys(program: TypingProgram): string[] {
   const keys: string[] = [];
   for (const atom of withTypedClosers(program).atoms) {
     if (atom.kind === 'literal') keys.push(...Array.from(atom.text));
+    else if (atom.kind === 'romaji') keys.push(...Array.from(shortestSpelling(atom)));
     else if (atom.kind === 'separator' && atom.required) {
+      keys.push(atom.canonical === '\n' ? ENTER_KEY : SPACE_KEY);
+    }
+  }
+  return keys;
+}
+
+/**
+ * The keys of the longest way to type a block: as `canonicalKeys`, but every Japanese unit spelled
+ * with its longest spelling (`shi`, not `si`), the way §13.5 counts the most keys a run can reach.
+ */
+export function longestKeys(program: TypingProgram): string[] {
+  const keys: string[] = [];
+  for (const atom of program.atoms) {
+    if (atom.kind === 'literal') keys.push(...Array.from(atom.text));
+    else if (atom.kind === 'romaji') {
+      const longest = atom.alternatives.reduce((most, next) =>
+        next.length > most.length ? next : most,
+      );
+      keys.push(...Array.from(longest));
+    } else if (atom.kind === 'separator' && atom.required) {
       keys.push(atom.canonical === '\n' ? ENTER_KEY : SPACE_KEY);
     }
   }

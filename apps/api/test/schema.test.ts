@@ -1,4 +1,5 @@
 import { CONTENT_LANGUAGES, POOLS, UsernameSchema } from '@typing-trainer/contracts';
+import { RUN_BLOCK_COUNTS } from '@typing-trainer/typing-engine';
 import { QueryFailedError } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -186,6 +187,29 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('initial schema (TEST_DATABASE_U
           ),
         ),
       ).toBe('23502');
+    });
+  });
+
+  describe('the number of blocks an issued run holds (§13.7)', () => {
+    const issue = (count: number) =>
+      sqlState(() =>
+        query(
+          `INSERT INTO issued_runs (user_id, language_id, mode, rng_seed, content_revision, block_ids)
+           VALUES ($1, 1, 'single', 1, 'rev', $2)`,
+          [userId, Array.from({ length: count }, (_, index) => `go/block-${String(index)}`)],
+        ),
+      );
+
+    it.each([1, 20, 80, 300])('accepts %i blocks', async (count) => {
+      expect(await issue(count)).toBeUndefined();
+    });
+
+    it.each([0, 301, 500])('refuses %i blocks', async (count) => {
+      expect(await issue(count)).toBe(CHECK_VIOLATION);
+    });
+
+    it('is bounded by the most blocks any run takes', () => {
+      expect(300).toBe(Math.max(...Object.values(RUN_BLOCK_COUNTS)));
     });
   });
 

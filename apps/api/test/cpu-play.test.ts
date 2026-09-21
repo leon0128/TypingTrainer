@@ -5,7 +5,13 @@ import {
   SubmitResultResponseSchema,
   type StartSessionResponse,
 } from '@typing-trainer/contracts';
-import { cpuScore, cpuTimeline, drawBlockIds, replaySession } from '@typing-trainer/typing-engine';
+import {
+  cpuScore,
+  cpuTimeline,
+  drawBlockIds,
+  replaySession,
+  runBlockCount,
+} from '@typing-trainer/typing-engine';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createApp } from '../src/app';
@@ -73,7 +79,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('vs CPU (TEST_DATABASE_URL)', ()
 
   /** The CPU's score exactly as a client would compute it from what was issued. */
   const opponentOf = (run: StartSessionResponse) =>
-    cpuScore(cpuTimeline(run.blocks, run.cpuLevel ?? 0, BigInt(run.seed)));
+    cpuScore(cpuTimeline(run.blocks, run.cpuLevel ?? 0, BigInt(run.seed), 'code'));
 
   async function playedKeys(token: string, run: StartSessionResponse, keys: number) {
     await aged(run.sessionId, (keys * STEP_MS) / 1000 + 1);
@@ -100,7 +106,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('vs CPU (TEST_DATABASE_URL)', ()
       expect(run).toMatchObject({ mode: 'cpu', cpuLevel: 48 });
       const bundle = app.get(ContentLibrary).get('python');
       expect(run.blocks.map((block) => block.blockId)).toEqual(
-        drawBlockIds(bundle?.blockIds ?? [], BigInt(run.seed)),
+        drawBlockIds(bundle?.blockIds ?? [], BigInt(run.seed), runBlockCount(null)),
       );
       const [row] = await query<{ mode: string; cpu_level: number }[]>(
         'SELECT mode, cpu_level FROM issued_runs WHERE id = $1',

@@ -1,7 +1,7 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
-import { MAX_SEED, RUN_BLOCK_COUNT, drawBlockIds } from '../src';
+import { MAX_SEED, RUN_BLOCK_COUNTS, drawBlockIds, runBlockCount } from '../src';
 
 const pool = (size: number) =>
   Array.from({ length: size }, (_, index) => `go/block-${String(index).padStart(2, '0')}`);
@@ -9,8 +9,23 @@ const pool = (size: number) =>
 const seedArbitrary = fc.bigInt({ min: 0n, max: MAX_SEED });
 
 describe('drawBlockIds', () => {
-  it('issues 20 blocks by default', () => {
-    expect(drawBlockIds(pool(50), 1n)).toHaveLength(RUN_BLOCK_COUNT);
+  it('issues the blocks a run of the pool takes: 20 for code and a paragraph, and more for shorter text', () => {
+    expect(runBlockCount(null)).toBe(20);
+    expect(runBlockCount('paragraph')).toBe(20);
+    expect(runBlockCount('line')).toBe(80);
+    expect(runBlockCount('word')).toBe(300);
+    expect(RUN_BLOCK_COUNTS).toEqual({ code: 20, word: 300, line: 80, paragraph: 20 });
+    for (const count of [runBlockCount(null), runBlockCount('word'), runBlockCount('line')]) {
+      expect(drawBlockIds(pool(500), 1n, count)).toHaveLength(count);
+    }
+  });
+
+  it('draws a whole run without a repeat when the pool is at least as large as the run', () => {
+    for (const kind of ['word', 'line', 'paragraph'] as const) {
+      const count = runBlockCount(kind);
+      const drawn = drawBlockIds(pool(count), 7n, count);
+      expect(new Set(drawn).size).toBe(count);
+    }
   });
 
   it('keeps the sequence of a seed stable across releases', () => {
@@ -82,11 +97,11 @@ describe('drawBlockIds', () => {
   });
 
   it('refuses pools and counts it cannot draw from', () => {
-    expect(() => drawBlockIds([], 1n)).toThrow(/empty/);
-    expect(() => drawBlockIds(['go/a', 'go/a'], 1n)).toThrow(/duplicate/);
+    expect(() => drawBlockIds([], 1n, RUN_BLOCK_COUNTS.code)).toThrow(/empty/);
+    expect(() => drawBlockIds(['go/a', 'go/a'], 1n, RUN_BLOCK_COUNTS.code)).toThrow(/duplicate/);
     expect(() => drawBlockIds(['go/a'], 1n, 2)).toThrow(/single-block/);
     expect(drawBlockIds(['go/a'], 1n, 1)).toEqual(['go/a']);
     expect(() => drawBlockIds(pool(5), 1n, 0)).toThrow(RangeError);
-    expect(() => drawBlockIds(pool(5), -1n)).toThrow(RangeError);
+    expect(() => drawBlockIds(pool(5), -1n, RUN_BLOCK_COUNTS.code)).toThrow(RangeError);
   });
 });

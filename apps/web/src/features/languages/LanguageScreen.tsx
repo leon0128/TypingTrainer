@@ -140,7 +140,7 @@ export function LanguageScreen() {
             />
             <span className="text-slate-600 dark:text-slate-400">
               {levelValid
-                ? t('home.aboutKpm', { kpm: Math.round(cpuBaseKpm(level)) })
+                ? t('home.aboutKpm', { kpm: Math.round(cpuBaseKpm(level, 'code')) })
                 : t('home.levelInvalid', { min: CPU_MIN_LEVEL, max: CPU_MAX_LEVEL })}
             </span>
           </label>

@@ -28,7 +28,8 @@ import { User } from './user.entity';
        AND "ghost_period" IN ('daily', 'weekly', 'total')
        AND "ghost_score" IS NOT NULL AND "ghost_score" >= 1)`,
 )
-@Check('chk_issued_runs_blocks', `cardinality("block_ids") = 20`)
+// The exact number is set by the pool's kind (`runBlockCount`); the database only bounds it.
+@Check('chk_issued_runs_blocks', `cardinality("block_ids") BETWEEN 1 AND 300`)
 @Check('chk_issued_runs_submitted', `"submitted_at" IS NULL OR "submitted_at" >= "issued_at"`)
 export class IssuedRun {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })

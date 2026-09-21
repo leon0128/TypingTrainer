@@ -300,7 +300,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
         'a burst no human can type',
         // Enough keys to fill a ten-second window past the peak limit.
         (run: StartSessionResponse): SessionLog =>
-          correctLog(run.blocks, PLAUSIBILITY_LIMITS.maxPeakKpm10s / 6 + 100, 20),
+          correctLog(run.blocks, PLAUSIBILITY_LIMITS.code.maxPeakKpm10s / 6 + 100, 20),
         'speed',
       ],
     ])('refuses %s with 422', async (_, makeLog, reason) => {

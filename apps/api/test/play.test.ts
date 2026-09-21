@@ -4,7 +4,7 @@ import {
   StartSessionResponseSchema,
   type StartSessionResponse,
 } from '@typing-trainer/contracts';
-import { RUN_BLOCK_COUNT, drawBlockIds } from '@typing-trainer/typing-engine';
+import { drawBlockIds, runBlockCount } from '@typing-trainer/typing-engine';
 import type { LightMyRequestResponse } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -88,9 +88,9 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       const bundle = app.get(ContentLibrary).get('python');
       expect(run).toMatchObject({ language: 'python', mode: 'single', durationMs: 120_000 });
       expect(run.contentRevision).toBe(bundle?.revision);
-      expect(run.blocks).toHaveLength(RUN_BLOCK_COUNT);
+      expect(run.blocks).toHaveLength(runBlockCount(null));
       expect(run.blocks.map((block) => block.blockId)).toEqual(
-        drawBlockIds(bundle?.blockIds ?? [], BigInt(run.seed)),
+        drawBlockIds(bundle?.blockIds ?? [], BigInt(run.seed), runBlockCount(null)),
       );
       for (const block of run.blocks) {
         expect(block).toEqual(bundle?.programs.get(block.blockId));

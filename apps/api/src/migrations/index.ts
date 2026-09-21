@@ -10,6 +10,7 @@ import { AddSkinPreference1789906000000 } from './1789906000000-AddSkinPreferenc
 import { AddDisplayName1789907000000 } from './1789907000000-AddDisplayName';
 import { AddLanguageRatings1789968962575 } from './1789968962575-AddLanguageRatings';
 import { RenameLanguagesAddTracks1790000000000 } from './1790000000000-RenameLanguagesAddTracks';
+import { RelaxIssuedRunBlockCount1790100000000 } from './1790100000000-RelaxIssuedRunBlockCount';
 
 /**
  * Every migration in order, listed explicitly: the production bundle has no migration files for a
@@ -29,4 +30,5 @@ export const MIGRATIONS = [
   AddDisplayName1789907000000,
   AddLanguageRatings1789968962575,
   RenameLanguagesAddTracks1790000000000,
+  RelaxIssuedRunBlockCount1790100000000,
 ];

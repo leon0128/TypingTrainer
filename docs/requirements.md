@@ -545,7 +545,7 @@ Natural-language pools are authored as one file each and have their own pipeline
 | Within a run | **No repeats while unused blocks remain.** Shuffle the language's pool with the session seed and draw without replacement |
 | Pool exhausted mid-run | Reshuffle and continue, excluding the block just played so the same one never appears twice in a row |
 | Across runs | **No memory.** The previous run has no influence on this run's draw (Q, "previous play is not considered") |
-| Sequence issuance | The server issues **20 compiled blocks** with the session. At 800 KPM a 120-second run consumes roughly 1,600 effective keystrokes; even short blocks (~125 keystrokes) cannot exhaust 20. No network call occurs mid-run, and versus opponents are guaranteed identical content |
+| Sequence issuance | The server issues **20 compiled blocks** of code with the session (🟡 v1.43: a natural-language run takes 300 words, 80 sentences, or 20 paragraphs, §13.7). At 800 KPM a 120-second run consumes roughly 1,600 effective keystrokes; even short blocks (~125 keystrokes) cannot exhaust 20. No network call occurs mid-run, and versus opponents are guaranteed identical content |
 
 ### 5.4 Languages 🔵 (Q9)
 
@@ -891,7 +891,7 @@ CREATE TABLE issued_runs (                     -- v1.14: what the server handed 
   issued_at        timestamptz NOT NULL DEFAULT now(),
   submitted_at     timestamptz,                -- set when a result is accepted or rejected
   CHECK (mode IN ('single', 'cpu', 'ghost')),
-  CHECK (cardinality(block_ids) = 20),
+  CHECK (cardinality(block_ids) BETWEEN 1 AND 300),  -- 🟡 (v1.43) was = 20; the exact count is set by the pool's kind (§13.7)
   CHECK (submitted_at IS NULL OR submitted_at >= issued_at)
 );
 CREATE INDEX idx_issued_runs_user ON issued_runs (user_id, issued_at);
@@ -976,7 +976,7 @@ Design points:
 | PATCH | `/api/auth/me` | 🟡 (v1.41) Set the display name. Body `{ displayName }`: trimmed, 1–24 code points, no control characters; `null` or a blank string clears it. Returns the user |
 | DELETE | `/api/auth/me` | 🟡 (v1.39) Delete the account and all its data. Body `{ password }`; 204 and the session cookie cleared, 403 for a wrong password, 429 while the account's sign-in backoff applies (§7) |
 | GET | `/api/languages` | Available languages |
-| POST | `/api/play/sessions` | **Start a run.** Body `{ language, mode, cpuLevel?, ghostPeriod? }`: `mode` is `single`, `cpu`, or `ghost`; `cpuLevel` (1–100) is required for `cpu` and `ghostPeriod` (`daily`, `weekly`, `total`) for `ghost`, and each is refused for the other modes. Returns 20 compiled blocks, the RNG seed, and the level or the Ghost's period and record score. A Ghost with no record to race answers 409 |
+| POST | `/api/play/sessions` | **Start a run.** Body `{ language, mode, cpuLevel?, ghostPeriod? }`: `mode` is `single`, `cpu`, or `ghost`; `cpuLevel` (1–100) is required for `cpu` and `ghostPeriod` (`daily`, `weekly`, `total`) for `ghost`, and each is refused for the other modes. Returns the compiled blocks of a run (20 for code, and by kind 300, 80, or 20 for natural language, §13.7), the RNG seed, and the level or the Ghost's period and record score. A Ghost with no record to race answers 409 |
 | POST | `/api/play/sessions/:id/result` | Submit a result; validated server-side. 🟡 (v1.42) For a vs CPU run the body also carries `rating`: the language's rating before and after and every language's rating now (§4.3.5); `null` for other modes |
 | GET | `/api/rankings` | `?period=daily\|weekly\|total&language=` |
 | GET | `/api/dashboard` | `?period=daily\|weekly\|total&language=&from=&to=` (`from`/`to` are inclusive local dates; §6.2) |
@@ -1229,11 +1229,11 @@ English needs no new atom. A word is a `literal`; a space between words is a req
 
 | Item | Rule |
 | --- | --- |
-| Blocks in a run | Word 300, sentence 80, paragraph 20 (code stays at 20) |
+| Blocks in a run | Word 300, sentence 80, paragraph 20 (code stays at 20): `runBlockCount(kind)` in `typing-engine`, with no default count, and each below the size of its smallest pool. The `issued_runs` CHECK bounds the count (1 to 300) and the service sets it |
 | Blocks shown | Word and sentence: the current block and the next 3; paragraph: the current block and the next 1, as code |
-| vs CPU speed | `baseKpm(level) = 50 × (1200 / 50) ^ ((level − 1) / 99)` for the natural-language tracks; code keeps 800 at level 100. The top is a design figure, not a measurement: prose is typed faster than code, and the curve is to be re-tuned against real play |
+| vs CPU speed | `baseKpm(level) = 50 × (top / 50) ^ ((level − 1) / 99)`, with `top` 800 for code and 1200 for the natural-language tracks (`cpuBaseKpm(level, track)` and `cpuTimeline(…, track)` take the track and have no default). The top is a design figure, not a measurement: prose is typed faster than code, and the curve is to be re-tuned against real play |
 | CPU rating | Unchanged: `20 × level` (§4.3.5) |
-| Plausibility (§9.8) | Natural-language tracks: at most 3,200 KPM in any 10-second window and 2,400 KPM over the run; effective keystrokes may not exceed the `maxKeystrokes` of the blocks reached. Code keeps 2,400 and 1,600 |
+| Plausibility (§9.8) | By the track the run was played in (`plausibilityLimits(track)`): natural-language tracks at most 3,200 KPM in any 10-second window and 2,400 KPM over the run (twice the top CPU); effective keystrokes may not exceed the `maxKeystrokes` of the blocks reached. Code keeps 2,400 and 1,600 |
 | Character-class weights | The CPU's per-key weights (§4.3.3) are 1.0 for lowercase letters, digits, and romaji keys, 1.5 for shifted keys, 1.3 for other symbols, 0.8 for separators; the CPU types the shortest spelling |
 | Modes | Single, vs CPU, and Ghost are all available in every track; the rating comes from vs CPU only |
 
@@ -1531,3 +1531,5 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.43 | Similarity threshold | 0.5, from the English pools: the most similar pair of distinct sentences scores 0.167 and of paragraphs 0.040, so 0.5 keeps three times the margin and still catches a copy of a long sentence with a word changed (§13.4) |
 | 1.43 | Similarity threshold, Japanese | Measured on the Japanese pools: the most similar pair of distinct sentences scores 0.313 and of paragraphs 0.066, so the one threshold of 0.5 holds for both languages (§13.4) |
 | 1.43 | Paragraph punctuation | A paragraph must contain at least one comma or period (`、` or `。`), since only paragraphs have them (§13.4) |
+| 1.43 | Run rules follow the track | A run's block count comes from its pool's kind, the CPU's speed from its track, and the plausibility limits from its track, each through a function with no default, so a caller cannot judge one track by another's. The `issued_runs` block-count CHECK is relaxed to 1–300 and the exact count stays with the service |
+| 1.43 | Enabling the pools waits for the web | The six natural-language pools stay disabled until the web has track screens and a Japanese play view: enabling them earlier would list them among the code languages on the current screens. The API is complete and inert until then, and the tests enable the pools in their own database; a small final migration turns them on |

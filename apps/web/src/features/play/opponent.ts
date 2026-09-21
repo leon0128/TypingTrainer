@@ -1,4 +1,4 @@
-import type { StartSessionResponse } from '@typing-trainer/contracts';
+import { trackOf, type StartSessionResponse } from '@typing-trainer/contracts';
 import {
   computeMetrics,
   cpuKeys,
@@ -42,7 +42,7 @@ export function createOpponent(issued: StartSessionResponse): Opponent | null {
     return replaying(
       issued,
       i18n.t('opponent.cpu', { level: issued.cpuLevel }),
-      cpuTimeline(issued.blocks, issued.cpuLevel, BigInt(issued.seed)),
+      cpuTimeline(issued.blocks, issued.cpuLevel, BigInt(issued.seed), trackOf(issued.language)),
     );
   }
   if (issued.mode === 'ghost' && issued.ghostPeriod !== null && issued.ghostScore !== null) {

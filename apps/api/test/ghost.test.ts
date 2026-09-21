@@ -13,6 +13,7 @@ import {
   drawBlockIds,
   ghostTimeline,
   replaySession,
+  runBlockCount,
 } from '@typing-trainer/typing-engine';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -239,7 +240,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('Ghost (TEST_DATABASE_URL)', () 
 
       const bundle = app.get(ContentLibrary).get('python');
       expect(daily.blocks.map((block) => block.blockId)).toEqual(
-        drawBlockIds(bundle?.blockIds ?? [], BigInt(daily.seed)),
+        drawBlockIds(bundle?.blockIds ?? [], BigInt(daily.seed), runBlockCount(null)),
       );
       const [row] = await query<
         { mode: string; ghost_period: string; ghost_score: number; cpu_level: number | null }[]

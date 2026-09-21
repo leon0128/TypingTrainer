@@ -1,4 +1,4 @@
-import type { TypingProgram } from '@typing-trainer/contracts';
+import type { Track, TypingProgram } from '@typing-trainer/contracts';
 
 import { ENTER_KEY, SPACE_KEY, withTypedClosers } from './engine';
 import { shortestSpelling } from './keystrokes';
@@ -10,7 +10,16 @@ export const CPU_MIN_LEVEL = 1;
 export const CPU_MAX_LEVEL = 100;
 
 const LEVEL_1_KPM = 50;
-const LEVEL_100_KPM = 800;
+/**
+ * The speed of level 100 in each track (§4.3.2, §13.7): 800 for code, and 1200 for prose, which the
+ * same typist types faster than code. A design figure for the natural-language tracks, to be
+ * re-tuned against real play.
+ */
+export const CPU_TOP_KPM: Readonly<Record<Track, number>> = {
+  code: 800,
+  'natural-ja': 1200,
+  'natural-en': 1200,
+};
 
 /** Per-block multiplier: truncated normal around 1, clipped to ±6% (§4.3.3). */
 const BLOCK_SIGMA = 0.02;
@@ -28,10 +37,14 @@ const CPU_STREAM = 0x2545_f491_4f6c_dd1dn;
 /** A second stream for the jitter, so a block's multiplier never depends on how many keys it has. */
 const JITTER_STREAM = 0x1b87_3593_cc9e_2d51n;
 
-/** The level's target speed: geometric interpolation from 50 to 800 KPM (§4.3.2). */
-export function cpuBaseKpm(level: number): number {
+/**
+ * The level's target speed in a track: geometric interpolation from 50 KPM at level 1 to the
+ * track's top at level 100 (§4.3.2). There is no default track, so a caller cannot use another
+ * track's curve by omission.
+ */
+export function cpuBaseKpm(level: number, track: Track): number {
   assertLevel(level);
-  return LEVEL_1_KPM * (LEVEL_100_KPM / LEVEL_1_KPM) ** ((level - 1) / (CPU_MAX_LEVEL - 1));
+  return LEVEL_1_KPM * (CPU_TOP_KPM[track] / LEVEL_1_KPM) ** ((level - 1) / (CPU_MAX_LEVEL - 1));
 }
 
 function assertLevel(level: number): void {
@@ -114,12 +127,13 @@ export function cpuTimeline(
   programs: readonly TypingProgram[],
   level: number,
   seed: bigint,
+  track: Track,
 ): Float64Array {
   assertLevel(level);
   if (seed < 0n || seed > MAX_SEED) throw new RangeError('Invalid seed');
   const random = createSeededRandom(seed ^ JITTER_STREAM);
   const multipliers = cpuBlockMultipliers(programs.length, seed);
-  const base = cpuBaseKpm(level);
+  const base = cpuBaseKpm(level, track);
 
   const times: number[] = [];
   let now = 0;

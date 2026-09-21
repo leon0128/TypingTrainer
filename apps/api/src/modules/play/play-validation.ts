@@ -1,7 +1,7 @@
 import type { SessionLog } from '@typing-trainer/contracts';
 import { IDLE_LIMIT_MS, sessionIdleMs, type SessionReplay } from '@typing-trainer/typing-engine';
 
-import { PLAUSIBILITY_LIMITS } from './plausibility-limits';
+import type { PlausibilityLimits } from './plausibility-limits';
 
 /** Why a submitted result was refused; sent to the client and logged with the numbers. */
 export type RejectionReason =
@@ -14,16 +14,16 @@ export interface Rejection {
 }
 
 /**
- * Checks a replayed run for what a real run cannot do (§9.8). The counters themselves are never
- * taken from the client: they come from replaying the log against the issued blocks.
+ * Checks a replayed run for what a real run cannot do (§9.8), against the limits of the track it
+ * was played in. The counters themselves are never taken from the client: they come from replaying
+ * the log against the issued blocks.
  */
 export function checkPlausibility(
   log: SessionLog,
   replay: SessionReplay,
   wallElapsedMs: number,
+  limits: PlausibilityLimits,
 ): Rejection | undefined {
-  const limits = PLAUSIBILITY_LIMITS;
-
   // The countdown starts with the first key, so the first delta is 0 (§4.1).
   if (log.deltas[0] !== 0) {
     return { reason: 'log-start', detail: `first delta ${String(log.deltas[0])} ms` };

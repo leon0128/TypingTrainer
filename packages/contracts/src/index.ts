@@ -164,3 +164,11 @@ export { GhostRecordsResponseSchema, LanguageGhostRecordsSchema } from './ghost-
 export type { GhostRecordsResponse, LanguageGhostRecords } from './ghost-records';
 export { LanguageRatingSchema, MatchRatingSchema, RatingsResponseSchema } from './ratings';
 export type { LanguageRating, MatchRating, RatingsResponse } from './ratings';
+export {
+  ACTIVITY_DEFAULT_DAYS,
+  ACTIVITY_MAX_DAYS,
+  ActivityDaySchema,
+  ActivityRequestSchema,
+  ActivityResponseSchema,
+} from './activity';
+export type { ActivityDay, ActivityRequest, ActivityResponse } from './activity';

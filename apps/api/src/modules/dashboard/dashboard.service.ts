@@ -7,6 +7,7 @@ import type {
   User,
 } from '@typing-trainer/contracts';
 
+import { addDays } from '../../common/local-date';
 import { accountTracks, assertPoolAvailable } from '../../common/pool-access';
 import { ConquestsRepository } from '../conquests/conquests.repository';
 import { LanguagesRepository } from '../languages/languages.repository';
@@ -18,13 +19,6 @@ export type DashboardSource = Pick<
 >;
 export type HighestLevelSource = Pick<ConquestsRepository, 'highestLevel'>;
 export type LanguageIdSource = Pick<LanguagesRepository, 'findEnabled'>;
-
-/** Adds days to a `YYYY-MM-DD` date; calendar arithmetic only, no time zone involved. */
-function addDays(date: string, delta: number): string {
-  const moved = new Date(`${date}T00:00:00Z`);
-  moved.setUTCDate(moved.getUTCDate() + delta);
-  return moved.toISOString().slice(0, 10);
-}
 
 /** The Sunday that starts the week containing the date (§6.1). */
 function weekStart(date: string): string {

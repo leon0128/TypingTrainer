@@ -239,6 +239,9 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('GET /api/dashboard (TEST_DATABA
       'period=daily',
       'period=weekly&language=python&to=2026-01-01',
       'period=total&language=python&from=2026-02-30',
+      // A month or day out of range once threw inside the schema, which answered 500.
+      'period=total&language=python&from=2026-13-01',
+      'period=total&language=python&to=2026-00-10',
       'period=total&language=python&from=2026-03-02&to=2026-03-01',
       'period=daily&language=python&from=2026-01-01&to=2026-03-01',
     ];

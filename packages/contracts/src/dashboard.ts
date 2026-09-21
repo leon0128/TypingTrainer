@@ -9,7 +9,9 @@ export const DASHBOARD_MAX_DAILY_DAYS = 31;
 /** A calendar date that exists, as `YYYY-MM-DD` — a day in the player's profile time zone (§6.4). */
 export const LocalDateSchema = z.string().refine((value) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  return new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
+  const date = new Date(`${value}T00:00:00Z`);
+  // A month or day out of range is an Invalid Date, whose toISOString() throws instead of failing.
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }, 'must be a calendar date, YYYY-MM-DD');
 
 /**

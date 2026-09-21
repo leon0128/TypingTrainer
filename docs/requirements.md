@@ -981,6 +981,7 @@ Design points:
 | GET | `/api/rankings` | `?period=daily\|weekly\|total&language=` |
 | GET | `/api/dashboard` | `?period=daily\|weekly\|total&language=&from=&to=` (`from`/`to` are inclusive local dates; §6.2) |
 | GET | `/api/history` | Paged list |
+| GET | `/api/activity` | 🟡 (v1.43) The player's own runs by local date, for the play-history grid (§13.8, §13.9) |
 | DELETE | `/api/history/:id` | Delete one run |
 | GET | `/api/ghost-records` | 🟡 (v1.30) The player's best score per language in each period (null where there is none), which decides which Ghost options can be chosen (§4.4) |
 | GET | `/api/ratings` | 🟡 (v1.42) The player's rating in every enabled language (`language`, `displayName`, `rating`, `gamesPlayed`); unplayed languages are 0 with no matches (§4.3.5) |
@@ -1243,7 +1244,7 @@ English needs no new atom. A word is a `literal`; a space between words is a req
 | --- | --- |
 | `GET /api/languages` | Signed-in only. Each entry gains `track` and `kind`. Pools of `natural-ja` are left out unless the account's display language is Japanese (§13.11) |
 | `GET /api/ratings` | Unchanged in shape: the flat list of `languages`, from which the overall rating and the rank of each track are derived with `trackOf` (§13.3), so nothing is grouped on the server. It lists only the languages the account may use |
-| `GET /api/activity` | New. `?from=&to=` (inclusive local dates, default the last 365 days) returns, per local date played, the number of runs in the code pools and in the natural-language pools: `{ date, code, natural }[]` |
+| `GET /api/activity` | New. Signed-in only, and the account's own runs. `?from=&to=` are inclusive local dates in the profile time zone (§6.4); with neither, the last 365 days up to today, with only `to` the 365 days ending there, with only `from` the 365 days starting there, and at most 366 days. Returns the range that was read and the days in it that have runs: `{ from, to, days: [{ date, code, natural }] }`, `code` counting the runs in the programming languages and `natural` those in the natural-language pools of either language. It counts every pool whatever the account's display language, since it names none |
 | `POST /api/play/sessions`, rankings, dashboard, history, conquests | Same shape; `language` may be any pool. A request that names a `natural-ja` pool answers **403** unless the account's display language is Japanese, after the checks that a pool exists and is enabled (400 or 404 first). Lists and totals (`ghost-records`, `cpu-conquests`, the history list, the dashboard summary) leave those pools out |
 
 ### 13.9 Screens
@@ -1536,3 +1537,5 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.43 | `GET /api/languages` is not public | Its answer depends on the account's display language, so it needs a session; the web uses it only after sign-in. §7 no longer lists it among the public routes |
 | 1.43 | Ratings stay flat | `GET /api/ratings` keeps its flat list of languages, filtered to what the account may use; the overall rating and rank of a track are derived from it with `trackOf`, so the §13.8 draft of a grouped response is dropped |
 | 1.43 | Forfeiting a Japanese run on a language change | Submitting a Japanese run after the display language was changed away from Japanese is refused with 403 and the run is used up, the loss charged at issue staying: changing the display language is the player's own act, and the run's pool is one the account can no longer use |
+| 1.43 | Activity response | `GET /api/activity` returns the range it read with the days that have runs, `{ from, to, days: [{ date, code, natural }] }`, not a bare list, so the client can draw the year without working out the defaults. Only `from` or only `to` gives 365 days from or to it, and no more than 366 days can be asked for |
+| 1.43 | Bug found in `LocalDateSchema` | A month or day out of range (`2026-13-01`) made the schema throw a RangeError instead of failing, so a query with such a date answered 500 rather than 400 on the dashboard as well. Found by the activity tests and fixed with them |

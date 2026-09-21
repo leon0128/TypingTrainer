@@ -476,7 +476,7 @@
   gap: 10px;
   order: 2;
   margin-left: auto;
-  padding: 4px 4px 4px 12px;
+  padding: 6px 16px;
   border: var(--sk-bw) dashed var(--sk-accent2);
   border-radius: 999px;
   font-family: var(--sk-font);

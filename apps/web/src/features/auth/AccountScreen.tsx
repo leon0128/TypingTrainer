@@ -125,6 +125,23 @@ export function AccountScreen() {
         </div>
       </form>
 
+      <section aria-labelledby="signout-heading" className="flex flex-col gap-3">
+        <h2 id="signout-heading" className="text-lg font-medium">
+          {t('account.signOutHeading')}
+        </h2>
+        <p>{t('account.signOutNote')}</p>
+        <button
+          className="ui-logout self-start"
+          type="button"
+          onClick={() => {
+            void signOut();
+          }}
+        >
+          <Icon name="logout" className="ui-icon" />
+          {t('common.signOut')}
+        </button>
+      </section>
+
       <section
         aria-labelledby="delete-heading"
         className="flex flex-col gap-3 rounded border border-red-500 p-4"
@@ -179,17 +196,6 @@ export function AccountScreen() {
           </button>
         </form>
       </section>
-
-      <button
-        className="ui-logout self-start"
-        type="button"
-        onClick={() => {
-          void signOut();
-        }}
-      >
-        <Icon name="logout" className="ui-icon" />
-        {t('common.signOut')}
-      </button>
     </main>
   );
 }

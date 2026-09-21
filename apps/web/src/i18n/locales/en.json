@@ -291,6 +291,8 @@
     "saving": "Saving…",
     "useUsername": "Use username",
     "timezone": "Time zone",
+    "signOutHeading": "Log out",
+    "signOutNote": "Ends this session on this device. Your data is kept, and you can log in again any time.",
     "deleteHeading": "Erase data",
     "warning": "This erases your account and everything in it: every run, ranking, CPU battle record, and setting. It cannot be undone. Backups may keep a copy for up to 7 days.",
     "password": "Your password",

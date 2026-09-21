@@ -41,7 +41,7 @@ export function AccountScreen() {
   };
 
   return (
-    <main className="ui-page mx-auto flex max-w-xl flex-col gap-6 p-6">
+    <main className="ui-page mx-auto flex max-w-5xl flex-col gap-6 p-6">
       <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
         <h1 className="ui-title text-2xl font-semibold">{t('account.title')}</h1>
       </header>

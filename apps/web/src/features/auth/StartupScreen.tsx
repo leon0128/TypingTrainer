@@ -10,7 +10,7 @@ export function StartupScreen() {
 
   return (
     <main
-      className="ui-page mx-auto flex max-w-sm flex-col gap-4 p-6"
+      className="ui-page mx-auto flex max-w-md flex-col gap-4 p-6"
       aria-busy={startupError === null}
     >
       <Logo />

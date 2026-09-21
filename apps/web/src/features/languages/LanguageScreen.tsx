@@ -98,7 +98,7 @@ export function LanguageScreen() {
   };
 
   return (
-    <main className="ui-page mx-auto flex max-w-2xl flex-col gap-6 p-6">
+    <main className="ui-page mx-auto flex max-w-5xl flex-col gap-6 p-6">
       <h2 className="ui-title text-lg">{t('home.modeHeading')}</h2>
 
       <div

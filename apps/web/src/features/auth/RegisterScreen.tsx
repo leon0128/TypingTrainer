@@ -22,7 +22,7 @@ export function RegisterScreen() {
   const signedIn = useAuthStore((state) => state.signedIn);
 
   return (
-    <main className="ui-page mx-auto flex max-w-sm flex-col gap-6 p-6">
+    <main className="ui-page mx-auto flex max-w-md flex-col gap-6 p-6">
       <Logo />
       <LanguageToggle />
       <h1 className="ui-title text-2xl font-semibold">{t('auth.createTitle')}</h1>

@@ -169,7 +169,7 @@ export function DashboardScreen() {
   const buttonClass = (active: boolean) => (active ? 'ui-tab is-active' : 'ui-tab');
 
   return (
-    <main className="ui-page mx-auto flex max-w-2xl flex-col gap-6 p-6">
+    <main className="ui-page mx-auto flex max-w-5xl flex-col gap-6 p-6">
       <header className="flex items-baseline justify-between gap-4">
         <h1 className="ui-title text-2xl font-semibold">
           <Icon name="insights" className="ui-icon" /> {t('dashboard.title')}

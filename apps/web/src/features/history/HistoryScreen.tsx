@@ -98,7 +98,7 @@ export function HistoryScreen() {
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <main className="ui-page mx-auto flex max-w-3xl flex-col gap-6 p-6">
+    <main className="ui-page mx-auto flex max-w-5xl flex-col gap-6 p-6">
       <header className="flex items-baseline justify-between gap-4">
         <h1 className="ui-title text-2xl font-semibold">{t('history.title')}</h1>
       </header>

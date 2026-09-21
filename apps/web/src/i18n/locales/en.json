@@ -65,6 +65,7 @@
     "milliseconds": "{{value}} ms"
   },
   "nav": {
+    "play": "Play",
     "rankings": "High scores",
     "appearance": "Settings",
     "conquests": "CPU battles",
@@ -256,6 +257,7 @@
   },
   "conquests": {
     "title": "CPU battles",
+    "startLevel": "Start level {{level}} vs CPU",
     "highest": "Toughest CPU beaten: Lv.{{level}}",
     "beaten": "Beaten: {{count}} / {{total}}",
     "levels": "{{language}} levels",

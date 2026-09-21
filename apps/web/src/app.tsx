@@ -1,5 +1,5 @@
 import { useEffect, type ReactElement } from 'react';
-import { Navigate, Route, Routes } from 'react-router';
+import { Navigate, Route, Routes, useLocation } from 'react-router';
 
 import { SettingsScreen } from './features/appearance/SettingsScreen';
 import { followSystemTheme, useAppearance } from './features/appearance/appearance-store';
@@ -14,7 +14,34 @@ import { DashboardScreen } from './features/dashboard/DashboardScreen';
 import { HistoryScreen } from './features/history/HistoryScreen';
 import { RankingsScreen } from './features/rankings/RankingsScreen';
 import { PlayScreen } from './features/play/PlayScreen';
+import { useTranslation } from './i18n';
 import { AppLayout } from './components/AppLayout';
+
+const TITLE_KEYS = {
+  '/': 'common.chooseLanguage',
+  '/play': 'nav.play',
+  '/rankings': 'nav.rankings',
+  '/account': 'nav.account',
+  '/settings': 'nav.appearance',
+  '/conquests': 'nav.conquests',
+  '/dashboard': 'nav.dashboard',
+  '/history': 'nav.history',
+  '/login': 'auth.signIn',
+  '/register': 'auth.createTitle',
+} as const;
+
+/** Keeps the tab title in step with the screen: "Typing Trainer - <screen>". */
+function usePageTitle(): void {
+  const { t } = useTranslation();
+  const { pathname } = useLocation();
+  const key = (TITLE_KEYS as Partial<Record<string, (typeof TITLE_KEYS)[keyof typeof TITLE_KEYS]>>)[
+    pathname
+  ];
+  const screen = key === undefined ? null : t(key);
+  useEffect(() => {
+    document.title = screen === null ? 'Typing Trainer' : `Typing Trainer - ${screen}`;
+  }, [screen]);
+}
 
 /** Screens that need a session; an ended session lands here as `anonymous` and goes to sign-in. */
 function RequireAuth({ children }: { children: ReactElement }): ReactElement {
@@ -46,6 +73,7 @@ export function App() {
     else if (status === 'anonymous') resetAppearance();
   }, [status, loadAppearance, resetAppearance]);
   useEffect(() => followSystemTheme(), []);
+  usePageTitle();
 
   return (
     <Routes>

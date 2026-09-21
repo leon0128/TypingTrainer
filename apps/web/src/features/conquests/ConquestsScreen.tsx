@@ -1,10 +1,13 @@
-import { CPU_LEVEL_COUNT, type ConquestsResponse, type Language } from '@typing-trainer/contracts';
+import { CPU_LEVEL_COUNT, type ConquestsResponse, type ContentLanguage, type Language } from '@typing-trainer/contracts';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { useTranslation } from '../../i18n';
 import { getConquests } from '../../lib/api/conquests';
 import { describeError } from '../../lib/api/describe-error';
 import { listLanguages } from '../../lib/api/languages';
+import { startSession } from '../../lib/api/play';
+import { useRunSession } from '../play/run-session';
 import { useRatings } from '../rating/use-ratings';
 
 /** A mark as well as a fill, so a beaten level is not told apart by colour alone (§8.2). */
@@ -13,7 +16,17 @@ const BEATEN_MARK = ' ✓';
 /** Levels per row of the grid: ten rows of ten cover 1–100 (§4.3.4). */
 const GRID_COLUMNS = 10;
 
-function LevelGrid({ language, beaten }: { language: string; beaten: ReadonlySet<number> }) {
+function LevelGrid({
+  language,
+  beaten,
+  disabled,
+  onStart,
+}: {
+  language: string;
+  beaten: ReadonlySet<number>;
+  disabled: boolean;
+  onStart: (level: number) => void;
+}) {
   const { t } = useTranslation();
   return (
     <ol
@@ -30,13 +43,23 @@ function LevelGrid({ language, beaten }: { language: string; beaten: ReadonlySet
             aria-label={t(done ? 'conquests.levelBeaten' : 'conquests.levelNotBeaten', { level })}
             className={
               done
-                ? 'rounded border border-slate-800 bg-slate-800 py-1 text-center text-xs text-white dark:border-slate-200 dark:bg-slate-200 dark:text-slate-900'
-                : 'rounded border border-slate-300 py-1 text-center text-xs text-slate-500 dark:border-slate-700'
+                ? 'rounded border border-slate-800 bg-slate-800 text-center text-xs text-white dark:border-slate-200 dark:bg-slate-200 dark:text-slate-900'
+                : 'rounded border border-slate-300 text-center text-xs text-slate-500 dark:border-slate-700'
             }
           >
-            {/* A mark as well as a fill, so the state is not conveyed by color alone. */}
-            {level}
-            {done ? BEATEN_MARK : ''}
+            <button
+              type="button"
+              className="w-full py-1"
+              disabled={disabled}
+              aria-label={t('conquests.startLevel', { level })}
+              onClick={() => {
+                onStart(level);
+              }}
+            >
+              {/* A mark as well as a fill, so the state is not conveyed by color alone. */}
+              {level}
+              {done ? BEATEN_MARK : ''}
+            </button>
           </li>
         );
       })}
@@ -51,6 +74,23 @@ export function ConquestsScreen() {
   const [conquests, setConquests] = useState<ConquestsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const ratings = useRatings();
+  const navigate = useNavigate();
+  const begin = useRunSession((state) => state.begin);
+  const [starting, setStarting] = useState(false);
+
+  const start = (language: ContentLanguage, level: number) => {
+    setStarting(true);
+    setError(null);
+    startSession(language, { mode: 'cpu', cpuLevel: level })
+      .then((issued) => {
+        begin(issued, performance.now());
+        void navigate('/play');
+      })
+      .catch((cause: unknown) => {
+        setError(describeError(cause));
+        setStarting(false);
+      });
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -107,7 +147,14 @@ export function ConquestsScreen() {
                     {t('conquests.beaten', { count: entry.totalConquests, total: CPU_LEVEL_COUNT })}
                   </span>
                 </h2>
-                <LevelGrid language={name} beaten={new Set(entry.beatenLevels)} />
+                <LevelGrid
+                  language={name}
+                  beaten={new Set(entry.beatenLevels)}
+                  disabled={starting}
+                  onStart={(level) => {
+                    start(entry.language, level);
+                  }}
+                />
               </section>
             );
           })}

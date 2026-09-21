@@ -64,6 +64,7 @@
     "milliseconds": "{{value}} ms"
   },
   "nav": {
+    "play": "プレイ",
     "rankings": "ハイスコア",
     "appearance": "設定",
     "conquests": "CPU対戦",
@@ -255,6 +256,7 @@
   },
   "conquests": {
     "title": "CPU対戦",
+    "startLevel": "レベル{{level}}のCPUと対戦",
     "highest": "撃破した最高 Level: {{level}}",
     "beaten": "撃破 Level 数: {{count}} / {{total}}",
     "levels": "{{language}}の Level",

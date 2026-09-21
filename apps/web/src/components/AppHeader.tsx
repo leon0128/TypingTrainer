@@ -4,21 +4,15 @@ import { NavLink } from 'react-router';
 import { useTranslation } from '../i18n';
 import { useAuthStore } from '../features/auth/auth-store';
 import { useLeaveGuard } from '../features/nav/leave-guard';
+import { TrackSwitch } from '../features/tracks/TrackSwitch';
 import { Icon } from './Icon';
 import { Logo } from './Logo';
 
-const LINKS = [
-  { to: '/', icon: 'home', label: 'common.chooseLanguage' },
-  { to: '/conquests', icon: 'military_tech', label: 'nav.conquests' },
-  { to: '/rankings', icon: 'leaderboard', label: 'nav.rankings' },
-  { to: '/dashboard', icon: 'insights', label: 'nav.dashboard' },
-  { to: '/history', icon: 'history', label: 'nav.history' },
-  { to: '/settings', icon: 'palette', label: 'nav.appearance' },
-] as const;
+const LINKS = [{ to: '/settings', icon: 'palette', label: 'nav.appearance' }] as const;
 
 /**
- * The header of every signed-in screen: the logo (home), the places to go, and — set apart from
- * them — who is playing.
+ * The header of every signed-in screen: the logo (home), the tracks to switch between (§13.9), the
+ * places that belong to no track, and — set apart from them — who is playing.
  */
 export function AppHeader(): ReactElement {
   const { t } = useTranslation();
@@ -33,9 +27,10 @@ export function AppHeader(): ReactElement {
   return (
     <header className="app-header">
       <Logo onClick={confirmLeave} />
+      <TrackSwitch />
       <nav className="app-nav" aria-label={t('nav.label')}>
         {LINKS.map(({ to, icon, label }) => (
-          <NavLink key={to} className="ui-chip" to={to} end={to === '/'} onClick={confirmLeave}>
+          <NavLink key={to} className="ui-chip" to={to} onClick={confirmLeave}>
             <Icon name={icon} className="ui-icon" />
             {t(label)}
           </NavLink>

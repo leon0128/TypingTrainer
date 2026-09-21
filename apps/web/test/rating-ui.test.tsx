@@ -80,7 +80,9 @@ describe('standing', () => {
 
 describe('RankIcon', () => {
   it('has a light and a dark icon for the rank, and the stylesheet shows one', () => {
-    const { container } = render(<RatingSummary languages={[language('python', 0)]} />);
+    const { container } = render(
+      <RatingSummary languages={[language('python', 0)]} track="code" />,
+    );
     const icons = [...container.querySelectorAll('img.rank-icon')].map((icon) =>
       icon.getAttribute('src'),
     );
@@ -90,7 +92,9 @@ describe('RankIcon', () => {
 
 describe('RatingSummary', () => {
   it('shows the rank, the overall rating, and the way to the next rank', () => {
-    render(<RatingSummary languages={[language('python', 2000), language('go', 0)]} />);
+    render(
+      <RatingSummary languages={[language('python', 2000), language('go', 0)]} track="code" />,
+    );
     const summary = within(screen.getByRole('region', { name: 'Rating' }));
     expect(summary.getByText('Silver 4')).toBeTruthy();
     expect(summary.getByText('1000')).toBeTruthy();
@@ -99,14 +103,14 @@ describe('RatingSummary', () => {
   });
 
   it('starts a new player in Beginner 1 with nothing to show for any language', () => {
-    render(<RatingSummary languages={[language('python', 0), language('go', 0)]} />);
+    render(<RatingSummary languages={[language('python', 0), language('go', 0)]} track="code" />);
     expect(screen.getByText('Beginner 1')).toBeTruthy();
     expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('0');
   });
 
   it('has no next rank to ask for at Master', () => {
     const maxed = ['typescript', 'go', 'java', 'python'] as const;
-    render(<RatingSummary languages={maxed.map((slug) => language(slug, 2000))} />);
+    render(<RatingSummary languages={maxed.map((slug) => language(slug, 2000))} track="code" />);
     expect(screen.getByText('Master')).toBeTruthy();
     expect(screen.getByText('You have reached the top rank')).toBeTruthy();
   });

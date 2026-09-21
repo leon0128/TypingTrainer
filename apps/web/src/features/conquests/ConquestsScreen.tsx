@@ -1,8 +1,8 @@
 import {
   CPU_LEVEL_COUNT,
+  trackOf,
   type ConquestsResponse,
   type ContentLanguage,
-  type Language,
 } from '@typing-trainer/contracts';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -10,10 +10,11 @@ import { useNavigate } from 'react-router';
 import { useTranslation } from '../../i18n';
 import { getConquests } from '../../lib/api/conquests';
 import { describeError } from '../../lib/api/describe-error';
-import { listLanguages } from '../../lib/api/languages';
 import { startSession } from '../../lib/api/play';
 import { useRunSession } from '../play/run-session';
 import { useRatings } from '../rating/use-ratings';
+import { languageLabel } from '../tracks/tracks';
+import { useTrack, useTrackLanguages } from '../tracks/use-track';
 
 /** A mark as well as a fill, so a beaten level is not told apart by colour alone (§8.2). */
 const BEATEN_MARK = ' ✓';
@@ -75,7 +76,8 @@ function LevelGrid({
 /** The player's own vs CPU conquest records, per language (§4.3.4). */
 export function ConquestsScreen() {
   const { t } = useTranslation();
-  const [languages, setLanguages] = useState<Language[] | null>(null);
+  const track = useTrack();
+  const { languages, error: languagesError } = useTrackLanguages();
   const [conquests, setConquests] = useState<ConquestsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const ratings = useRatings();
@@ -99,11 +101,8 @@ export function ConquestsScreen() {
 
   useEffect(() => {
     const controller = new AbortController();
-    Promise.all([listLanguages(controller.signal), getConquests(controller.signal)])
-      .then(([list, state]) => {
-        setLanguages(list);
-        setConquests(state);
-      })
+    getConquests(controller.signal)
+      .then(setConquests)
       .catch((cause: unknown) => {
         if (!controller.signal.aborted) setError(describeError(cause));
       });
@@ -118,51 +117,59 @@ export function ConquestsScreen() {
         <h1 className="ui-title text-2xl font-semibold">{t('conquests.title')}</h1>
       </header>
 
-      {error !== null && (
+      {(error ?? languagesError) !== null && (
         <p
           className="rounded border border-red-500 px-3 py-2 text-red-700 dark:text-red-400"
           role="alert"
         >
-          {error}
+          {error ?? languagesError}
         </p>
       )}
 
       {conquests === null || languages === null
         ? error === null && <p role="status">{t('conquests.loading')}</p>
-        : conquests.languages.map((entry) => {
-            const name =
-              languages.find((language) => language.slug === entry.language)?.displayName ??
-              entry.language;
-            const rated = ratings?.languages.find(
-              (candidate) => candidate.language === entry.language,
-            );
-            return (
-              <section key={entry.language} className="flex flex-col gap-2">
-                <h2 className="flex flex-wrap items-baseline gap-x-4 text-lg font-medium">
-                  {name}
-                  {rated !== undefined && (
-                    <span className="text-base font-semibold">
-                      {rated.gamesPlayed === 0
-                        ? t('rating.unplayed')
-                        : t('rating.headingValue', { rating: rated.rating })}
+        : conquests.languages
+            .filter((entry) => trackOf(entry.language) === track)
+            .map((entry) => {
+              const name = languageLabel(
+                t,
+                entry.language,
+                languages.find((language) => language.slug === entry.language)?.displayName ??
+                  entry.language,
+              );
+              const rated = ratings?.languages.find(
+                (candidate) => candidate.language === entry.language,
+              );
+              return (
+                <section key={entry.language} className="flex flex-col gap-2">
+                  <h2 className="flex flex-wrap items-baseline gap-x-4 text-lg font-medium">
+                    {name}
+                    {rated !== undefined && (
+                      <span className="text-base font-semibold">
+                        {rated.gamesPlayed === 0
+                          ? t('rating.unplayed')
+                          : t('rating.headingValue', { rating: rated.rating })}
+                      </span>
+                    )}
+                    <span className="text-sm font-normal text-slate-600 dark:text-slate-400">
+                      {t('conquests.highest', { level: entry.highestLevel ?? '—' })} ·{' '}
+                      {t('conquests.beaten', {
+                        count: entry.totalConquests,
+                        total: CPU_LEVEL_COUNT,
+                      })}
                     </span>
-                  )}
-                  <span className="text-sm font-normal text-slate-600 dark:text-slate-400">
-                    {t('conquests.highest', { level: entry.highestLevel ?? '—' })} ·{' '}
-                    {t('conquests.beaten', { count: entry.totalConquests, total: CPU_LEVEL_COUNT })}
-                  </span>
-                </h2>
-                <LevelGrid
-                  language={name}
-                  beaten={new Set(entry.beatenLevels)}
-                  disabled={starting}
-                  onStart={(level) => {
-                    start(entry.language, level);
-                  }}
-                />
-              </section>
-            );
-          })}
+                  </h2>
+                  <LevelGrid
+                    language={name}
+                    beaten={new Set(entry.beatenLevels)}
+                    disabled={starting}
+                    onStart={(level) => {
+                      start(entry.language, level);
+                    }}
+                  />
+                </section>
+              );
+            })}
 
       <p className="text-sm text-slate-600 dark:text-slate-400">{t('conquests.note')}</p>
     </main>

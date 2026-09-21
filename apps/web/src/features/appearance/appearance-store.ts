@@ -63,6 +63,9 @@ function applySound(sound: Sound): void {
 /** Saves already queued; each new one waits for the one before, whatever became of it. */
 let queue: Promise<void> = Promise.resolve();
 
+/** Resolves once every save queued so far has been answered, whatever became of it. */
+export const whenSaved = (): Promise<void> => queue;
+
 export const useAppearance = create<AppearanceState>()((set, get) => {
   const current = (): Settings => ({
     ...get().appearance,

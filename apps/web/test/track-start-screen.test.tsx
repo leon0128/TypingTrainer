@@ -6,7 +6,7 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAuthStore } from '../src/features/auth/auth-store';
-import { LanguageScreen } from '../src/features/languages/LanguageScreen';
+import { TrackStartScreen } from '../src/features/tracks/TrackStartScreen';
 import { useRunSession } from '../src/features/play/run-session';
 import { IF_PROGRAM } from './program-fixture';
 
@@ -53,7 +53,7 @@ function renderScreen() {
   return render(
     <MemoryRouter initialEntries={['/']}>
       <Routes>
-        <Route path="/" element={<LanguageScreen />} />
+        <Route path="/" element={<TrackStartScreen />} />
         <Route path="/play" element={<p>playing</p>} />
       </Routes>
     </MemoryRouter>,

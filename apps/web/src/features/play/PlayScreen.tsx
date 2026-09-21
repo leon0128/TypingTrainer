@@ -1,4 +1,4 @@
-import type { TypingProgram } from '@typing-trainer/contracts';
+import { trackOf, type TypingProgram } from '@typing-trainer/contracts';
 import { PLAY_DURATION_MS, type SessionState } from '@typing-trainer/typing-engine';
 import type { TFunction } from 'i18next';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react';
@@ -133,7 +133,7 @@ function RunView({ run }: { run: RunStore }) {
   const overlay = overlayText(snapshot.phase, focused, imeActive, t);
 
   return (
-    <main className="play">
+    <main className="play" data-track={trackOf(run.issued.language)}>
       <header className="play-header">
         <span className="block-name">
           {run.issued.language}

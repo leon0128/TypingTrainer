@@ -76,6 +76,17 @@
     "account": "Player",
     "label": "Menu"
   },
+  "tracks": {
+    "label": "Tracks",
+    "code": "Code",
+    "natural-ja": "Japanese",
+    "natural-en": "English"
+  },
+  "poolKinds": {
+    "word": "Words",
+    "line": "Sentences",
+    "paragraph": "Paragraphs"
+  },
   "auth": {
     "signIn": "Log in",
     "enterBoth": "Enter your username and password.",

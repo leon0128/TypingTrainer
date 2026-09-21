@@ -1,19 +1,20 @@
-import type {
-  ContentLanguage,
-  DashboardPoint,
-  DashboardResponse,
-  Language,
-  RankingPeriod,
+import {
+  trackOf,
+  type ContentLanguage,
+  type DashboardPoint,
+  type DashboardResponse,
+  type RankingPeriod,
 } from '@typing-trainer/contracts';
 import { useEffect, useState } from 'react';
 
 import { i18n, useTranslation } from '../../i18n';
 import { getDashboard } from '../../lib/api/dashboard';
 import { describeError } from '../../lib/api/describe-error';
-import { listLanguages } from '../../lib/api/languages';
 import { useAuthStore } from '../auth/auth-store';
 import { LanguageRatings, RatingSummary } from '../rating/RatingSummary';
 import { useRatings } from '../rating/use-ratings';
+import { languageLabel, poolName } from '../tracks/tracks';
+import { useTrack, useTrackLanguages } from '../tracks/use-track';
 import { CHART_HEIGHT, CHART_PADDING, CHART_WIDTH, plot } from './chart';
 import { Icon } from '../../components/Icon';
 
@@ -114,8 +115,11 @@ export function DashboardScreen() {
   const { t } = useTranslation();
   const timezone = useAuthStore((state) => state.user?.timezone ?? 'UTC');
   const ratings = useRatings();
-  const [languages, setLanguages] = useState<Language[] | null>(null);
-  const [language, setLanguage] = useState<ContentLanguage | null>(null);
+  const track = useTrack();
+  const { languages, error: languagesError } = useTrackLanguages();
+  // The language chosen, or the first of the track until one is.
+  const [chosen, setLanguage] = useState<ContentLanguage | null>(null);
+  const language = chosen ?? languages?.[0]?.slug ?? null;
   const [period, setPeriod] = useState<RankingPeriod>('weekly');
   /** Anchor of the daily and weekly views: undefined is "now"; the arrows move it. */
   const [anchor, setAnchor] = useState<string | undefined>(undefined);
@@ -130,21 +134,6 @@ export function DashboardScreen() {
         : addDays(todayIn(timezone), 1 - rangeDays)
       : anchor;
   const key = language === null ? null : `${period}:${language}:${from ?? ''}`;
-
-  useEffect(() => {
-    const controller = new AbortController();
-    listLanguages(controller.signal)
-      .then((list) => {
-        setLanguages(list);
-        setLanguage((current) => current ?? list[0]?.slug ?? null);
-      })
-      .catch((cause: unknown) => {
-        if (!controller.signal.aborted) setError(describeError(cause));
-      });
-    return () => {
-      controller.abort();
-    };
-  }, []);
 
   useEffect(() => {
     if (language === null || key === null) return;
@@ -179,19 +168,21 @@ export function DashboardScreen() {
         </h1>
       </header>
 
-      {error !== null && (
+      {(error ?? languagesError) !== null && (
         <p
           className="rounded border border-red-500 px-3 py-2 text-red-700 dark:text-red-400"
           role="alert"
         >
-          {error}
+          {error ?? languagesError}
         </p>
       )}
 
       {ratings !== null && (
         <>
-          <RatingSummary languages={ratings.languages} />
-          <LanguageRatings languages={ratings.languages} />
+          <RatingSummary languages={ratings.languages} track={track} />
+          <LanguageRatings
+            languages={ratings.languages.filter((entry) => trackOf(entry.language) === track)}
+          />
         </>
       )}
 
@@ -214,7 +205,7 @@ export function DashboardScreen() {
                   : shown.summary.bestScores
                       .map(
                         (best) =>
-                          `${languages.find((entry) => entry.slug === best.language)?.displayName ?? best.language} ${String(best.score)}`,
+                          `${languageLabel(t, best.language, languages.find((entry) => entry.slug === best.language)?.displayName ?? best.language)} ${String(best.score)}`,
                       )
                       .join(' · ')}
               </p>
@@ -235,7 +226,7 @@ export function DashboardScreen() {
                   setLanguage(entry.slug);
                 }}
               >
-                {entry.displayName}
+                {poolName(t, entry)}
               </button>
             ))}
           </div>

@@ -1,8 +1,9 @@
-import type { LanguageRating } from '@typing-trainer/contracts';
+import type { LanguageRating, Track } from '@typing-trainer/contracts';
 import { RATING_LANGUAGE_MAX, type Rank, type RankStanding } from '@typing-trainer/typing-engine';
 import type { ReactElement } from 'react';
 
 import { useTranslation } from '../../i18n';
+import { languageLabel } from '../tracks/tracks';
 import { ICON_THEMES, rankIconSrc, rankName, standingOf } from './standing';
 import './rating.css';
 
@@ -70,11 +71,13 @@ export function RankProgress({ rank, total }: { rank: RankStanding; total: numbe
  */
 export function RatingSummary({
   languages,
+  track,
 }: {
   languages: readonly LanguageRating[];
+  track: Track;
 }): ReactElement {
   const { t } = useTranslation();
-  const { total, rank } = standingOf(languages, 'code');
+  const { total, rank } = standingOf(languages, track);
   return (
     <section className="rating-summary" aria-label={t('rating.title')}>
       <RankIcon rank={rank} size={72} />
@@ -108,10 +111,14 @@ export function LanguageRatings({
       <ul className="language-ratings">
         {languages.map((entry) => (
           <li key={entry.language}>
-            <span className="language-ratings-name">{entry.displayName}</span>
+            <span className="language-ratings-name">
+              {languageLabel(t, entry.language, entry.displayName)}
+            </span>
             <Meter
               fraction={entry.rating / RATING_LANGUAGE_MAX}
-              label={t('rating.languageMeter', { language: entry.displayName })}
+              label={t('rating.languageMeter', {
+                language: languageLabel(t, entry.language, entry.displayName),
+              })}
             />
             <span className="language-ratings-value">
               {entry.gamesPlayed === 0 ? t('rating.unplayed') : entry.rating}

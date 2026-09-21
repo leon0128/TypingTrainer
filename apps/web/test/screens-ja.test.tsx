@@ -11,7 +11,7 @@ import { LoginScreen } from '../src/features/auth/LoginScreen';
 import { RegisterScreen } from '../src/features/auth/RegisterScreen';
 import { StartupScreen } from '../src/features/auth/StartupScreen';
 import { AppLayout } from '../src/components/AppLayout';
-import { LanguageScreen } from '../src/features/languages/LanguageScreen';
+import { TrackStartScreen } from '../src/features/tracks/TrackStartScreen';
 import { PlayScreen } from '../src/features/play/PlayScreen';
 import { useRunSession } from '../src/features/play/run-session';
 import { applyLocale, i18n } from '../src/i18n';
@@ -55,7 +55,7 @@ function renderAt(path: string) {
         <Route path="/register" element={<RegisterScreen />} />
         <Route element={<AppLayout />}>
           <Route path="/play" element={<PlayScreen />} />
-          <Route path="/" element={<LanguageScreen />} />
+          <Route path="/" element={<TrackStartScreen />} />
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -261,7 +261,7 @@ describe('the language screen in Japanese', () => {
   it('reads in Japanese with the terms the requester chose', async () => {
     const { container } = renderAt('/');
     await screen.findByRole('button', { name: 'Python' });
-    for (const name of ['ハイスコア', '設定', 'CPU対戦', 'ステータス', 'プレイログ']) {
+    for (const name of ['コード', '設定']) {
       expect(screen.getByRole('link', { name })).toBeTruthy();
     }
     const modes = within(screen.getByRole('group', { name: 'モード' }));

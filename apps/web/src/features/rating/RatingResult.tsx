@@ -2,6 +2,7 @@ import type { MatchRating } from '@typing-trainer/contracts';
 import type { ReactElement } from 'react';
 
 import { useTranslation } from '../../i18n';
+import { languageLabel } from '../tracks/tracks';
 import { RankIcon, RankProgress } from './RatingSummary';
 import { rankName, rankShift, standingWith } from './standing';
 import './rating.css';
@@ -20,7 +21,7 @@ function signed(delta: number): string {
 export function RatingResult({ rating }: { rating: MatchRating }): ReactElement {
   const { t } = useTranslation();
   const language = rating.languages.find((entry) => entry.language === rating.language);
-  const name = language?.displayName ?? rating.language;
+  const name = languageLabel(t, rating.language, language?.displayName ?? rating.language);
   const before = standingWith(rating.languages, rating.language, rating.before);
   const after = standingWith(rating.languages, rating.language, rating.after);
   const shift = rankShift(before.rank, after.rank);

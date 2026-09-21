@@ -1,9 +1,4 @@
-import type {
-  ContentLanguage,
-  GhostPeriod,
-  GhostRecordsResponse,
-  Language,
-} from '@typing-trainer/contracts';
+import type { ContentLanguage, GhostPeriod, GhostRecordsResponse } from '@typing-trainer/contracts';
 import { CPU_MAX_LEVEL, CPU_MIN_LEVEL, cpuBaseKpm } from '@typing-trainer/typing-engine';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -11,11 +6,12 @@ import { useNavigate } from 'react-router';
 import { describeError } from '../../lib/api/describe-error';
 import { useTranslation } from '../../i18n';
 import { getGhostRecords } from '../../lib/api/ghost-records';
-import { listLanguages } from '../../lib/api/languages';
 import { startSession, type Opponent } from '../../lib/api/play';
 import { useRunSession } from '../play/run-session';
 import { RatingSummary } from '../rating/RatingSummary';
 import { useRatings } from '../rating/use-ratings';
+import { poolName } from './tracks';
+import { useTrack, useTrackLanguages } from './use-track';
 
 type Mode = 'single' | 'cpu' | 'ghost';
 
@@ -27,14 +23,19 @@ const GHOST_PERIODS: GhostPeriod[] = ['daily', 'weekly', 'total'];
 const SELECTED = 'ui-tab is-active';
 const UNSELECTED = 'ui-tab';
 
-/** Language selection (F-03): pick a language and the server issues a run of 20 blocks. */
-export function LanguageScreen() {
+/**
+ * The start screen of a track (F-03, §13.9): pick a mode and a pool, and the server issues the
+ * run. For code the pools are the programming languages; for a natural-language track they are the
+ * kinds of text.
+ */
+export function TrackStartScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const begin = useRunSession((state) => state.begin);
   const ratings = useRatings();
+  const track = useTrack();
+  const { languages, error: languagesError } = useTrackLanguages();
 
-  const [languages, setLanguages] = useState<Language[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState<ContentLanguage | null>(null);
   const [mode, setMode] = useState<Mode>('single');
@@ -66,18 +67,6 @@ export function LanguageScreen() {
     };
   }, [mode]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    listLanguages(controller.signal)
-      .then(setLanguages)
-      .catch((cause: unknown) => {
-        if (!controller.signal.aborted) setError(describeError(cause));
-      });
-    return () => {
-      controller.abort();
-    };
-  }, []);
-
   const start = (language: ContentLanguage) => {
     if (!canStart) return;
     const opponent: Opponent =
@@ -102,7 +91,7 @@ export function LanguageScreen() {
 
   return (
     <main className="ui-page mx-auto flex max-w-5xl flex-col gap-6 p-6">
-      {ratings !== null && <RatingSummary languages={ratings.languages} />}
+      {ratings !== null && <RatingSummary languages={ratings.languages} track={track} />}
 
       <h2 className="ui-title text-lg">{t('home.modeHeading')}</h2>
 
@@ -140,7 +129,7 @@ export function LanguageScreen() {
             />
             <span className="text-slate-600 dark:text-slate-400">
               {levelValid
-                ? t('home.aboutKpm', { kpm: Math.round(cpuBaseKpm(level, 'code')) })
+                ? t('home.aboutKpm', { kpm: Math.round(cpuBaseKpm(level, track)) })
                 : t('home.levelInvalid', { min: CPU_MIN_LEVEL, max: CPU_MAX_LEVEL })}
             </span>
           </label>
@@ -175,12 +164,12 @@ export function LanguageScreen() {
 
       <h2 className="ui-title text-lg">{t('home.heading')}</h2>
 
-      {error !== null && (
+      {(error ?? languagesError) !== null && (
         <p
           className="rounded border border-red-500 px-3 py-2 text-red-700 dark:text-red-400"
           role="alert"
         >
-          {error}
+          {error ?? languagesError}
         </p>
       )}
 
@@ -205,7 +194,7 @@ export function LanguageScreen() {
                       start(language.slug);
                     }}
                   >
-                    {starting === language.slug ? t('home.starting') : language.displayName}
+                    {starting === language.slug ? t('home.starting') : poolName(t, language)}
                     {rated !== undefined && ' '}
                     {rated !== undefined && (
                       <span className="block text-xs text-slate-600 dark:text-slate-400">

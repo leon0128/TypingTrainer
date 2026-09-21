@@ -1252,10 +1252,18 @@ English needs no new atom. A word is a `literal`; a space between words is a req
 | Route | Screen |
 | --- | --- |
 | `/` | **Home.** A card per track with its rank icon and name, overall rating, and the bar towards the next rank; and the play-history grid |
-| `/code`, `/ja`, `/en` | The track's start screen: mode, the pools with their ratings. This is what `/` showed before |
-| `/<track>/rankings`, `/dashboard`, `/history`, `/conquests` | The existing screens, limited to the current track's pools |
+| `/code`, `/ja`, `/en` | The track's start screen: mode, and the pools with their ratings (a programming language, or a kind of text). This is what `/` showed before |
+| `/<track>/conquests`, `/rankings`, `/dashboard`, `/history` | The existing screens, limited to the track: its pools, its rating, its history (`GET /api/history?track=`), and a dashboard summary of its own (§9.5) |
+| `/play`, `/account`, `/settings` | Outside any track; `/play` takes the track of the run |
+| `/conquests`, `/rankings`, `/dashboard`, `/history` | Old addresses: they redirect to the same screen of the code track |
 
-The logo returns to Home. The header of every track screen has a switch between Code, 日本語 (when available), and English. Each track has its own accent color through one CSS custom property, `--track-accent`, selected by a `data-track` attribute on top of the theme and skin, so the player can tell at a glance which track is being played.
+The URL names a track `code`, `ja`, or `en`. A track that does not exist, or that the account may not use, goes back to Home.
+
+**Which tracks are offered.** The web does not decide from the display language: that is known only a moment after signing in, and until then it is the browser's. The tracks offered are those for which `GET /api/languages` lists a pool, which the server has already limited to what the account may use (§13.11) and to what is enabled. The list is read on sign-in and again once a change of the display language has been saved. So Japanese is never shown to an account that may not use it, not even briefly, and while the natural-language pools are disabled only the code track is offered.
+
+**Header and track menu.** The logo leads to Home. Beside it is a switch between the tracks offered, in the order Code, Japanese, English, with the current one marked (on the play screen, the track of the run; switching away from a run asks first, like every link of the header). The header keeps only what belongs to no track, the settings and the player. A track's own screens (Play, CPU battles, High scores, Status, Play log) are a menu under the header, with its name and the current screen marked in the track's colour. A natural-language pool is named by its kind (Words, Sentences, Paragraphs; 単語, 1行, 複数行), since the track already says the language.
+
+**Track colour.** One CSS custom property, `--track-accent`, set by a `data-track` attribute on top of the theme and skin: green for code, and for the natural-language tracks violet, leaning red for Japanese and blue for English, brighter on dark themes and brightest on high contrast. It colours the top edge of a track's screens, its name, the current item of the menu and the switch, and a stripe on top of the play screen. It is only ever a mark beside text.
 
 **Play-history grid.** As on GitHub: one column per week, one row per day, for the last year. A cell is colored when a run was played on that day, in four steps of shade by the number of runs. Code runs use one hue and natural-language runs another; a day with both shows both (the cell split in two). Colors are never the only signal: each cell has a text title with the date and counts.
 
@@ -1540,3 +1548,5 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.43 | Activity response | `GET /api/activity` returns the range it read with the days that have runs, `{ from, to, days: [{ date, code, natural }] }`, not a bare list, so the client can draw the year without working out the defaults. Only `from` or only `to` gives 365 days from or to it, and no more than 366 days can be asked for |
 | 1.43 | Bug found in `LocalDateSchema` | A month or day out of range (`2026-13-01`) made the schema throw a RangeError instead of failing, so a query with such a date answered 500 rather than 400 on the dashboard as well. Found by the activity tests and fixed with them |
 | 1.43 | History and dashboard by track | `GET /api/history` takes an optional `track`, and the dashboard summary (runs, keystrokes, best scores, highest CPU level) covers the track of the language shown instead of every track the account may use, so a track's screens never add up another track's play (§13.9) |
+| 1.43 | Tracks offered from the language list | The web offers the tracks for which `GET /api/languages` lists a pool, not those its display language would suggest: the display language is the browser's until the account's preferences arrive, so deciding from it could show Japanese to an account that may not use it. It also keeps the natural-language tracks out of sight while their pools are disabled |
+| 1.43 | Old addresses | `/conquests`, `/rankings`, `/dashboard`, and `/history` redirect to the code track's screens, so a bookmark still works |

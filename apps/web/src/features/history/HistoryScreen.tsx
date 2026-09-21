@@ -2,7 +2,6 @@ import type {
   ContentLanguage,
   HistoryEntry,
   HistoryRequest,
-  Language,
   PlayMode,
   RankingPeriod,
 } from '@typing-trainer/contracts';
@@ -11,8 +10,9 @@ import { useEffect, useState } from 'react';
 import { i18n, useTranslation } from '../../i18n';
 import { describeError } from '../../lib/api/describe-error';
 import { deleteHistoryEntry, getHistory } from '../../lib/api/history';
-import { listLanguages } from '../../lib/api/languages';
 import { formatPercent } from '../play/format';
+import { languageLabel, poolName } from '../tracks/tracks';
+import { useTrack, useTrackLanguages } from '../tracks/use-track';
 
 /** The period filter's choices, all time first, as this screen has always listed them. */
 const PERIODS: (RankingPeriod | '')[] = ['', 'daily', 'weekly'];
@@ -30,7 +30,8 @@ interface Filters {
 /** Play history (F-08, §6.3): the player's own runs, filterable, with per-row hard delete. */
 export function HistoryScreen() {
   const { t } = useTranslation();
-  const [languages, setLanguages] = useState<Language[] | null>(null);
+  const track = useTrack();
+  const { languages, error: languagesError } = useTrackLanguages();
   const [filters, setFilters] = useState<Filters>({ period: '', mode: '', language: '' });
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState<HistoryEntry[] | null>(null);
@@ -38,17 +39,10 @@ export function HistoryScreen() {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  useEffect(() => {
-    listLanguages()
-      .then(setLanguages)
-      .catch((cause: unknown) => {
-        setError(describeError(cause));
-      });
-  }, []);
-
   const request: Partial<HistoryRequest> = {
     page,
     pageSize: PAGE_SIZE,
+    track,
     ...(filters.period === '' ? {} : { period: filters.period }),
     ...(filters.mode === '' ? {} : { mode: filters.mode }),
     ...(filters.language === '' ? {} : { language: filters.language }),
@@ -103,12 +97,12 @@ export function HistoryScreen() {
         <h1 className="ui-title text-2xl font-semibold">{t('history.title')}</h1>
       </header>
 
-      {error !== null && (
+      {(error ?? languagesError) !== null && (
         <p
           className="rounded border border-red-500 px-3 py-2 text-red-700 dark:text-red-400"
           role="alert"
         >
-          {error}
+          {error ?? languagesError}
         </p>
       )}
 
@@ -160,7 +154,7 @@ export function HistoryScreen() {
             <option value="">{t('history.all')}</option>
             {(languages ?? []).map((entry) => (
               <option key={entry.slug} value={entry.slug}>
-                {entry.displayName}
+                {poolName(t, entry)}
               </option>
             ))}
           </select>
@@ -196,8 +190,12 @@ export function HistoryScreen() {
                   </td>
                   <td className="py-1 pr-2">{t(`modes.${row.mode}`)}</td>
                   <td className="py-1 pr-2">
-                    {languages?.find((entry) => entry.slug === row.language)?.displayName ??
-                      row.language}
+                    {languageLabel(
+                      t,
+                      row.language,
+                      languages?.find((entry) => entry.slug === row.language)?.displayName ??
+                        row.language,
+                    )}
                   </td>
                   <td className="py-1 pr-2">{row.kpm}</td>
                   <td className="py-1 pr-2">{formatPercent(row.accuracy)}</td>

@@ -19,6 +19,8 @@ function englishTexts(): string[] {
           ![
             'TypingTrainer',
             'English',
+            // Part of the names of fonts (Fira Code, Source Code Pro), which are not translated.
+            'Code',
             'vs CPU',
             'KPM',
             'Okabe–Ito',

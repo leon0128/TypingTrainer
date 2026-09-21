@@ -1,43 +1,26 @@
-import type {
-  ContentLanguage,
-  Language,
-  RankingEntry,
-  RankingPeriod,
-} from '@typing-trainer/contracts';
+import type { ContentLanguage, RankingEntry, RankingPeriod } from '@typing-trainer/contracts';
 import { useEffect, useState } from 'react';
 
 import { i18n, useTranslation } from '../../i18n';
 import { describeError } from '../../lib/api/describe-error';
-import { listLanguages } from '../../lib/api/languages';
 import { getRankings } from '../../lib/api/rankings';
 import { formatPercent } from '../play/format';
+import { poolName } from '../tracks/tracks';
+import { useTrackLanguages } from '../tracks/use-track';
 
 const PERIODS: RankingPeriod[] = ['daily', 'weekly', 'total'];
 
 /** The player's own top 10 runs by period and language (§6.1) — never other players' scores. */
 export function RankingsScreen() {
   const { t } = useTranslation();
-  const [languages, setLanguages] = useState<Language[] | null>(null);
-  const [language, setLanguage] = useState<ContentLanguage | null>(null);
+  const { languages, error: languagesError } = useTrackLanguages();
+  // The language chosen, or the first of the track until one is.
+  const [chosen, setLanguage] = useState<ContentLanguage | null>(null);
+  const language = chosen ?? languages?.[0]?.slug ?? null;
   const [period, setPeriod] = useState<RankingPeriod>('daily');
   const [entries, setEntries] = useState<{ key: string; rows: RankingEntry[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const entriesKey = language === null ? null : `${period}:${language}`;
-
-  useEffect(() => {
-    const controller = new AbortController();
-    listLanguages(controller.signal)
-      .then((list) => {
-        setLanguages(list);
-        setLanguage((current) => current ?? list[0]?.slug ?? null);
-      })
-      .catch((cause: unknown) => {
-        if (!controller.signal.aborted) setError(describeError(cause));
-      });
-    return () => {
-      controller.abort();
-    };
-  }, []);
 
   useEffect(() => {
     if (language === null || entriesKey === null) return;
@@ -63,12 +46,12 @@ export function RankingsScreen() {
         <h1 className="ui-title text-2xl font-semibold">{t('rankings.title')}</h1>
       </header>
 
-      {error !== null && (
+      {(error ?? languagesError) !== null && (
         <p
           className="rounded border border-red-500 px-3 py-2 text-red-700 dark:text-red-400"
           role="alert"
         >
-          {error}
+          {error ?? languagesError}
         </p>
       )}
 
@@ -91,7 +74,7 @@ export function RankingsScreen() {
                   setLanguage(entry.slug);
                 }}
               >
-                {entry.displayName}
+                {poolName(t, entry)}
               </button>
             ))}
           </div>

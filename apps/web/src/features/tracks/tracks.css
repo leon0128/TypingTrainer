@@ -1,0 +1,105 @@
+/*
+ * The colour of each track (§13.9): one custom property, `--track-accent`, set by a `data-track`
+ * attribute on whatever it colours. Code is green and the natural-language tracks are violet, the
+ * Japanese one leaning red and the English one leaning blue, so a track is known at a glance. The
+ * values are a little brighter on dark themes and brightest on high contrast, and the accent is
+ * only ever a mark beside text, never the only thing that says which track it is.
+ */
+
+:root {
+  --track-code: #2f855a;
+  --track-ja: #a3398f;
+  --track-en: #4b55c8;
+  /* The one violet the play-history grid uses for both natural-language tracks. */
+  --track-natural: #7c4fc4;
+}
+
+[data-theme='dark'] {
+  --track-code: #48bb78;
+  --track-ja: #d77ac8;
+  --track-en: #8b93f0;
+  --track-natural: #a98bf0;
+}
+
+[data-theme='high-contrast'] {
+  --track-code: #4ade80;
+  --track-ja: #f0abfc;
+  --track-en: #a5b4fc;
+  --track-natural: #c4b5fd;
+}
+
+[data-track='code'] {
+  --track-accent: var(--track-code);
+}
+
+[data-track='natural-ja'] {
+  --track-accent: var(--track-ja);
+}
+
+[data-track='natural-en'] {
+  --track-accent: var(--track-en);
+}
+
+.track-layout {
+  border-top: 4px solid var(--track-accent);
+}
+
+.track-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 18px;
+  padding: 10px 24px 0;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.track-name {
+  color: var(--track-accent);
+  font-weight: 700;
+}
+
+.track-nav-link {
+  padding: 2px 2px 4px;
+  border-bottom: 3px solid transparent;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.track-nav-link:hover {
+  border-bottom-color: color-mix(in srgb, var(--track-accent) 45%, transparent);
+}
+
+.track-nav-link.active {
+  border-bottom-color: var(--track-accent);
+  font-weight: 600;
+}
+
+.track-switch {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.track-switch-item {
+  padding: 2px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.track-switch-item:hover {
+  border-color: var(--track-accent);
+}
+
+.track-switch-item[aria-current='page'] {
+  border-color: var(--track-accent);
+  background: color-mix(in srgb, var(--track-accent) 22%, transparent);
+  font-weight: 600;
+}
+
+/* The play screen is outside a track's layout, so it carries the colour itself: a stripe on top says
+   which track is being played. */
+.play[data-track] {
+  border-top: 4px solid var(--track-accent);
+}

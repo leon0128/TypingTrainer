@@ -75,6 +75,17 @@
     "account": "プレイヤー情報",
     "label": "メニュー"
   },
+  "tracks": {
+    "label": "トラック",
+    "code": "コード",
+    "natural-ja": "日本語",
+    "natural-en": "英語"
+  },
+  "poolKinds": {
+    "word": "単語",
+    "line": "1行",
+    "paragraph": "複数行"
+  },
   "auth": {
     "signIn": "ログイン",
     "enterBoth": "ユーザー名とパスワードを入力してください。",

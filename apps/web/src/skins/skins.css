@@ -34,8 +34,9 @@
 
 .ui-panel,
 .ui-tile {
-  background: var(--sk-tile-bg);
-  border: var(--sk-bw) solid var(--border);
+  /* A little of the text colour in the fill and the border, so a panel never merges with the page. */
+  background: color-mix(in srgb, var(--sk-tile-bg) 90%, var(--fg) 10%);
+  border: var(--sk-bw) solid color-mix(in srgb, var(--border) 65%, var(--fg) 35%);
   border-radius: var(--sk-radius);
   box-shadow: var(--sk-shadow);
 }
@@ -453,8 +454,9 @@
 }
 
 .app-nav {
+  order: 3;
   display: flex;
-  flex: 1 1 auto;
+  flex: 1 0 100%;
   flex-wrap: wrap;
   gap: 8px;
   font-size: 0.9rem;
@@ -472,6 +474,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  order: 2;
   margin-left: auto;
   padding: 4px 4px 4px 12px;
   border: var(--sk-bw) dashed var(--sk-accent2);

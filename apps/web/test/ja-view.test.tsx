@@ -68,6 +68,14 @@ describe('JaView', () => {
     expect(container.querySelector('.ja-text')?.textContent).toBe('今日');
     expect(container.querySelector('.cell-cursor')?.textContent).toBe('kyo');
   });
+
+  it('keeps the text on a row of its own, so the romaji cannot open gaps in it', () => {
+    const { container } = render(
+      <JaView program={PROGRAM} engine={null} missSeq={0} lastMiss={null} />,
+    );
+    const rows = [...container.querySelectorAll('.ja-texts')].map((row) => row.textContent);
+    expect(rows).toEqual(['今日', 'し']);
+  });
 });
 
 describe('lookahead', () => {

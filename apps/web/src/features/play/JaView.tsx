@@ -1,6 +1,6 @@
 import type { TypingProgram } from '@typing-trainer/contracts';
 import type { EngineState } from '@typing-trainer/typing-engine';
-import { memo, useLayoutEffect, useMemo, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 
 import { useTranslation } from '../../i18n';
 
@@ -20,29 +20,6 @@ function groupState(group: GroupView): UnitState {
   if (group.units.some((unit) => unit.state === 'cursor')) return 'cursor';
   return group.units.every((unit) => unit.state === 'typed') ? 'typed' : 'pending';
 }
-
-const Group = memo(function Group({ group, flash }: { group: GroupView; flash: boolean }) {
-  return (
-    <span className="ja-group">
-      <span className={`ja-text ja-${groupState(group)}`}>{group.display}</span>
-      <span className="ja-romaji">
-        {group.units.map((unit) => (
-          <span
-            key={unit.atomIndex}
-            className={
-              unit.state === 'cursor'
-                ? `cell cell-cursor${flash ? ' miss-flash' : ''}`
-                : `cell cell-${unit.state}`
-            }
-          >
-            {unit.typed !== '' && <span className="cell-typed">{unit.typed}</span>}
-            {unit.rest}
-          </span>
-        ))}
-      </span>
-    </span>
-  );
-});
 
 /**
  * A Japanese block as two lines, the text above and the romaji below it (§13.6). The caret is the
@@ -68,18 +45,37 @@ export function JaView({ program, engine, missSeq, lastMiss }: JaViewProps) {
     <div ref={preRef} className="code ja-block" aria-label={t('play.codeToType')}>
       {lines.map((line, index) => (
         <div key={index} className="ja-line">
-          {line.groups.map((group) => (
-            <Group
-              key={group.units[0]?.atomIndex}
-              group={group}
-              flash={flashing > 0 && group.units.some((unit) => unit.state === 'cursor')}
-            />
-          ))}
-          {line.eol !== null && (
-            <span className={`cell cell-${line.eol.state}`}>
-              {line.eol.state === 'cursor' ? '↵' : ''}
-            </span>
-          )}
+          {/* The text is laid out on its own row, evenly spaced whatever the romaji below is; the
+              romaji row follows its own widths, so the two need not line up (§13.6). */}
+          <div className="ja-texts">
+            {line.groups.map((group) => (
+              <span key={group.units[0]?.atomIndex} className={`ja-text ja-${groupState(group)}`}>
+                {group.display}
+              </span>
+            ))}
+            {line.eol !== null && (
+              <span className={`cell cell-${line.eol.state}`}>
+                {line.eol.state === 'cursor' ? '↵' : ''}
+              </span>
+            )}
+          </div>
+          <div className="ja-romaji">
+            {line.groups.flatMap((group) =>
+              group.units.map((unit) => (
+                <span
+                  key={unit.atomIndex}
+                  className={
+                    unit.state === 'cursor'
+                      ? `cell cell-cursor${flashing > 0 ? ' miss-flash' : ''}`
+                      : `cell cell-${unit.state}`
+                  }
+                >
+                  {unit.typed !== '' && <span className="cell-typed">{unit.typed}</span>}
+                  {unit.rest}
+                </span>
+              )),
+            )}
+          </div>
         </div>
       ))}
     </div>

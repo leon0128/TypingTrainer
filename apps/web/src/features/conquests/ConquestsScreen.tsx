@@ -1,4 +1,9 @@
-import { CPU_LEVEL_COUNT, type ConquestsResponse, type ContentLanguage, type Language } from '@typing-trainer/contracts';
+import {
+  CPU_LEVEL_COUNT,
+  type ConquestsResponse,
+  type ContentLanguage,
+  type Language,
+} from '@typing-trainer/contracts';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 

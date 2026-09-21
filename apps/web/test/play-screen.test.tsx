@@ -91,6 +91,22 @@ describe('play screen', () => {
     expect(await screen.findByText('choose a language')).toBeTruthy();
   });
 
+  it('asks before the logo leaves a run in progress', async () => {
+    beginRun();
+    renderScreen();
+    const confirm = vi.spyOn(window, 'confirm');
+
+    confirm.mockReturnValueOnce(false);
+    await userEvent.click(screen.getByRole('link', { name: 'TypingTrainer' }));
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('choose a language')).toBeNull();
+
+    confirm.mockReturnValueOnce(true);
+    await userEvent.click(screen.getByRole('link', { name: 'TypingTrainer' }));
+    expect(await screen.findByText('choose a language')).toBeTruthy();
+    confirm.mockRestore();
+  });
+
   it('shows the block being typed and the next one, with the run position', () => {
     beginRun();
     renderScreen();

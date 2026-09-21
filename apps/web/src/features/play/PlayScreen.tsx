@@ -18,6 +18,7 @@ import { ResultPanel } from './ResultPanel';
 import { useRunSession } from './run-session';
 import { onRunClock, type RunPhase, type RunStore } from './run-store';
 import './play.css';
+import { Logo } from '../../components/Logo';
 
 const noSubscribe = () => () => undefined;
 const noSnapshot = () => null;
@@ -126,8 +127,14 @@ function RunView({ run }: { run: RunStore }) {
 
   return (
     <main className="play">
+      <Logo
+        onClick={(event) => {
+          if (snapshot.phase !== 'ended' && !window.confirm(t('play.confirmLeave'))) {
+            event.preventDefault();
+          }
+        }}
+      />
       <header className="play-header">
-        <h1>{t('app.name')}</h1>
         <span className="block-name">
           {run.issued.language}
           {opponent !== null && ` · ${t('play.versus', { opponent: opponent.label })}`} ·{' '}

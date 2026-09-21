@@ -14,6 +14,7 @@ import { describeError } from '../../lib/api/describe-error';
 import { deleteHistoryEntry, getHistory } from '../../lib/api/history';
 import { listLanguages } from '../../lib/api/languages';
 import { formatPercent } from '../play/format';
+import { Logo } from '../../components/Logo';
 
 /** The period filter's choices, all time first, as this screen has always listed them. */
 const PERIODS: (RankingPeriod | '')[] = ['', 'daily', 'weekly'];
@@ -100,6 +101,7 @@ export function HistoryScreen() {
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-6 p-6">
+      <Logo />
       <header className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-semibold">{t('history.title')}</h1>
         <Link className="underline" to="/">

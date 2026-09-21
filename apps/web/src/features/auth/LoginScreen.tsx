@@ -5,6 +5,7 @@ import * as authApi from '../../lib/api/auth';
 import { useAuthStore } from './auth-store';
 import { CredentialsForm } from './CredentialsForm';
 import { LanguageToggle } from './LanguageToggle';
+import { Logo } from '../../components/Logo';
 
 export function LoginScreen() {
   const { t } = useTranslation();
@@ -15,6 +16,7 @@ export function LoginScreen() {
 
   return (
     <main className="mx-auto flex max-w-sm flex-col gap-6 p-6">
+      <Logo />
       <LanguageToggle />
       {erased && <p role="status">{t('account.deletedNotice')}</p>}
       <h1 className="text-2xl font-semibold">{t('auth.signIn')}</h1>

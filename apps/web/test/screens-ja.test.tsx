@@ -101,7 +101,11 @@ describe('the sign-in and registration screens in Japanese', () => {
   });
 
   it('the startup screen reads in Japanese', () => {
-    const { container } = render(<StartupScreen />);
+    const { container } = render(
+      <MemoryRouter>
+        <StartupScreen />
+      </MemoryRouter>,
+    );
     expect(screen.getByRole('status').textContent).toBe('読み込み中…');
     expectNoEnglish(container);
   });

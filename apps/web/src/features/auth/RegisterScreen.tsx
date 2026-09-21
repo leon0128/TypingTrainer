@@ -9,6 +9,7 @@ import { useAppearance } from '../appearance/appearance-store';
 import { useAuthStore } from './auth-store';
 import { CredentialsForm } from './CredentialsForm';
 import { LanguageToggle } from './LanguageToggle';
+import { Logo } from '../../components/Logo';
 
 /** The browser's own time zone, which the profile uses for day boundaries (§6.4). */
 function browserTimezone(): string {
@@ -22,6 +23,7 @@ export function RegisterScreen() {
 
   return (
     <main className="mx-auto flex max-w-sm flex-col gap-6 p-6">
+      <Logo />
       <LanguageToggle />
       <h1 className="text-2xl font-semibold">{t('auth.createTitle')}</h1>
       <CredentialsForm

@@ -18,6 +18,7 @@ import { buildLayout } from '../play/layout';
 import { useAppearance } from './appearance-store';
 import { FONT_LABELS, fontStack, loadFont } from './fonts';
 import { PALETTES } from './palettes';
+import { Logo } from '../../components/Logo';
 
 /**
  * A block for the preview: typed text, the cursor, text still to type, and auto-inserted text that
@@ -79,6 +80,7 @@ export function SettingsScreen() {
 
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
+      <Logo />
       <header className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-semibold">{t('settings.title')}</h1>
         <Link className="underline" to="/">

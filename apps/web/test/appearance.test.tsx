@@ -274,7 +274,7 @@ describe('the app', () => {
       ),
     );
     renderApp();
-    await screen.findByText('TypingTrainer');
+    await screen.findAllByRole('link', { name: 'TypingTrainer' });
     await vi.waitFor(() => {
       expect(property('--code-size')).toBe('14px');
     });

@@ -135,6 +135,7 @@
     "statusEnded": "Run over.",
     "overlayIme": "Turn off your IME (Japanese input) to type.",
     "overlayResume": "Paused — click here to resume",
+    "confirmLeave": "Leave this run? Your progress will be lost.",
     "overlayStart": "Click here to start"
   },
   "result": {

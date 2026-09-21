@@ -14,6 +14,7 @@ import { describeError } from '../../lib/api/describe-error';
 import { listLanguages } from '../../lib/api/languages';
 import { useAuthStore } from '../auth/auth-store';
 import { CHART_HEIGHT, CHART_PADDING, CHART_WIDTH, plot } from './chart';
+import { Logo } from '../../components/Logo';
 
 const PERIODS: { value: RankingPeriod; label: 'periodDaily' | 'periodWeekly' | 'periodTotal' }[] = [
   { value: 'daily', label: 'periodDaily' },
@@ -173,6 +174,7 @@ export function DashboardScreen() {
 
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
+      <Logo />
       <header className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
         <Link className="underline" to="/">

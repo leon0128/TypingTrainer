@@ -1,5 +1,6 @@
 import { useTranslation } from '../../i18n';
 import { useAuthStore } from './auth-store';
+import { Logo } from '../../components/Logo';
 
 /** Shown while the first `me` request is in flight, and when it failed (§9.6: no SLA, retry). */
 export function StartupScreen() {
@@ -9,6 +10,7 @@ export function StartupScreen() {
 
   return (
     <main className="mx-auto flex max-w-sm flex-col gap-4 p-6" aria-busy={startupError === null}>
+      <Logo />
       {startupError === null ? (
         <p role="status">{t('common.loading')}</p>
       ) : (

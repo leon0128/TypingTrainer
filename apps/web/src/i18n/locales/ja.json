@@ -134,6 +134,7 @@
     "statusEnded": "終了。",
     "overlayIme": "入力するには IME(日本語入力)をオフにしてください。",
     "overlayResume": "一時停止中 — ここをクリックして再開",
+    "confirmLeave": "このランを離れますか?進行状況は失われます。",
     "overlayStart": "ここをクリックして開始"
   },
   "result": {

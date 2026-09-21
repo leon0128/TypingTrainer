@@ -6,6 +6,7 @@ import { useTranslation } from '../../i18n';
 import { getConquests } from '../../lib/api/conquests';
 import { describeError } from '../../lib/api/describe-error';
 import { listLanguages } from '../../lib/api/languages';
+import { Logo } from '../../components/Logo';
 
 /** A mark as well as a fill, so a beaten level is not told apart by colour alone (§8.2). */
 const BEATEN_MARK = ' ✓';
@@ -68,6 +69,7 @@ export function ConquestsScreen() {
 
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
+      <Logo />
       <header className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-semibold">{t('conquests.title')}</h1>
         <Link className="underline" to="/">

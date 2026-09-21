@@ -6,6 +6,7 @@ import type {
   User,
 } from '@typing-trainer/contracts';
 
+import { accountTracks, assertPoolAvailable } from '../../common/pool-access';
 import { HistoryRepository, type HistoryRow } from './history.repository';
 
 /** The part of the repository the service needs, so tests can substitute it. */
@@ -16,7 +17,8 @@ export class HistoryService {
   constructor(@Inject(HistoryRepository) private readonly history: HistorySource) {}
 
   async list(user: User, request: HistoryRequest): Promise<HistoryResponse> {
-    const { rows, total } = await this.history.page(user.id, request);
+    if (request.language !== undefined) assertPoolAvailable(user, request.language);
+    const { rows, total } = await this.history.page(user.id, request, accountTracks(user));
     return {
       entries: rows.map(toEntry),
       page: request.page,

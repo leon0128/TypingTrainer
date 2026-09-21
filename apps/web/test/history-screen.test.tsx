@@ -8,8 +8,8 @@ import { HistoryScreen } from '../src/features/history/HistoryScreen';
 
 const LANGUAGES = {
   languages: [
-    { slug: 'python', displayName: 'Python' },
-    { slug: 'go', displayName: 'Go' },
+    { slug: 'python', displayName: 'Python', track: 'code', kind: null },
+    { slug: 'go', displayName: 'Go', track: 'code', kind: null },
   ],
 };
 

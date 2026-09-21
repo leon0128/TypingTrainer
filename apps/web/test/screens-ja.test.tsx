@@ -240,8 +240,8 @@ describe('registering in the language the screen is in', () => {
 describe('the language screen in Japanese', () => {
   const LANGUAGES = {
     languages: [
-      { slug: 'python', displayName: 'Python' },
-      { slug: 'go', displayName: 'Go' },
+      { slug: 'python', displayName: 'Python', track: 'code', kind: null },
+      { slug: 'go', displayName: 'Go', track: 'code', kind: null },
     ],
   };
   const RECORDS: GhostRecordsResponse = {

@@ -33,6 +33,7 @@
     "usernameTaken": "そのユーザー名は使われています",
     "invalidCredentials": "ユーザー名またはパスワードが正しくありません",
     "languageUnavailable": "言語「{{language}}」は利用できません",
+    "languageForbidden": "言語「{{language}}」はこのアカウントでは使えません",
     "runNotFound": "プレイ記録が見つかりません",
     "noSuchRun": "該当するプレイがありません",
     "runTooOld": "このプレイは古すぎて送信できません。もう一度プレイしてください",

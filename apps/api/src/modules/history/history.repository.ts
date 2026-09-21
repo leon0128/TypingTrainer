@@ -33,7 +33,11 @@ export class HistoryRepository {
    * result by `started_at` is cheap in memory at the up-to-10,000-rows-per-user scale those
    * indexes were sized for.
    */
-  async page(userId: string, request: HistoryRequest): Promise<HistoryPage> {
+  async page(
+    userId: string,
+    request: HistoryRequest,
+    tracks: readonly string[],
+  ): Promise<HistoryPage> {
     const { period, mode, language } = request;
     const offset = (request.page - 1) * request.pageSize;
 
@@ -46,9 +50,18 @@ export class HistoryRepository {
          AND ($2::text IS NULL OR r.mode = $2)
          AND ($3::text IS NULL OR l.slug = $3)
          AND ${periodCondition('$4')}
+         AND l.track = ANY($7::text[])
        ORDER BY r.started_at DESC, r.id DESC
        LIMIT $5 OFFSET $6`,
-      [userId, mode ?? null, language ?? null, period ?? null, request.pageSize, offset],
+      [
+        userId,
+        mode ?? null,
+        language ?? null,
+        period ?? null,
+        request.pageSize,
+        offset,
+        [...tracks],
+      ],
     );
 
     const [{ count } = { count: '0' }] = await this.dataSource.query<{ count: string }[]>(
@@ -59,8 +72,9 @@ export class HistoryRepository {
        WHERE r.user_id = $1
          AND ($2::text IS NULL OR r.mode = $2)
          AND ($3::text IS NULL OR l.slug = $3)
-         AND ${periodCondition('$4')}`,
-      [userId, mode ?? null, language ?? null, period ?? null],
+         AND ${periodCondition('$4')}
+         AND l.track = ANY($5::text[])`,
+      [userId, mode ?? null, language ?? null, period ?? null, [...tracks]],
     );
 
     return { rows, total: Number(count) };

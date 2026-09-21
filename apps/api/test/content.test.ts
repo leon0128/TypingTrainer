@@ -3,7 +3,7 @@ import { HealthResponseSchema, LanguagesResponseSchema } from '@typing-trainer/c
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createApp } from '../src/app';
-import { testEnv } from './support/env';
+import { TEST_APP_ORIGIN, testEnv } from './support/env';
 import { TEST_DATABASE_URL, createTestDatabase, type TestDatabase } from './support/test-database';
 
 describe.runIf(TEST_DATABASE_URL !== undefined)(
@@ -28,6 +28,18 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       await app.init();
       await app.getHttpAdapter().getInstance().ready();
       return app;
+    }
+
+    /** The cookie of a new account: the language list is not public. */
+    async function cookieFor(app: NestFastifyApplication): Promise<string> {
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        headers: { origin: TEST_APP_ORIGIN },
+        payload: { username: 'contentchecker', password: 'correct horse battery staple' },
+      });
+      expect(response.statusCode).toBe(201);
+      return `tt_session=${response.cookies.find((cookie) => cookie.name === 'tt_session')?.value ?? ''}`;
     }
 
     it('starts when every enabled language has a bundle and every bundle has a language', async () => {
@@ -82,7 +94,11 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
       const db = await database();
       await db.dataSource.query(`UPDATE languages SET enabled = false WHERE slug = 'go'`);
       const app = await start(db.url);
-      const response = await app.inject({ method: 'GET', url: '/api/languages' });
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/languages',
+        headers: { cookie: await cookieFor(app) },
+      });
       expect(LanguagesResponseSchema.parse(response.json()).languages.map((l) => l.slug)).toEqual([
         'typescript',
         'java',
@@ -103,7 +119,11 @@ describe.runIf(TEST_DATABASE_URL !== undefined)(
         ok: false,
         detail: 'inconsistent',
       });
-      const response = await app.inject({ method: 'GET', url: '/api/languages' });
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/languages',
+        headers: { cookie: await cookieFor(app) },
+      });
       expect(LanguagesResponseSchema.parse(response.json()).languages).toHaveLength(4);
     });
   },

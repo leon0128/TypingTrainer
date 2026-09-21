@@ -7,6 +7,7 @@ import type {
   User,
 } from '@typing-trainer/contracts';
 
+import { accountTracks, assertPoolAvailable } from '../../common/pool-access';
 import { ConquestsRepository } from '../conquests/conquests.repository';
 import { LanguagesRepository } from '../languages/languages.repository';
 import { DashboardRepository } from './dashboard.repository';
@@ -45,6 +46,7 @@ export class DashboardService {
     if (language === undefined) {
       throw new BadRequestException(`language "${request.language}" is not available`);
     }
+    assertPoolAvailable(user, request.language);
 
     const today = await this.dashboard.today(user.id);
     let from: string | null;
@@ -77,10 +79,11 @@ export class DashboardService {
       points = best.map((row) => ({ x: row.day, score: row.score }));
     }
 
+    const tracks = accountTracks(user);
     const [totals, bests, highestCpuLevel] = await Promise.all([
-      this.dashboard.totals(user.id),
-      this.dashboard.bestPerLanguage(user.id),
-      this.conquests.highestLevel(user.id),
+      this.dashboard.totals(user.id, tracks),
+      this.dashboard.bestPerLanguage(user.id, tracks),
+      this.conquests.highestLevel(user.id, tracks),
     ]);
     return {
       period: request.period,

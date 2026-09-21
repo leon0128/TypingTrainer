@@ -16,24 +16,30 @@ export interface BeatenLevelRow {
 export class ConquestsRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
-  /** Each distinct (language, level) the user has beaten, in language then level order. */
-  beatenLevels(userId: string): Promise<BeatenLevelRow[]> {
+  /**
+   * Each distinct (language, level) the user has beaten on the given tracks, in language then level
+   * order.
+   */
+  beatenLevels(userId: string, tracks: readonly string[]): Promise<BeatenLevelRow[]> {
     return this.dataSource.query<BeatenLevelRow[]>(
       `SELECT l.slug, r.cpu_level::int AS level
        FROM play_sessions r JOIN languages l ON l.id = r.language_id
        WHERE r.user_id = $1 AND r.mode = 'cpu' AND r.result = 'win'
+         AND l.track = ANY($2::text[])
        GROUP BY l.slug, l.sort_order, r.cpu_level
        ORDER BY l.sort_order ASC, r.cpu_level ASC`,
-      [userId],
+      [userId, [...tracks]],
     );
   }
 
-  /** The highest level the user has beaten in any language, or null when none. */
-  async highestLevel(userId: string): Promise<number | null> {
+  /** The highest level the user has beaten in any language on the given tracks, or null when none. */
+  async highestLevel(userId: string, tracks: readonly string[]): Promise<number | null> {
     const [row] = await this.dataSource.query<{ level: number | null }[]>(
-      `SELECT max(cpu_level)::int AS level FROM play_sessions
-       WHERE user_id = $1 AND mode = 'cpu' AND result = 'win'`,
-      [userId],
+      `SELECT max(r.cpu_level)::int AS level
+       FROM play_sessions r JOIN languages l ON l.id = r.language_id
+       WHERE r.user_id = $1 AND r.mode = 'cpu' AND r.result = 'win'
+         AND l.track = ANY($2::text[])`,
+      [userId, [...tracks]],
     );
     return row?.level ?? null;
   }

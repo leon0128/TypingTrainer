@@ -6,6 +6,7 @@ import {
   type User,
 } from '@typing-trainer/contracts';
 
+import { accountTracks } from '../../common/pool-access';
 import { GhostRecordsRepository } from './ghost-records.repository';
 
 export type RecordsSource = Pick<GhostRecordsRepository, 'bestByLanguage'>;
@@ -16,7 +17,7 @@ export class GhostRecordsService {
 
   async get(user: User): Promise<GhostRecordsResponse> {
     const languages: LanguageGhostRecords[] = [];
-    for (const row of await this.records.bestByLanguage(user.id)) {
+    for (const row of await this.records.bestByLanguage(user.id, accountTracks(user))) {
       const slug = ContentLanguageSchema.safeParse(row.slug);
       if (!slug.success) continue;
       languages.push({

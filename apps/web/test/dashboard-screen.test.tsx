@@ -30,7 +30,9 @@ beforeEach(() => {
   requested = [];
   vi.stubGlobal('fetch', (url: string) => {
     if (url.endsWith('/languages')) {
-      return Promise.resolve(json({ languages: [{ slug: 'python', displayName: 'Python' }] }));
+      return Promise.resolve(
+        json({ languages: [{ slug: 'python', displayName: 'Python', track: 'code', kind: null }] }),
+      );
     }
     if (url.endsWith('/ratings')) return Promise.resolve(json(RATINGS));
     const parsed = new URL(url, 'http://localhost');

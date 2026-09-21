@@ -8,8 +8,8 @@ import { RankingsScreen } from '../src/features/rankings/RankingsScreen';
 
 const LANGUAGES = {
   languages: [
-    { slug: 'python', displayName: 'Python' },
-    { slug: 'go', displayName: 'Go' },
+    { slug: 'python', displayName: 'Python', track: 'code', kind: null },
+    { slug: 'go', displayName: 'Go', track: 'code', kind: null },
   ],
 };
 

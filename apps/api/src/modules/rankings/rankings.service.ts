@@ -6,6 +6,7 @@ import type {
   User,
 } from '@typing-trainer/contracts';
 
+import { assertPoolAvailable } from '../../common/pool-access';
 import { LanguagesRepository } from '../languages/languages.repository';
 import { RankingsRepository, type RankingRow } from './rankings.repository';
 
@@ -29,6 +30,7 @@ export class RankingsService {
     if (language === undefined) {
       throw new BadRequestException(`language "${request.language}" is not available`);
     }
+    assertPoolAvailable(user, request.language);
 
     const rows = await this.rankings.top10(user.id, language.id, request.period);
     return {

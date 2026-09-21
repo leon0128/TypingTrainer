@@ -57,3 +57,17 @@ export function trackOf(language: ContentLanguage): Track {
 export function poolKindOf(language: ContentLanguage): PoolKind | null {
   return POOLS[language].kind;
 }
+
+/**
+ * The tracks an account may use, by its display language (§13.11): Japanese is for accounts whose
+ * display language is Japanese, and everything else is for everyone. One rule for the server, which
+ * refuses, and the web, which does not offer what the server would refuse.
+ */
+export function availableTracks(locale: string): Track[] {
+  return TRACKS.filter((track) => track !== 'natural-ja' || locale === 'ja');
+}
+
+/** Whether an account with this display language may use a pool. */
+export function poolAvailable(language: ContentLanguage, locale: string): boolean {
+  return availableTracks(locale).includes(trackOf(language));
+}

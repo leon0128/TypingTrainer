@@ -8,6 +8,8 @@ import {
   POOL_KINDS,
   TRACKS,
   TRACK_POOLS,
+  availableTracks,
+  poolAvailable,
   poolKindOf,
   trackOf,
 } from '../src';
@@ -42,4 +44,27 @@ describe('pools and tracks', () => {
       }
     },
   );
+});
+
+describe('which tracks an account may use (§13.11)', () => {
+  it('gives an account whose display language is Japanese every track', () => {
+    expect(availableTracks('ja')).toEqual(['code', 'natural-ja', 'natural-en']);
+  });
+
+  it.each(['en', '', 'en-US', 'ja-JP', 'JA', 'ja ', 'jp', 'fr'])(
+    'keeps Japanese from an account whose display language is "%s"',
+    (locale) => {
+      expect(availableTracks(locale)).toEqual(['code', 'natural-en']);
+    },
+  );
+
+  it('allows a pool exactly when its track is allowed', () => {
+    for (const pool of CONTENT_LANGUAGES) {
+      expect(poolAvailable(pool, 'ja'), pool).toBe(true);
+      expect(poolAvailable(pool, 'en'), pool).toBe(trackOf(pool) !== 'natural-ja');
+    }
+    expect(poolAvailable('ja-word', 'en')).toBe(false);
+    expect(poolAvailable('en-word', 'en')).toBe(true);
+    expect(poolAvailable('python', 'en')).toBe(true);
+  });
 });

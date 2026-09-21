@@ -33,6 +33,7 @@
     "usernameTaken": "username is taken",
     "invalidCredentials": "invalid username or password",
     "languageUnavailable": "language \"{{language}}\" is not available",
+    "languageForbidden": "language \"{{language}}\" is not available for this account",
     "runNotFound": "run not found",
     "noSuchRun": "no such run",
     "runTooOld": "this run is too old to submit; play again",

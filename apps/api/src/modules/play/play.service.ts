@@ -38,6 +38,7 @@ import {
   runBlockCount,
 } from '@typing-trainer/typing-engine';
 
+import { assertPoolAvailable } from '../../common/pool-access';
 import { SlidingWindowLimiter, enforce } from '../../common/rate-limit';
 import { ENV, type Env } from '../../config/env';
 import { ContentLibrary } from '../content/content-library';
@@ -99,6 +100,7 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
     if (bundle === undefined || languageId === undefined) {
       throw new NotFoundException(`language "${request.language}" is not available`);
     }
+    assertPoolAvailable(user, request.language);
 
     // A Ghost reproduces the player's best of the period as it stands now, and that score is kept
     // with the run: the client cannot name one, and a later change to the records (a new best, a
@@ -160,6 +162,9 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
     body: SubmitResultRequest,
   ): Promise<SubmittedRun | undefined> {
     const run = await this.consume(user, sessionId);
+    // Switching the display language away from Japanese with a Japanese run unsent forfeits it: the
+    // run is used up and the loss charged when it was issued stays (§13.11).
+    assertPoolAvailable(user, run.language);
     const bundle = this.content.get(run.language);
     if (bundle?.revision !== run.contentRevision) {
       // Not the player's doing, so the loss charged when the run was issued is taken back.

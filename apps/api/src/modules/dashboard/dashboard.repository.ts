@@ -70,24 +70,25 @@ export class DashboardRepository {
     );
   }
 
-  async totals(userId: string): Promise<SummaryRow> {
+  async totals(userId: string, tracks: readonly string[]): Promise<SummaryRow> {
     const [row] = await this.dataSource.query<SummaryRow[]>(
       `SELECT count(*)::int AS total_runs,
-              coalesce(sum(effective_keystrokes), 0)::int AS total_keystrokes
-       FROM play_sessions WHERE user_id = $1`,
-      [userId],
+              coalesce(sum(r.effective_keystrokes), 0)::int AS total_keystrokes
+       FROM play_sessions r JOIN languages l ON l.id = r.language_id
+       WHERE r.user_id = $1 AND l.track = ANY($2::text[])`,
+      [userId, [...tracks]],
     );
     return row ?? { total_runs: 0, total_keystrokes: 0 };
   }
 
-  bestPerLanguage(userId: string): Promise<LanguageBestRow[]> {
+  bestPerLanguage(userId: string, tracks: readonly string[]): Promise<LanguageBestRow[]> {
     return this.dataSource.query<LanguageBestRow[]>(
       `SELECT l.slug, max(r.score)::int AS score
        FROM play_sessions r JOIN languages l ON l.id = r.language_id
-       WHERE r.user_id = $1
+       WHERE r.user_id = $1 AND l.track = ANY($2::text[])
        GROUP BY l.slug, l.sort_order
        ORDER BY l.sort_order ASC`,
-      [userId],
+      [userId, [...tracks]],
     );
   }
 }

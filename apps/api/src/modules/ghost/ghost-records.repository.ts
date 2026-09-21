@@ -34,8 +34,8 @@ export class GhostRecordsRepository {
     return row?.score ?? null;
   }
 
-  /** The best score in each period for every enabled language, in display order. */
-  bestByLanguage(userId: string): Promise<LanguageRecordsRow[]> {
+  /** The best score in each period for every enabled language on the given tracks, in display order. */
+  bestByLanguage(userId: string, tracks: readonly string[]): Promise<LanguageRecordsRow[]> {
     return this.dataSource.query<LanguageRecordsRow[]>(
       `SELECT l.slug,
               max(r.score) FILTER (WHERE ${periodCondition("'daily'")})::int AS daily,
@@ -44,10 +44,10 @@ export class GhostRecordsRepository {
        FROM languages l
        JOIN users u ON u.id = $1
        LEFT JOIN play_sessions r ON r.language_id = l.id AND r.user_id = u.id
-       WHERE l.enabled
+       WHERE l.enabled AND l.track = ANY($2::text[])
        GROUP BY l.slug, l.sort_order, u.timezone
        ORDER BY l.sort_order ASC`,
-      [userId],
+      [userId, [...tracks]],
     );
   }
 }

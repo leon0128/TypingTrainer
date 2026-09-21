@@ -34,6 +34,8 @@ export {
   TRACKS,
   TRACK_POOLS,
   TrackSchema,
+  availableTracks,
+  poolAvailable,
   poolKindOf,
   trackOf,
 } from './tracks';

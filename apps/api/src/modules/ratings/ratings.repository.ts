@@ -13,16 +13,19 @@ export interface LanguageRatingRow {
 export class RatingsRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
-  /** Every enabled language in display order; a language the user has not played rates 0. */
-  list(userId: string): Promise<LanguageRatingRow[]> {
+  /**
+   * Every enabled language on the given tracks in display order; a language the user has not
+   * played rates 0.
+   */
+  list(userId: string, tracks: readonly string[]): Promise<LanguageRatingRow[]> {
     return this.dataSource.query<LanguageRatingRow[]>(
       `SELECT l.slug, l.display_name AS "displayName", COALESCE(r.rating, 0)::int AS rating,
               COALESCE(r.games_played, 0)::int AS "gamesPlayed"
        FROM languages l
        LEFT JOIN language_ratings r ON r.language_id = l.id AND r.user_id = $1
-       WHERE l.enabled = true
+       WHERE l.enabled = true AND l.track = ANY($2::text[])
        ORDER BY l.sort_order ASC, l.id ASC`,
-      [userId],
+      [userId, [...tracks]],
     );
   }
 }

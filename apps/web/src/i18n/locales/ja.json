@@ -63,7 +63,7 @@
   "nav": {
     "rankings": "ハイスコア",
     "appearance": "設定",
-    "conquests": "対戦記録",
+    "conquests": "CPU対戦",
     "dashboard": "ステータス",
     "history": "プレイログ",
     "account": "プレイヤー情報",
@@ -223,7 +223,7 @@
     "empty": "この期間の記録はありません。"
   },
   "conquests": {
-    "title": "対戦記録",
+    "title": "CPU対戦",
     "highest": "撃破した最高 Level: {{level}}",
     "beaten": "撃破 Level 数: {{count}} / {{total}}",
     "levels": "{{language}}の Level",
@@ -283,7 +283,7 @@
     "username": "ユーザー名",
     "timezone": "タイムゾーン",
     "deleteHeading": "データ消去",
-    "warning": "アカウントと、その中のすべて(プレイ記録、ランキング、対戦記録、設定)が削除されます。元に戻せません。バックアップには最大 7 日間、コピーが残ることがあります。",
+    "warning": "アカウントと、その中のすべて(プレイ記録、ランキング、CPU対戦、設定)が削除されます。元に戻せません。バックアップには最大 7 日間、コピーが残ることがあります。",
     "password": "パスワード",
     "acknowledge": "元に戻せないことを理解しました",
     "delete": "プレイヤーデータを消去する",

@@ -46,12 +46,11 @@ describe('the shared header', () => {
     const menu = within(screen.getByRole('navigation', { name: 'Menu' }));
     expect(menu.getAllByRole('link').map((link) => link.textContent)).toEqual([
       'homeHome',
+      'military_techCPU battles',
       'leaderboardHigh scores',
-      'account_circlePlayer',
-      'paletteSettings',
-      'military_techConquests',
       'insightsStatus',
       'historyPlay log',
+      'paletteSettings',
     ]);
     expect(screen.getByText('history page')).toBeTruthy();
     expect(menu.getByRole('link', { name: 'Play log' }).getAttribute('aria-current')).toBe('page');
@@ -74,8 +73,10 @@ describe('the shared header', () => {
     const menu = screen.getByRole('navigation', { name: 'Menu' });
     expect(within(menu).queryByText('ada')).toBeNull();
     expect(within(menu).queryByRole('button', { name: 'Log out' })).toBeNull();
-    expect(screen.getByText('ada')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Log out' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /ada/ }).getAttribute('href')).toBe('/account');
+    // Sign-out is an icon: it has a name for assistive technology but no visible words.
+    const logout = screen.getByRole('button', { name: 'Log out' });
+    expect(logout.textContent).toBe('logout');
   });
 
   it('signs out', async () => {

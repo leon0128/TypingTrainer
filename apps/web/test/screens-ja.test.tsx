@@ -260,7 +260,7 @@ describe('the language screen in Japanese', () => {
   it('reads in Japanese with the terms the requester chose', async () => {
     const { container } = renderAt('/');
     await screen.findByRole('button', { name: 'Python' });
-    for (const name of ['ハイスコア', '設定', '対戦記録', 'ステータス', 'プレイログ']) {
+    for (const name of ['ハイスコア', '設定', 'CPU対戦', 'ステータス', 'プレイログ']) {
       expect(screen.getByRole('link', { name })).toBeTruthy();
     }
     const modes = within(screen.getByRole('group', { name: 'モード' }));

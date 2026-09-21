@@ -218,10 +218,10 @@ describe('the dashboard screen in Japanese', () => {
 });
 
 describe('the conquests screen in Japanese', () => {
-  it('is the 対戦記録 screen, and reads in Japanese', async () => {
+  it('is the CPU対戦 screen, and reads in Japanese', async () => {
     stubApi();
     const { container } = renderScreen('/conquests', <ConquestsScreen />);
-    expect(screen.getByRole('heading', { name: '対戦記録' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'CPU対戦' })).toBeTruthy();
     expect(
       await screen.findByText(/撃破した最高 Level: 12 · 撃破 Level 数: 3 \/ 100/),
     ).toBeTruthy();

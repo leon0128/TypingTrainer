@@ -9,12 +9,11 @@ import { Logo } from './Logo';
 
 const LINKS = [
   { to: '/', icon: 'home', label: 'common.chooseLanguage' },
-  { to: '/rankings', icon: 'leaderboard', label: 'nav.rankings' },
-  { to: '/account', icon: 'account_circle', label: 'nav.account' },
-  { to: '/settings', icon: 'palette', label: 'nav.appearance' },
   { to: '/conquests', icon: 'military_tech', label: 'nav.conquests' },
+  { to: '/rankings', icon: 'leaderboard', label: 'nav.rankings' },
   { to: '/dashboard', icon: 'insights', label: 'nav.dashboard' },
   { to: '/history', icon: 'history', label: 'nav.history' },
+  { to: '/settings', icon: 'palette', label: 'nav.appearance' },
 ] as const;
 
 /**
@@ -45,20 +44,26 @@ export function AppHeader(): ReactElement {
       </nav>
       {user !== null && (
         <div className="ui-userbox">
-          <span className="ui-username">
+          <NavLink
+            className="ui-username"
+            to="/account"
+            title={t('nav.account')}
+            onClick={confirmLeave}
+          >
             <Icon name="person" className="ui-icon" />
             {user.username}
-          </span>
+          </NavLink>
           <button
             className="ui-logout"
             type="button"
+            aria-label={t('common.signOut')}
+            title={t('common.signOut')}
             onClick={(event) => {
               confirmLeave(event);
               if (!event.defaultPrevented) void signOut();
             }}
           >
             <Icon name="logout" className="ui-icon" />
-            {t('common.signOut')}
           </button>
         </div>
       )}

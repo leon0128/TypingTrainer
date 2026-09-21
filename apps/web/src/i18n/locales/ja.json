@@ -83,8 +83,8 @@
   },
   "poolKinds": {
     "word": "単語",
-    "line": "1行",
-    "paragraph": "複数行"
+    "line": "短文",
+    "paragraph": "長文"
   },
   "auth": {
     "signIn": "ログイン",

@@ -35,3 +35,13 @@ How to write the pools that `pnpm content:build` checks. The contract is docs/re
 - Spell out what the reader must not guess: give the reading a word usually has, and avoid words
   whose reading depends on the sentence (行った is `い` or `おこな`; 上手 is `じょうず`). When in
   doubt, write the word in kana.
+
+## Voice (Japanese)
+
+- Write as Japanese is written and said, not as a translation: leave the subject out (no 私は, 彼は
+  unless it is the point), use proverbs, set phrases, everyday remarks, notices, and letters.
+- Words average about five characters: mix four-character idioms, katakana loanwords, greetings,
+  and set phrases, and keep the mean near 5 when a change adds or removes words.
+- Sentences are 短文 and paragraphs are 長文 in the interface; a sentence often has no 。 and a
+  paragraph reads like a diary entry, a notice, or a short essay.
+

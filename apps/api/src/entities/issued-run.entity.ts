@@ -77,6 +77,21 @@ export class IssuedRun {
   @Column({ name: 'issued_at', type: 'timestamptz', default: () => 'now()' })
   issuedAt!: Date;
 
+  /**
+   * vs CPU only (§4.3.5): the language rating and match count going into the run, and the points
+   * charged when it was issued. A run counts as a loss from the moment it is issued, so leaving
+   * one unfinished is a loss; submitting the result replaces that charge with the real outcome.
+   * Null on runs issued before ratings existed, which are not rated.
+   */
+  @Column({ name: 'rating_before', type: 'int', nullable: true })
+  ratingBefore!: number | null;
+
+  @Column({ name: 'games_before', type: 'int', nullable: true })
+  gamesBefore!: number | null;
+
+  @Column({ name: 'rating_charged', type: 'int', nullable: true })
+  ratingCharged!: number | null;
+
   /** Set when a result is submitted, which may happen only once. */
   @Column({ name: 'submitted_at', type: 'timestamptz', nullable: true })
   submittedAt!: Date | null;

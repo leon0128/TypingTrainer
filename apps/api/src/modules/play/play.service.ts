@@ -15,6 +15,7 @@ import {
 import {
   PlayModeSchema,
   type PlayMode,
+  type MatchRating,
   type PlayRun,
   type StartSessionRequest,
   type StartSessionResponse,
@@ -39,6 +40,7 @@ import { SlidingWindowLimiter, enforce } from '../../common/rate-limit';
 import { ENV, type Env } from '../../config/env';
 import { ContentLibrary } from '../content/content-library';
 import { GhostRecordsRepository } from '../ghost/ghost-records.repository';
+import { RatingsService } from '../ratings/ratings.service';
 import { IssuedRunsRepository, type ConsumedRun } from './issued-runs.repository';
 import {
   ISSUED_RUN_CLEANUP_INTERVAL_MS,
@@ -58,6 +60,12 @@ function newSeed(): bigint {
   return BigInt(`0x${randomBytes(8).toString('hex')}`) & MAX_SEED;
 }
 
+/** A stored run, and for vs CPU what it did to the player's rating (§4.3.5). */
+export interface SubmittedRun {
+  readonly run: PlayRun;
+  readonly rating: MatchRating | null;
+}
+
 @Injectable()
 export class PlayService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PlayService.name);
@@ -71,6 +79,7 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
     @Inject(IssuedRunsRepository) private readonly issuedRuns: IssuedRunsRepository,
     @Inject(ContentLibrary) private readonly content: ContentLibrary,
     @Inject(GhostRecordsRepository) private readonly records: GhostRecordsRepository,
+    @Inject(RatingsService) private readonly ratings: RatingsService,
     @Inject(ENV) private readonly env: Env,
   ) {}
 
@@ -142,10 +151,12 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
     user: User,
     sessionId: string,
     body: SubmitResultRequest,
-  ): Promise<PlayRun | undefined> {
+  ): Promise<SubmittedRun | undefined> {
     const run = await this.consume(user, sessionId);
     const bundle = this.content.get(run.language);
     if (bundle?.revision !== run.contentRevision) {
+      // Not the player's doing, so the loss charged when the run was issued is taken back.
+      await this.settleRating(user, run, 'void');
       throw new ConflictException('the content changed since this run was issued; play again');
     }
     if (body.log.keys.length === 0) return undefined;
@@ -170,6 +181,7 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
       opponent = cpuScore(ghostTimeline(programs, run.ghostScore));
     }
     const result = opponent === null ? null : judgeMatch(metrics.score, opponent);
+    const rating = result === null ? null : await this.settleRating(user, run, result);
     const stored = await this.issuedRuns.storeRun({
       userId: user.id,
       languageId: run.languageId,
@@ -195,7 +207,7 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
 
     if (stored === undefined) throw new UnauthorizedException('authentication required');
 
-    return {
+    const storedRun: PlayRun = {
       id: stored.id,
       language: run.language,
       mode: playMode(run.mode),
@@ -212,6 +224,31 @@ export class PlayService implements OnModuleInit, OnModuleDestroy {
       opponentScore: opponent,
       result,
     };
+    return { run: storedRun, rating };
+  }
+
+  /**
+   * Replaces the loss charged when a vs CPU run was issued with how it really ended (§4.3.5), and
+   * reports the language's rating before and after with every language's rating as it now stands.
+   * Null for a run that is not rated: any other mode, or one issued before ratings existed.
+   */
+  private async settleRating(
+    user: User,
+    run: ConsumedRun,
+    outcome: 'win' | 'lose' | 'void',
+  ): Promise<MatchRating | null> {
+    if (run.mode !== 'cpu' || run.cpuLevel === null || run.rating === null) return null;
+    const settled = await this.issuedRuns.settleRating(
+      {
+        userId: user.id,
+        languageId: run.languageId,
+        cpuLevel: run.cpuLevel,
+        rating: run.rating,
+      },
+      outcome,
+    );
+    const { languages } = await this.ratings.get(user);
+    return { language: run.language, before: settled.before, after: settled.after, languages };
   }
 
   private async consume(user: User, sessionId: string): Promise<ConsumedRun> {

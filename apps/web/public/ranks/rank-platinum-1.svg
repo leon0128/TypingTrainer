@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="platinum 1">
+  <!-- Placeholder rank icon: replace this file with the final artwork, keeping its name. -->
+  <path d="M32 4 56 13v18c0 15-10 25-24 29C18 56 8 46 8 31V13z" fill="#6fd3d8" stroke="#217c83" stroke-width="4" stroke-linejoin="round"/>
+  <text x="32" y="41" text-anchor="middle" font-family="system-ui, sans-serif" font-size="26" font-weight="700" fill="#08343a">1</text>
+</svg>

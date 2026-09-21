@@ -68,7 +68,7 @@ describe('submitting a finished run', () => {
     const calls: { url: string; body: string }[] = [];
     vi.stubGlobal('fetch', (url: string, init: { body?: string } = {}) => {
       calls.push({ url, body: init.body ?? '' });
-      return Promise.resolve(json({ run: STORED }, 201));
+      return Promise.resolve(json({ run: STORED, rating: null }, 201));
     });
 
     begin();
@@ -80,7 +80,11 @@ describe('submitting a finished run', () => {
     // Exactly the log the run store built: the client sends no numbers of its own (§9.8).
     expect(sent.log).toEqual(useRunSession.getState().run?.buildLog());
     expect(sent.log.deltas[0]).toBe(0);
-    expect(useRunSession.getState().submission).toEqual({ kind: 'saved', run: STORED });
+    expect(useRunSession.getState().submission).toEqual({
+      kind: 'saved',
+      run: STORED,
+      rating: null,
+    });
   });
 
   it('reports a run with nothing to score, which the server answers 204', async () => {
@@ -121,7 +125,7 @@ describe('submitting a finished run', () => {
   });
 
   it('sends a run once, however often it is asked to', async () => {
-    const fetchSpy = vi.fn(() => Promise.resolve(json({ run: STORED }, 201)));
+    const fetchSpy = vi.fn(() => Promise.resolve(json({ run: STORED, rating: null }, 201)));
     vi.stubGlobal('fetch', fetchSpy);
 
     begin();
@@ -137,7 +141,7 @@ describe('submitting a finished run', () => {
       attempt += 1;
       return attempt === 1
         ? Promise.reject(new TypeError('Failed to fetch'))
-        : Promise.resolve(json({ run: STORED }, 201));
+        : Promise.resolve(json({ run: STORED, rating: null }, 201));
     });
 
     begin();
@@ -146,7 +150,11 @@ describe('submitting a finished run', () => {
     expect(useRunSession.getState().submission).toMatchObject({ kind: 'failed', canRetry: true });
 
     await useRunSession.getState().submit();
-    expect(useRunSession.getState().submission).toEqual({ kind: 'saved', run: STORED });
+    expect(useRunSession.getState().submission).toEqual({
+      kind: 'saved',
+      run: STORED,
+      rating: null,
+    });
   });
 
   it('explains a retry that finds the run already submitted', async () => {

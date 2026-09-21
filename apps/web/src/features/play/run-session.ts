@@ -1,4 +1,4 @@
-import type { PlayRun, StartSessionResponse } from '@typing-trainer/contracts';
+import type { MatchRating, PlayRun, StartSessionResponse } from '@typing-trainer/contracts';
 import { create } from 'zustand';
 
 import { ApiRequestError, NetworkError } from '../../lib/api/errors';
@@ -10,8 +10,11 @@ import { createRunStore, type RunStore } from './run-store';
 export type Submission =
   | { readonly kind: 'unsent' }
   | { readonly kind: 'sending' }
-  /** Stored: these are the numbers the server recomputed from the log. */
-  | { readonly kind: 'saved'; readonly run: PlayRun }
+  /**
+   * Stored: these are the numbers the server recomputed from the log, and for vs CPU what the
+   * match did to the player's rating (§4.3.5).
+   */
+  | { readonly kind: 'saved'; readonly run: PlayRun; readonly rating: MatchRating | null }
   /** No keystroke to score: the server answered 204 and stored nothing. */
   | { readonly kind: 'empty' }
   /** Left idle past the limit (§4.1): never sent, never saved. */
@@ -34,7 +37,8 @@ interface RunSessionState {
  *
  * Deliberately in memory only: a reload leaves no run, the play screen sends the player back to
  * language selection, and the issued run on the server is never submitted — it expires by itself
- * inside the submission window and is deleted a day later (§9.8). Storing it would mean deciding
+ * inside the submission window and is deleted a day later (§9.8). A vs CPU run left that way stays
+ * the loss it was charged as when it was issued (§4.3.5). Storing it would mean deciding
  * what run time a restored run has, and what a second tab is playing.
  */
 export const useRunSession = create<RunSessionState>()((set, get) => ({
@@ -63,7 +67,12 @@ export const useRunSession = create<RunSessionState>()((set, get) => ({
     set({ submission: { kind: 'sending' } });
     try {
       const stored = await submitResult(run.issued.sessionId, run.buildLog());
-      set({ submission: stored === null ? { kind: 'empty' } : { kind: 'saved', run: stored } });
+      set({
+        submission:
+          stored === null
+            ? { kind: 'empty' }
+            : { kind: 'saved', run: stored.run, rating: stored.rating },
+      });
     } catch (error) {
       set({ submission: failure(error) });
     }

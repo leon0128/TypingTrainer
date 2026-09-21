@@ -1,0 +1,191 @@
+/* Rating and rank (§4.3.5). Colours come from the theme's variables, so every skin and theme
+   carries them; the up and down colours are always paired with a sign or a word. */
+
+.rank-icon {
+  flex: none;
+  display: block;
+  object-fit: contain;
+}
+
+.rating-summary,
+.rating-result-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rating-summary {
+  padding: 14px 18px;
+  border: var(--sk-bw, 1px) solid var(--border);
+  border-radius: var(--sk-radius, 8px);
+  background: var(--sk-tile-bg, var(--panel));
+  box-shadow: var(--sk-shadow, none);
+}
+
+.rating-summary-body,
+.rating-result-rows {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.rating-rank {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.rating-was {
+  margin-left: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.rating-total {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+}
+
+.rating-total-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.rating-total-value {
+  font-size: 26px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.rating-meter {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.rating-meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--sk-accent, var(--fg));
+  transition: width 0.6s ease-out;
+}
+
+.rating-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.language-ratings {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.language-ratings li {
+  display: grid;
+  grid-template-columns: minmax(6rem, 10rem) 1fr 5rem;
+  align-items: center;
+  gap: 12px;
+}
+
+.language-ratings-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.language-ratings-value:not(:empty) {
+  font-weight: 600;
+}
+
+/* After a match. */
+.rating-result {
+  margin: 16px 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--border);
+}
+
+.rating-result h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.rating-changes {
+  grid-template-columns: max-content 1fr;
+  margin: 4px 0;
+}
+
+.rating-changes dd {
+  font-variant-numeric: tabular-nums;
+}
+
+.rating-from {
+  color: var(--muted);
+}
+
+.rating-delta {
+  margin-left: 10px;
+  font-weight: 700;
+}
+
+.rating-delta.is-up,
+.rating-shift.is-up {
+  color: var(--typed, var(--fg));
+}
+
+.rating-delta.is-down,
+.rating-shift.is-down {
+  color: var(--error);
+}
+
+.rating-delta.is-flat {
+  color: var(--muted);
+}
+
+.rating-shift {
+  margin: 0 0 2px;
+  font-size: 17px;
+  font-weight: 800;
+  animation: rating-pop 0.5s ease-out;
+}
+
+@keyframes rating-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rating-shift {
+    animation: none;
+  }
+  .rating-meter > span {
+    transition: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .language-ratings li {
+    grid-template-columns: 1fr 5rem;
+  }
+  .language-ratings .rating-meter {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}

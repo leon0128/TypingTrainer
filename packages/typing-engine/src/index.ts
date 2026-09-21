@@ -51,3 +51,22 @@ export {
   keyCost,
 } from './cpu';
 export { ghostTimeline } from './ghost';
+export {
+  RANK_DIVISIONS,
+  RANK_TIERS,
+  RATING_INITIAL,
+  RATING_LANGUAGE_COUNT,
+  RATING_LANGUAGE_MAX,
+  RATING_PER_CPU_LEVEL,
+  RATING_PROVISIONAL_GAMES,
+  RATING_TOP_WEIGHT,
+  RATING_WEIGHT_RATIO,
+  cpuRating,
+  maxTotalRating,
+  rankOf,
+  rankSteps,
+  ratingDelta,
+  ratingWeight,
+  totalRating,
+} from './rating';
+export type { MatchRatingInput, Rank, RankStanding, RankTier } from './rating';

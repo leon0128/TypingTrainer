@@ -5,6 +5,7 @@ import { useTranslation } from '../../i18n';
 import { getConquests } from '../../lib/api/conquests';
 import { describeError } from '../../lib/api/describe-error';
 import { listLanguages } from '../../lib/api/languages';
+import { useRatings } from '../rating/use-ratings';
 
 /** A mark as well as a fill, so a beaten level is not told apart by colour alone (§8.2). */
 const BEATEN_MARK = ' ✓';
@@ -49,6 +50,7 @@ export function ConquestsScreen() {
   const [languages, setLanguages] = useState<Language[] | null>(null);
   const [conquests, setConquests] = useState<ConquestsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const ratings = useRatings();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -86,10 +88,20 @@ export function ConquestsScreen() {
             const name =
               languages.find((language) => language.slug === entry.language)?.displayName ??
               entry.language;
+            const rated = ratings?.languages.find(
+              (candidate) => candidate.language === entry.language,
+            );
             return (
               <section key={entry.language} className="flex flex-col gap-2">
                 <h2 className="flex flex-wrap items-baseline gap-x-4 text-lg font-medium">
                   {name}
+                  {rated !== undefined && (
+                    <span className="text-base font-semibold">
+                      {rated.gamesPlayed === 0
+                        ? t('rating.unplayed')
+                        : t('rating.headingValue', { rating: rated.rating })}
+                    </span>
+                  )}
                   <span className="text-sm font-normal text-slate-600 dark:text-slate-400">
                     {t('conquests.highest', { level: entry.highestLevel ?? '—' })} ·{' '}
                     {t('conquests.beaten', { count: entry.totalConquests, total: CPU_LEVEL_COUNT })}

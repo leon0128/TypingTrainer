@@ -3,6 +3,7 @@ import type { OfficialMetrics } from '@typing-trainer/typing-engine';
 import type { TFunction } from 'i18next';
 
 import { i18n, useTranslation } from '../../i18n';
+import { RatingResult } from '../rating/RatingResult';
 import { formatPercent } from './format';
 import type { Submission } from './run-session';
 
@@ -69,6 +70,10 @@ export function ResultPanel({ metrics, submission, onRetry, onPlayAgain }: Resul
           <dt>{t('result.keystrokes')}</dt>
           <dd>{t('result.keystrokeCounts', { effective, miss, raw })}</dd>
         </dl>
+      )}
+
+      {submission.kind === 'saved' && submission.rating !== null && (
+        <RatingResult rating={submission.rating} />
       )}
 
       <p className="result-actions">

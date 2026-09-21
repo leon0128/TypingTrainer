@@ -94,6 +94,13 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('DELETE /api/auth/me (TEST_DATAB
       headers: headers(account.token),
       payload: { language: 'python' },
     });
+    // A vs CPU run is rated, which gives the account a row in language_ratings.
+    await app.inject({
+      method: 'POST',
+      url: '/api/play/sessions',
+      headers: headers(account.token),
+      payload: { language: 'python', mode: 'cpu', cpuLevel: 5 },
+    });
     const [language] = await query<{ id: number }[]>(
       "SELECT id FROM programming_languages WHERE slug = 'python'",
     );
@@ -160,6 +167,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('DELETE /api/auth/me (TEST_DATAB
     expect(Object.keys(before.leaver).sort()).toEqual([
       'auth_sessions',
       'issued_runs',
+      'language_ratings',
       'play_sessions',
       'user_preferences',
     ]);
@@ -181,7 +189,7 @@ describe.runIf(TEST_DATABASE_URL !== undefined)('DELETE /api/auth/me (TEST_DATAB
 
   it('is complete by construction: every table that refers to a user cascades on delete', async () => {
     const keys = await keysToUsers();
-    expect(keys.length).toBeGreaterThanOrEqual(4);
+    expect(keys.length).toBeGreaterThanOrEqual(5);
     // `c` is CASCADE in pg_constraint.confdeltype.
     expect(keys.filter((key) => key.onDelete !== 'c')).toEqual([]);
   });

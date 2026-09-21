@@ -72,6 +72,9 @@ const SAME_IN_EVERY_LANGUAGE = new Set<string>([
   'result.score',
   'result.won',
   'result.lost',
+  // "ゴールド3": Japanese writes a rank and its division without a space, so it differs from
+  // English but has no Japanese of its own; the tier names carry the Japanese.
+  'rating.rank',
 ]);
 
 describe('the language resources (§8.4)', () => {

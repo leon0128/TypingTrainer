@@ -108,6 +108,34 @@
     "recordGroup": "Record",
     "modeHeading": "Select your mode"
   },
+  "rating": {
+    "title": "Rating",
+    "total": "Overall rating",
+    "byLanguage": "Rating by language",
+    "unplayed": "Unplayed",
+    "tile": "Rating {{rating}}",
+    "headingValue": "Rating {{rating}}",
+    "rank": "{{tier}} {{division}}",
+    "tier": {
+      "beginner": "Beginner",
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum",
+      "diamond": "Diamond",
+      "master": "Master"
+    },
+    "progress": "Progress to the next rank",
+    "toNext": "{{points}} to {{rank}}",
+    "topRank": "You have reached the top rank",
+    "languageMeter": "{{language}} rating",
+    "resultTitle": "Rating change",
+    "languageRating": "{{language}} rating",
+    "to": "to",
+    "promoted": "Promoted! {{rank}}",
+    "demoted": "Demoted… {{rank}}",
+    "was": "(was {{rank}})"
+  },
   "periodsShort": {
     "daily": "Today",
     "weekly": "This week",

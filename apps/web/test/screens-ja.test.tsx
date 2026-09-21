@@ -358,6 +358,15 @@ describe('the play screen in Japanese', () => {
               opponentScore: 70,
               result: 'win',
             },
+            rating: {
+              language: 'python',
+              before: 560,
+              after: 612,
+              languages: [
+                { language: 'python', displayName: 'Python', rating: 612, gamesPlayed: 12 },
+                { language: 'go', displayName: 'Go', rating: 0, gamesPlayed: 0 },
+              ],
+            },
           },
           201,
         ),
@@ -378,6 +387,13 @@ describe('the play screen in Japanese', () => {
     }
     expect(screen.getByText('有効 123 · ミス 4 · 総数 111')).toBeTruthy();
     expect(screen.getByText('ミス率 3.1 %')).toBeTruthy();
+
+    // The rating: a promotion from ビギナー5 (280) to ブロンズ1 (306), with the signs written.
+    expect(screen.getByRole('heading', { name: 'レートの変動' })).toBeTruthy();
+    expect(container.querySelector('.rating-shift')?.textContent).toBe('昇格!ブロンズ1');
+    expect(screen.getByText('(前回:ビギナー5)')).toBeTruthy();
+    expect(screen.getByText('+52')).toBeTruthy();
+    expect(screen.getByText('+26')).toBeTruthy();
     expectNoEnglish(container);
   });
 });

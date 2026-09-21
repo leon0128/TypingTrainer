@@ -137,3 +137,5 @@ export type {
 } from './preferences';
 export { GhostRecordsResponseSchema, LanguageGhostRecordsSchema } from './ghost-records';
 export type { GhostRecordsResponse, LanguageGhostRecords } from './ghost-records';
+export { LanguageRatingSchema, MatchRatingSchema, RatingsResponseSchema } from './ratings';
+export type { LanguageRating, MatchRating, RatingsResponse } from './ratings';

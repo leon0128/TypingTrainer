@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { ContentLanguageSchema } from './content-bundle';
+import { MatchRatingSchema } from './ratings';
 import { SessionLogSchema } from './session-log';
 import { TypingProgramSchema } from './typing-program';
 
@@ -101,6 +102,8 @@ export const PlayRunSchema = z.object({
 /** Body of a stored result; an empty run answers 204 with no body instead. */
 export const SubmitResultResponseSchema = z.object({
   run: PlayRunSchema,
+  /** vs CPU only: what the match did to the player's rating (§4.3.5); null for other modes. */
+  rating: MatchRatingSchema.nullable(),
 });
 
 export type SubmitResultRequest = z.output<typeof SubmitResultRequestSchema>;

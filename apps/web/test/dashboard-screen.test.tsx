@@ -20,6 +20,10 @@ const json = (body: unknown) =>
     headers: { 'content-type': 'application/json' },
   });
 
+const RATINGS = {
+  languages: [{ language: 'python', displayName: 'Python', rating: 700, gamesPlayed: 12 }],
+};
+
 let requested: URL[] = [];
 
 beforeEach(() => {
@@ -28,6 +32,7 @@ beforeEach(() => {
     if (url.endsWith('/languages')) {
       return Promise.resolve(json({ languages: [{ slug: 'python', displayName: 'Python' }] }));
     }
+    if (url.endsWith('/ratings')) return Promise.resolve(json(RATINGS));
     const parsed = new URL(url, 'http://localhost');
     requested.push(parsed);
     const period = parsed.searchParams.get('period');
@@ -73,6 +78,15 @@ describe('dashboard screen', () => {
     expect(await screen.findByRole('img', { name: 'Score trend' })).toBeTruthy();
     expect(screen.getByText('Python 90', { exact: false })).toBeTruthy();
     expect(screen.getByText('Total keystrokes: 700')).toBeTruthy();
+  });
+
+  it('shows the rank, the overall rating, and the rating of each language', async () => {
+    renderScreen();
+    // 700 in the one language counts at half: 350, which is Bronze 1 (295 to 368) for the four languages there are.
+    expect(await screen.findByText('Bronze 1')).toBeTruthy();
+    expect(screen.getByText('350')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Rating by language' })).toBeTruthy();
+    expect(screen.getByRole('progressbar', { name: 'Python rating' })).toBeTruthy();
   });
 
   it('moves the weekly view back by seven days', async () => {

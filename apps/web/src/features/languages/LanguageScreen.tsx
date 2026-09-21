@@ -14,6 +14,8 @@ import { getGhostRecords } from '../../lib/api/ghost-records';
 import { listLanguages } from '../../lib/api/languages';
 import { startSession, type Opponent } from '../../lib/api/play';
 import { useRunSession } from '../play/run-session';
+import { RatingSummary } from '../rating/RatingSummary';
+import { useRatings } from '../rating/use-ratings';
 
 type Mode = 'single' | 'cpu' | 'ghost';
 
@@ -30,6 +32,7 @@ export function LanguageScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const begin = useRunSession((state) => state.begin);
+  const ratings = useRatings();
 
   const [languages, setLanguages] = useState<Language[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -99,6 +102,8 @@ export function LanguageScreen() {
 
   return (
     <main className="ui-page mx-auto flex max-w-5xl flex-col gap-6 p-6">
+      {ratings !== null && <RatingSummary languages={ratings.languages} />}
+
       <h2 className="ui-title text-lg">{t('home.modeHeading')}</h2>
 
       <div
@@ -190,6 +195,7 @@ export function LanguageScreen() {
               {(() => {
                 const record = mode === 'ghost' ? recordFor(language.slug) : null;
                 const noRecord = mode === 'ghost' && records !== null && record === null;
+                const rated = ratings?.languages.find((entry) => entry.language === language.slug);
                 return (
                   <button
                     className="ui-tile ui-card w-full px-3 py-4"
@@ -200,6 +206,14 @@ export function LanguageScreen() {
                     }}
                   >
                     {starting === language.slug ? t('home.starting') : language.displayName}
+                    {rated !== undefined && ' '}
+                    {rated !== undefined && (
+                      <span className="block text-xs text-slate-600 dark:text-slate-400">
+                        {rated.gamesPlayed === 0
+                          ? t('rating.unplayed')
+                          : t('rating.tile', { rating: rated.rating })}
+                      </span>
+                    )}
                     {mode === 'ghost' && records !== null && (
                       <span className="block text-xs text-slate-600 dark:text-slate-400">
                         {noRecord ? t('home.noRecord') : t('home.best', { score: record })}

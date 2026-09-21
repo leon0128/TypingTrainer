@@ -150,7 +150,7 @@ describe('play screen', () => {
     const calls: { url: string; body: string }[] = [];
     vi.stubGlobal('fetch', (url: string, init: { body?: string } = {}) => {
       calls.push({ url, body: init.body ?? '' });
-      return Promise.resolve(json({ run: STORED }, 201));
+      return Promise.resolve(json({ run: STORED, rating: null }, 201));
     });
 
     beginRun();
@@ -204,7 +204,7 @@ describe('play screen', () => {
       attempt += 1;
       return attempt === 1
         ? Promise.reject(new TypeError('Failed to fetch'))
-        : Promise.resolve(json({ run: STORED }, 201));
+        : Promise.resolve(json({ run: STORED, rating: null }, 201));
     });
 
     beginRun();
@@ -257,6 +257,7 @@ describe('vs CPU', () => {
               score: 88,
               result,
             },
+            rating: null,
           },
           201,
         ),
@@ -312,6 +313,7 @@ describe('a Ghost run', () => {
               score: 91,
               result,
             },
+            rating: null,
           },
           201,
         ),
@@ -374,7 +376,7 @@ describe('key sounds on the play screen', () => {
   });
 
   it('stays silent once the run has ended', async () => {
-    vi.stubGlobal('fetch', () => Promise.resolve(json({ run: STORED }, 201)));
+    vi.stubGlobal('fetch', () => Promise.resolve(json({ run: STORED, rating: null }, 201)));
     const play = vi.spyOn(soundPlayer, 'play').mockImplementation(() => undefined);
     beginRun();
     renderScreen();

@@ -14,6 +14,7 @@ import { ConquestsModule } from './modules/conquests/conquests.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PreferencesModule } from './modules/preferences/preferences.module';
 import { RankingsModule } from './modules/rankings/rankings.module';
+import { RatingsModule } from './modules/ratings/ratings.module';
 
 @Module({})
 export class AppModule {
@@ -34,6 +35,7 @@ export class AppModule {
         PlayModule,
         PreferencesModule,
         RankingsModule,
+        RatingsModule,
       ],
     };
   }

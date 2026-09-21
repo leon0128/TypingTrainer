@@ -107,6 +107,34 @@
     "recordGroup": "記録",
     "modeHeading": "モードを選ぶ"
   },
+  "rating": {
+    "title": "レート",
+    "total": "総合レート",
+    "byLanguage": "言語別レート",
+    "unplayed": "未プレイ",
+    "tile": "レート {{rating}}",
+    "headingValue": "レート {{rating}}",
+    "rank": "{{tier}}{{division}}",
+    "tier": {
+      "beginner": "ビギナー",
+      "bronze": "ブロンズ",
+      "silver": "シルバー",
+      "gold": "ゴールド",
+      "platinum": "プラチナ",
+      "diamond": "ダイヤ",
+      "master": "マスター"
+    },
+    "progress": "次のランクまでの進捗",
+    "toNext": "{{rank}}まであと {{points}}",
+    "topRank": "最高ランクに到達しています",
+    "languageMeter": "{{language}}のレート",
+    "resultTitle": "レートの変動",
+    "languageRating": "{{language}}のレート",
+    "to": "から",
+    "promoted": "昇格!{{rank}}",
+    "demoted": "降格… {{rank}}",
+    "was": "(前回:{{rank}})"
+  },
   "periodsShort": {
     "daily": "今日",
     "weekly": "今週",

@@ -42,6 +42,28 @@ function renderScreen() {
 }
 
 describe('conquests screen', () => {
+  it('shows the rating of each language beside its name', async () => {
+    vi.stubGlobal('fetch', (url: string) =>
+      Promise.resolve(
+        json(
+          url.endsWith('/languages')
+            ? LANGUAGES
+            : url.endsWith('/ratings')
+              ? {
+                  languages: [
+                    { language: 'python', displayName: 'Python', rating: 812, gamesPlayed: 30 },
+                    { language: 'go', displayName: 'Go', rating: 0, gamesPlayed: 0 },
+                  ],
+                }
+              : CONQUESTS,
+        ),
+      ),
+    );
+    renderScreen();
+    expect(await screen.findByText('Rating 812')).toBeTruthy();
+    expect(screen.getByText('Unplayed')).toBeTruthy();
+  });
+
   it('shows the highest level, the count, and a grid of all 100 levels per language', async () => {
     vi.stubGlobal('fetch', (url: string) =>
       Promise.resolve(json(url.endsWith('/languages') ? LANGUAGES : CONQUESTS)),

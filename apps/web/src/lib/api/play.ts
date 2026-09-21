@@ -3,6 +3,7 @@ import {
   SubmitResultResponseSchema,
   type ContentLanguage,
   type GhostPeriod,
+  type MatchRating,
   type PlayRun,
   type SessionLog,
   type StartSessionResponse,
@@ -28,16 +29,25 @@ export function startSession(
   });
 }
 
+/** A stored run, and for vs CPU what it did to the player's rating (§4.3.5). */
+export interface SubmittedRun {
+  readonly run: PlayRun;
+  readonly rating: MatchRating | null;
+}
+
 /**
  * Submits the keystroke log of a finished run (§9.8). The server replays it against the blocks it
  * issued and answers with what it stored, or with nothing at all when the run had no keystroke to
  * score. The run is used up either way, so this is never sent twice for the same run.
  */
-export async function submitResult(sessionId: string, log: SessionLog): Promise<PlayRun | null> {
+export async function submitResult(
+  sessionId: string,
+  log: SessionLog,
+): Promise<SubmittedRun | null> {
   const body = await requestMaybe(`/play/sessions/${sessionId}/result`, {
     method: 'POST',
     body: { log },
     schema: SubmitResultResponseSchema,
   });
-  return body === null ? null : body.run;
+  return body;
 }

@@ -4,6 +4,14 @@ import type { ContentLanguage, GhostPeriod } from '@typing-trainer/contracts';
 import type { DataSource } from 'typeorm';
 
 import { returnedRows } from '../../database/returned-rows';
+import {
+  chargeLoss,
+  settleRating,
+  type Queryable,
+  type RatingCharge,
+  type RatingOutcome,
+  type SettledRating,
+} from '../ratings/rating-ledger';
 import { ISSUED_RUN_RETENTION } from './play.constants';
 
 export interface IssuedRunRow {
@@ -25,6 +33,8 @@ export interface ConsumedRun {
   readonly seed: string;
   readonly contentRevision: string;
   readonly blockIds: string[];
+  /** vs CPU only: what issuing charged against the language's rating; null when unrated (§4.3.5). */
+  readonly rating: RatingCharge | null;
   readonly issuedAt: Date;
   readonly submittedAt: Date;
   /** Milliseconds from issuing to this submission, on the database clock. */
@@ -43,6 +53,9 @@ interface ConsumedRunColumns {
   rng_seed: string;
   content_revision: string;
   block_ids: string[];
+  rating_before: number | null;
+  games_before: number | null;
+  rating_charged: number | null;
   issued_at: Date;
   submitted_at: Date;
   wall_elapsed_ms: string;
@@ -95,7 +108,11 @@ export class IssuedRunsRepository {
     return rows[0]?.id;
   }
 
-  /** Records what was issued, on the database clock. */
+  /**
+   * Records what was issued, on the database clock. A vs CPU run is also charged as a loss against
+   * the language's rating in the same transaction (§4.3.5), so an issued run can never exist
+   * without its charge.
+   */
   async create(run: {
     userId: string;
     languageId: number;
@@ -107,11 +124,34 @@ export class IssuedRunsRepository {
     contentRevision: string;
     blockIds: readonly string[];
   }): Promise<IssuedRunRow> {
-    const result: unknown = await this.dataSource.query(
+    const { cpuLevel } = run;
+    if (run.mode !== 'cpu' || cpuLevel === null) return this.insert(this.dataSource, run, null);
+    return this.dataSource.transaction(async (manager) => {
+      const charge = await chargeLoss(manager, run.userId, run.languageId, cpuLevel);
+      return this.insert(manager, run, charge);
+    });
+  }
+
+  private async insert(
+    db: Queryable,
+    run: {
+      userId: string;
+      languageId: number;
+      mode: string;
+      cpuLevel: number | null;
+      ghostPeriod: GhostPeriod | null;
+      ghostScore: number | null;
+      seed: bigint;
+      contentRevision: string;
+      blockIds: readonly string[];
+    },
+    charge: RatingCharge | null,
+  ): Promise<IssuedRunRow> {
+    const result = await db.query(
       `INSERT INTO issued_runs
          (user_id, language_id, mode, cpu_level, ghost_period, ghost_score, rng_seed,
-          content_revision, block_ids)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          content_revision, block_ids, rating_before, games_before, rating_charged)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING id, issued_at`,
       [
         run.userId,
@@ -123,11 +163,22 @@ export class IssuedRunsRepository {
         run.seed.toString(),
         run.contentRevision,
         [...run.blockIds],
+        charge?.ratingBefore ?? null,
+        charge?.gamesBefore ?? null,
+        charge?.ratingCharged ?? null,
       ],
     );
     const row = returnedRows<{ id: string; issued_at: Date }>(result)[0];
     if (row === undefined) throw new Error('inserting an issued run returned no row');
     return { id: row.id, issuedAt: row.issued_at };
+  }
+
+  /** Settles the rating charged when a vs CPU run was issued with how the run ended (§4.3.5). */
+  settleRating(
+    run: { userId: string; languageId: number; cpuLevel: number; rating: RatingCharge },
+    outcome: RatingOutcome,
+  ): Promise<SettledRating> {
+    return settleRating(this.dataSource, { ...run.rating, ...run }, outcome);
   }
 
   /**
@@ -143,7 +194,7 @@ export class IssuedRunsRepository {
          AND r.issued_at > now() - make_interval(secs => $3)
          AND l.id = r.language_id
        RETURNING r.id, r.language_id, l.slug AS language, r.mode, r.cpu_level, r.ghost_period, r.ghost_score, r.rng_seed, r.content_revision,
-                 r.block_ids, r.issued_at, r.submitted_at,
+                 r.block_ids, r.rating_before, r.games_before, r.rating_charged, r.issued_at, r.submitted_at,
                  round(extract(epoch FROM now() - r.issued_at) * 1000) AS wall_elapsed_ms`,
       [id, userId, windowMs / 1000],
     );
@@ -161,6 +212,14 @@ export class IssuedRunsRepository {
           seed: row.rng_seed,
           contentRevision: row.content_revision,
           blockIds: row.block_ids,
+          rating:
+            row.rating_before === null || row.games_before === null || row.rating_charged === null
+              ? null
+              : {
+                  ratingBefore: row.rating_before,
+                  gamesBefore: row.games_before,
+                  ratingCharged: row.rating_charged,
+                },
           issuedAt: row.issued_at,
           submittedAt: row.submitted_at,
           wallElapsedMs: Number(row.wall_elapsed_ms),

@@ -51,12 +51,12 @@ export class PlayController {
     @Req() request: FastifyRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
   ): Promise<SubmitResultResponse | undefined> {
-    const run = await this.play.submitResult(this.user(request), sessionId, body);
-    if (run === undefined) {
+    const submitted = await this.play.submitResult(this.user(request), sessionId, body);
+    if (submitted === undefined) {
       void reply.status(HttpStatus.NO_CONTENT);
       return undefined;
     }
-    return { run };
+    return submitted;
   }
 
   // AuthGuard sets the user before any non-public handler runs; checked rather than asserted.

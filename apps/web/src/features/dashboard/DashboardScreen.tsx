@@ -12,6 +12,8 @@ import { getDashboard } from '../../lib/api/dashboard';
 import { describeError } from '../../lib/api/describe-error';
 import { listLanguages } from '../../lib/api/languages';
 import { useAuthStore } from '../auth/auth-store';
+import { LanguageRatings, RatingSummary } from '../rating/RatingSummary';
+import { useRatings } from '../rating/use-ratings';
 import { CHART_HEIGHT, CHART_PADDING, CHART_WIDTH, plot } from './chart';
 import { Icon } from '../../components/Icon';
 
@@ -111,6 +113,7 @@ function Chart({ points, period }: { points: DashboardPoint[]; period: RankingPe
 export function DashboardScreen() {
   const { t } = useTranslation();
   const timezone = useAuthStore((state) => state.user?.timezone ?? 'UTC');
+  const ratings = useRatings();
   const [languages, setLanguages] = useState<Language[] | null>(null);
   const [language, setLanguage] = useState<ContentLanguage | null>(null);
   const [period, setPeriod] = useState<RankingPeriod>('weekly');
@@ -183,6 +186,13 @@ export function DashboardScreen() {
         >
           {error}
         </p>
+      )}
+
+      {ratings !== null && (
+        <>
+          <RatingSummary languages={ratings.languages} />
+          <LanguageRatings languages={ratings.languages} />
+        </>
       )}
 
       {languages === null ? (

@@ -25,6 +25,13 @@ const LANGUAGES = {
   ],
 };
 
+const RATINGS = {
+  languages: [
+    { language: 'python', displayName: 'Python', rating: 812, gamesPlayed: 30 },
+    { language: 'go', displayName: 'Go', rating: 0, gamesPlayed: 0 },
+  ],
+};
+
 const ISSUED = {
   sessionId: '22222222-2222-4222-8222-222222222222',
   language: 'python',
@@ -67,19 +74,42 @@ describe('language screen', () => {
   it('offers the languages the server has content for', async () => {
     vi.stubGlobal('fetch', () => Promise.resolve(json(LANGUAGES)));
     renderScreen();
+    expect(await screen.findByRole('button', { name: /^Python/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Go/ })).toBeTruthy();
+  });
+
+  it('shows the player’s rank and the rating of each language on its button', async () => {
+    vi.stubGlobal('fetch', (url: string) =>
+      Promise.resolve(json(url.endsWith('/ratings') ? RATINGS : LANGUAGES)),
+    );
+    renderScreen();
+    // 812 in one language counts at half: 406, which is Bronze 2 (369 to 442) for the four languages there are.
+    expect(await screen.findByText('Bronze 2')).toBeTruthy();
+    expect(screen.getByText('406')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Python Rating 812' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Go Unplayed' })).toBeTruthy();
+  });
+
+  it('shows no ratings, and still lets the player start, when they cannot be read', async () => {
+    vi.stubGlobal('fetch', (url: string) =>
+      Promise.resolve(url.endsWith('/ratings') ? json({}, 500) : json(LANGUAGES)),
+    );
+    renderScreen();
     expect(await screen.findByRole('button', { name: 'Python' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Go' })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'Rating' })).toBeNull();
   });
 
   it('starts a run for the language that was picked and goes to the play screen', async () => {
     const requests: { url: string; body?: string }[] = [];
     vi.stubGlobal('fetch', (url: string, init: { body?: string } = {}) => {
+      // The ratings are read for display and are not part of what these tests are about.
+      if (url.endsWith('/ratings')) return Promise.resolve(json(RATINGS));
       requests.push({ url, ...(init.body === undefined ? {} : { body: init.body }) });
       return Promise.resolve(url.endsWith('/languages') ? json(LANGUAGES) : json(ISSUED, 201));
     });
 
     renderScreen();
-    await userEvent.click(await screen.findByRole('button', { name: 'Go' }));
+    await userEvent.click(await screen.findByRole('button', { name: /^Go/ }));
 
     await screen.findByText('playing');
     expect(requests[1]?.url).toBe('/api/play/sessions');
@@ -97,12 +127,12 @@ describe('language screen', () => {
     );
 
     renderScreen();
-    await userEvent.click(await screen.findByRole('button', { name: 'Python' }));
+    await userEvent.click(await screen.findByRole('button', { name: /^Python/ }));
 
     expect((await screen.findByRole('alert')).textContent).toBe('too many runs');
     expect(useRunSession.getState().run).toBeNull();
     // The button is usable again, so the player can retry.
-    expect(screen.getByRole('button', { name: 'Python' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Python/ })).toBeTruthy();
   });
 
   it('reports a language list that could not be loaded', async () => {
@@ -116,6 +146,8 @@ describe('vs CPU', () => {
   const stubServer = () => {
     const requests: { url: string; body?: string }[] = [];
     vi.stubGlobal('fetch', (url: string, init: { body?: string } = {}) => {
+      // The ratings are read for display and are not part of what these tests are about.
+      if (url.endsWith('/ratings')) return Promise.resolve(json(RATINGS));
       requests.push({ url, ...(init.body === undefined ? {} : { body: init.body }) });
       return Promise.resolve(
         url.endsWith('/languages')
@@ -131,7 +163,7 @@ describe('vs CPU', () => {
     renderScreen();
     await userEvent.click(await screen.findByRole('button', { name: 'vs CPU' }));
     expect(screen.getByLabelText(/CPU level/)).toHaveProperty('value', '1');
-    await userEvent.click(screen.getByRole('button', { name: 'Go' }));
+    await userEvent.click(screen.getByRole('button', { name: /^Go/ }));
 
     await screen.findByText('playing');
     expect(JSON.parse(requests[1]?.body ?? '{}')).toEqual({
@@ -150,7 +182,7 @@ describe('vs CPU', () => {
     await userEvent.clear(input);
     await userEvent.type(input, '48');
     expect(screen.getByText('about 186 KPM')).toBeTruthy();
-    await userEvent.click(screen.getByRole('button', { name: 'Python' }));
+    await userEvent.click(screen.getByRole('button', { name: /^Python/ }));
     await screen.findByText('playing');
     expect(JSON.parse(requests[1]?.body ?? '{}')).toMatchObject({ mode: 'cpu', cpuLevel: 48 });
   });
@@ -164,7 +196,7 @@ describe('vs CPU', () => {
       const input = screen.getByLabelText(/CPU level/);
       await userEvent.clear(input);
       if (text !== '') await userEvent.type(input, text);
-      const button = screen.getByRole('button', { name: 'Python' });
+      const button = screen.getByRole('button', { name: /^Python/ });
       expect(button).toHaveProperty('disabled', true);
       await userEvent.click(button);
       expect(requests).toHaveLength(1);
@@ -176,7 +208,7 @@ describe('vs CPU', () => {
     renderScreen();
     await userEvent.click(await screen.findByRole('button', { name: 'vs CPU' }));
     await userEvent.click(screen.getByRole('button', { name: 'Solo' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Go' }));
+    await userEvent.click(screen.getByRole('button', { name: /^Go/ }));
     await screen.findByText('playing');
     expect(JSON.parse(requests[1]?.body ?? '{}')).toEqual({ language: 'go', mode: 'single' });
   });
@@ -193,6 +225,8 @@ describe('vs Ghost', () => {
   function stubServer(records: unknown = RECORDS) {
     const requests: { url: string; body?: string }[] = [];
     vi.stubGlobal('fetch', (url: string, init: { body?: string } = {}) => {
+      // The ratings are read for display and are not part of what these tests are about.
+      if (url.endsWith('/ratings')) return Promise.resolve(json(RATINGS));
       requests.push({ url, ...(init.body === undefined ? {} : { body: init.body }) });
       if (url.endsWith('/languages')) return Promise.resolve(json(LANGUAGES));
       if (url.endsWith('/ghost-records')) return Promise.resolve(json(records));
@@ -285,7 +319,7 @@ describe('vs Ghost', () => {
   it('asks for no records outside Ghost mode, and shows no record hints there', async () => {
     const requests = stubServer();
     renderScreen();
-    await screen.findByRole('button', { name: 'Python' });
+    await screen.findByRole('button', { name: /^Python/ });
     expect(requests.some((request) => request.url.endsWith('/ghost-records'))).toBe(false);
     expect(screen.queryByText(/best \d+/)).toBeNull();
   });

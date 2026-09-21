@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.41 |
+| Version | 1.42 |
 | Language of record | **English** (all deliverables from this point on) |
 | Status | **Settled.** No open items; ready to implement |
-| Supersedes | v1.40 — a display name can be set from the Account screen (§7, §9.3, Appendix B); v1.39 — the account can be erased from the Account screen (§7, §10, Appendix B) |
+| Supersedes | v1.41 — a rating and ranks from vs CPU results (§4.3.5, §9.3, §9.5, Appendix B); v1.40 — a display name can be set from the Account screen (§7, §9.3, Appendix B); v1.39 — the account can be erased from the Account screen (§7, §10, Appendix B) |
 
 **Legend**
 
@@ -439,6 +439,22 @@ The RNG seed is issued by the server and stored on the session row, so any match
 | Duration | Not part of the key — duration is fixed at 120 s (Q14) |
 | Display | Per language: highest level beaten, a grid of levels beaten, total conquest count |
 | On history deletion | **Conquest records are deleted along with the play record** (Q15). They are therefore **derived from `play_sessions`, not stored separately** (§9.3) |
+
+#### 4.3.5 Rating and Ranks 🟡 (v1.42)
+
+The rating is the player's standing among CPU opponents, meant to give a reason to keep playing: it is computed from vs CPU results only, in every language, and rewards playing several languages over one.
+
+| Item | Rule |
+| --- | --- |
+| Language rating | Elo-style, per language, whole points from 0 to 2000; everyone starts at 0 in every language and history before this version is not counted. The CPU of level `L` has the fixed rating `20 × L` (level 100 is 2000). A win is 1, a loss 0, and the step is `K × (result − expected)` with `K` of 40 for the first 10 matches in a language and 20 after, clamped so a rating stays within 0–2000. Beating a stronger CPU is worth more than a weaker one, and a CPU at the player's own rating is worth almost nothing to beat |
+| Overall rating | The language ratings from best to worst, times weights `0.5 × 0.8^i` (`i` from 0), summed. A player who has maxed one language is at 1000; the ceiling needs every language maxed: `5000 × (1 − 0.8^N)` for `N` languages (2952 for four). A language not yet played is 0 and costs nothing, so no language is required |
+| Language count | `RATING_LANGUAGE_COUNT` in `typing-engine`, the one setting to change when a language is added; a test keeps it equal to the list of content languages. Adding a language raises the ceiling and every rank threshold, leaves every rating as it is (a new language is 0, which adds nothing), and so may lower a player's rank |
+| Abandoning | A vs CPU run is **charged as a loss when it is issued**; submitting the result replaces the charge with the real outcome. A run left unfinished, submitted empty, or rejected as implausible therefore stays a loss. A run the server cannot judge through no fault of the player (the content changed under it) gives its points and its match back. Runs issued before ratings existed are not rated |
+| Ranks | Beginner, Bronze, Silver, Gold, Platinum, Diamond, each in divisions 1–5 (a bigger number is higher), and Master, which has none: 31 ranks. Thresholds are set on the overall rating as fractions of the ceiling (Beginner from 0 with divisions 40/2000 wide, Bronze from 200 with 50, Silver from 450 with 60, Gold from 750 with 70, Platinum from 1100 with 80, Diamond from 1500 with 90, Master from 1950, all out of 2000), so they always span the whole range. For four languages: Bronze 1 from 295, Silver 1 from 664, Gold 1 from 1107, Platinum 1 from 1624, Diamond 1 from 2214, Master from 2878. There is no protection against demotion: the rank follows the rating |
+| Rank of a language | None: languages show a rating, and only the overall rating has a rank |
+| Stored | `language_ratings (user_id, language_id, rating, games_played)`, one row from a player's first vs CPU run in a language. The overall rating and the rank are derived when read, never stored |
+| Shown | Home and Status: the rank's icon and name, the overall rating, and a bar towards the next rank; the rating of each language on the language buttons (Home), beside each language (CPU battles), and as a list with unplayed languages marked (Status). After a vs CPU match: the language's and the overall rating before and after with signs, the rank now held, a promotion or demotion when it changed, and the bar. No win rate or expected gain is shown before a match, and the language's record is not shown after it |
+| Icons | 31 rank icons in `apps/web/public/ranks/` (`rank-<tier>-<division>.svg`, `rank-master.svg`); the files there are placeholders, replaced by putting a file of the same name in place |
 
 ### 4.4 Ghost 🔵
 
@@ -946,12 +962,13 @@ Design points:
 | DELETE | `/api/auth/me` | 🟡 (v1.39) Delete the account and all its data. Body `{ password }`; 204 and the session cookie cleared, 403 for a wrong password, 429 while the account's sign-in backoff applies (§7) |
 | GET | `/api/languages` | Available languages |
 | POST | `/api/play/sessions` | **Start a run.** Body `{ language, mode, cpuLevel?, ghostPeriod? }`: `mode` is `single`, `cpu`, or `ghost`; `cpuLevel` (1–100) is required for `cpu` and `ghostPeriod` (`daily`, `weekly`, `total`) for `ghost`, and each is refused for the other modes. Returns 20 compiled blocks, the RNG seed, and the level or the Ghost's period and record score. A Ghost with no record to race answers 409 |
-| POST | `/api/play/sessions/:id/result` | Submit a result; validated server-side |
+| POST | `/api/play/sessions/:id/result` | Submit a result; validated server-side. 🟡 (v1.42) For a vs CPU run the body also carries `rating`: the language's rating before and after and every language's rating now (§4.3.5); `null` for other modes |
 | GET | `/api/rankings` | `?period=daily\|weekly\|total&language=` |
 | GET | `/api/dashboard` | `?period=daily\|weekly\|total&language=&from=&to=` (`from`/`to` are inclusive local dates; §6.2) |
 | GET | `/api/history` | Paged list |
 | DELETE | `/api/history/:id` | Delete one run |
 | GET | `/api/ghost-records` | 🟡 (v1.30) The player's best score per language in each period (null where there is none), which decides which Ghost options can be chosen (§4.4) |
+| GET | `/api/ratings` | 🟡 (v1.42) The player's rating in every enabled language (`language`, `displayName`, `rating`, `gamesPlayed`); unplayed languages are 0 with no matches (§4.3.5) |
 | GET | `/api/cpu-conquests` | Conquest state of every enabled language: highest level beaten, the levels beaten, and their count (§4.3.4) |
 | GET / PUT | `/api/preferences` | 🟡 (v1.25, v1.26) `GET` returns the time zone (read only), the display language, and the appearance (`font`, `fontSize`, `theme`, `colorPreset`, and 🟡 `skin`); `PUT` changes the settings sent (`locale`, those five, and 🟡 (v1.32) `soundPack` and `soundVolume`) and refuses anything else with 400 |
 
@@ -1281,3 +1298,7 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.40 | A found and fixed defect | **Found in that browser:** the "Your account was deleted." notice never appeared. Clearing the session makes the route guard send an anonymous visitor to sign-in before the account screen's own navigation, and that redirect carries no router state. The notice is now kept in the auth store, and the first test, which used a router without the guard, could not have seen it; a test through the whole app now fails with the old behaviour (§7) |
 | 1.40 | Not covered | Deleting while another tab has the account open leaves that tab signed in until its next request, which then answers 401; the player's own record of what they asked for is not kept, so the restore procedure above depends on the operator's own log (§7, §9.6) |
 | 1.41 | Display name | `users.display_name` (nullable, 1–24 characters, not unique, `chk_users_display_name`) is shown in place of the username in the header when set. It is set and cleared on the Account screen through `PATCH /api/auth/me`; the username stays the sign-in identity, is still shown on the Account screen, and is what appears when no display name is set. The user object gains `displayName: string \| null` |
+| 1.42 | Rating and ranks | vs CPU results feed a per-language Elo-style rating (CPU of level `L` is rated `20 × L`, start 0, 0–2000), and the overall rating weighs the languages best to worst (`0.5 × 0.8^i`), so one maxed language is 1000 and the ceiling needs all of them. 31 ranks (six tiers of five divisions, then Master) are laid over the overall rating as fractions of its ceiling, so adding a language (one setting, `RATING_LANGUAGE_COUNT`) raises the ceiling and the thresholds and leaves every rating unchanged, which may demote (§4.3.5) |
+| 1.42 | Abandoning is a loss, by charging at issue | A vs CPU run costs its loss the moment it is issued (`issued_runs.rating_before`, `games_before`, `rating_charged`, in the same transaction as the run), and the result replaces the charge with the real outcome, computed from the rating and match count the run started with, so overlapping runs are worth what they were worth when issued. Nothing has to detect abandonment. A run the server cannot judge through no fault of the player (content changed) is given back (§4.3.5, §9.8) |
+| 1.42 | Ratings are stored, unlike conquests | An Elo rating depends on the order of results, so it cannot be derived from `play_sessions` as conquests are: deleting a run from the history does not change the rating. The overall rating and the rank are derived when read (§4.3.5, §9.3) |
+| 1.42 | Rank thresholds rounded | The thresholds are the announced fractions of the ceiling rounded to whole points; for four languages Platinum 1 starts at 1624 (1623.6), not 1623 (§4.3.5) |

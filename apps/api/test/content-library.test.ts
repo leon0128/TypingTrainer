@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { CODE_LANGUAGES, type ContentBundle } from '@typing-trainer/contracts';
+import { CODE_LANGUAGES, TRACK_POOLS, type ContentBundle } from '@typing-trainer/contracts';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { ContentLoadError, loadContentLibrary } from '../src/modules/content/content-library';
@@ -37,11 +37,14 @@ async function problemsOf(directory: string): Promise<readonly string[]> {
   return [];
 }
 
+/** The pools with a committed bundle: the code languages and, so far, the English pools (§13.4). */
+const COMMITTED = [...CODE_LANGUAGES, ...TRACK_POOLS['natural-en']];
+
 describe('loadContentLibrary', () => {
   it('loads the committed bundles of every content language', async () => {
     const library = await loadContentLibrary(TEST_CONTENT_DIR);
-    expect(library.languages).toEqual([...CODE_LANGUAGES].sort());
-    for (const language of CODE_LANGUAGES) {
+    expect(library.languages).toEqual([...COMMITTED].sort());
+    for (const language of COMMITTED) {
       const loaded = library.get(language);
       const committed = bundle(language);
       expect(loaded?.revision).toBe(committed.revision);

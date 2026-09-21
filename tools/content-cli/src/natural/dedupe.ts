@@ -5,10 +5,13 @@ import type { ContentDiagnostic } from '../diagnostics';
 
 /**
  * Sentences and paragraphs at or above this Jaccard similarity of their n-grams are duplicates of
- * an earlier block (§5.2 stage 7). Provisional: chosen before there was content to measure, and to
- * be set from the most similar pair of distinct blocks once there is.
+ * an earlier block (§5.2 stage 7). Measured on the English pools before adoption: the most similar
+ * pair of distinct sentences scores 0.167 (word 3-grams, sharing "all the way home") and of
+ * distinct paragraphs 0.040, while a copy of a 15-word sentence with its last word changed scores
+ * 0.857 and one with a middle word changed 0.625. The Japanese pools are measured with their own
+ * content; the value stays here until one of them needs it changed.
  */
-export const NATURAL_SIMILARITY_THRESHOLD = 0.85;
+export const NATURAL_SIMILARITY_THRESHOLD = 0.5;
 
 export interface NaturalDedupeEntry {
   readonly file: string;

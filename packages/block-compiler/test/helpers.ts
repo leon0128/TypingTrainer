@@ -18,7 +18,15 @@ export function readFixture(name: string): string {
 
 /** The canonical code a program displays (§3.2): every atom's text, separators included. */
 export function render(atoms: readonly Atom[]): string {
-  return atoms.map((atom) => (atom.kind === 'separator' ? atom.canonical : atom.text)).join('');
+  return atoms
+    .map((atom) =>
+      atom.kind === 'separator'
+        ? atom.canonical
+        : atom.kind === 'romaji'
+          ? (atom.alternatives[0] ?? '')
+          : atom.text,
+    )
+    .join('');
 }
 
 /** Compiles `source` and returns its diagnostics as compact `{ code, at: "line:column" }`. */

@@ -413,6 +413,12 @@ importers:
         specifier: 0.27.0
         version: 0.27.0
     devDependencies:
+      '@typing-trainer/typing-engine':
+        specifier: workspace:*
+        version: link:../../packages/typing-engine
+      fast-check:
+        specifier: ^4.10.0
+        version: 4.10.1
       tsx:
         specifier: 4.23.13
         version: 4.23.13

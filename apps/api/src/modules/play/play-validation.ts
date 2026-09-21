@@ -51,13 +51,15 @@ export function checkPlausibility(
     return { reason: 'speed', detail: `${String(replay.metrics.kpm)} KPM over the run` };
   }
   // The engine cannot count more effective keys than the blocks reached hold; checked anyway, so a
-  // future engine change cannot quietly inflate a score.
-  if (replay.counters.effective > replay.canonicalReached) {
+  // future engine change cannot quietly inflate a score. The ceiling is the longest way to type the
+  // blocks: a Japanese run counts every key pressed, so spelling `shi` for し (three keys) reaches
+  // past the shortest route (§13.5). For code and English the two are the same.
+  if (replay.counters.effective > replay.maxReached) {
     return {
       reason: 'progress',
       detail: `${String(replay.counters.effective)} effective keys in ${String(
-        replay.canonicalReached,
-      )} canonical`,
+        replay.maxReached,
+      )} at most`,
     };
   }
   return undefined;

@@ -50,6 +50,13 @@ export function buildLayout(program: TypingProgram): Layout {
         });
         break;
       }
+      case 'romaji':
+        // Japanese gets its own two-line view later; until then the shown spelling is laid out as
+        // if it were a literal, so a block is never drawn empty.
+        Array.from(atom.alternatives[0] ?? '').forEach((text, charIndex) => {
+          cells.push({ kind: 'literal', text, atomIndex, charIndex });
+        });
+        break;
       case 'auto':
         autoAtoms.push(atomIndex);
         Array.from(atom.text).forEach((text, charIndex) => {

@@ -1,6 +1,7 @@
 import type { TypingProgram } from '@typing-trainer/contracts';
 
 import { ENTER_KEY, SPACE_KEY, withTypedClosers } from './engine';
+import { shortestSpelling } from './keystrokes';
 import { PLAY_DURATION_MS, computeMetrics } from './metrics';
 import { MAX_SEED, createSeededRandom, type SeededRandom } from './random';
 
@@ -88,6 +89,7 @@ function blockKeys(program: TypingProgram): string[] {
   for (const atom of withTypedClosers(program).atoms) {
     if (atom.kind === 'literal') keys.push(...atom.text.split(''));
     else if (atom.kind === 'separator') keys.push(atom.canonical === '\n' ? ENTER_KEY : SPACE_KEY);
+    else if (atom.kind === 'romaji') keys.push(...shortestSpelling(atom).split(''));
   }
   return keys;
 }

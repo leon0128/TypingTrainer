@@ -1177,36 +1177,36 @@ The screen shows the text above and its romaji below, as on common Japanese typi
 
 ```ts
 | { kind: 'romaji';
-    display: string;                     // the text shown above (kanji included); '' for the later units of one reading
-    alternatives: readonly string[];     // accepted romaji; the shortest first, which is also what the lower line shows
+    display: string;                     // the text shown above: the kana of the unit, or the kanji whose reading starts in it; '' when the unit continues a reading
+    alternatives: readonly string[];     // accepted romaji, [a-z'.,-]; the first is the one shown (Hepburn where two differ)
   }
 ```
 
-`TypingProgramSchema` gains a `romaji` atom, allowed in Japanese pools only, and `maxKeystrokes`: the length of the longest route (`canonicalKeystrokes` is the shortest).
+`canonicalKeystrokes` is the length of the shortest way to type the block. The longest way is **derived, not stored** (`countMaxKeystrokes` in `contracts`, repeated in `typing-engine`, which may import only types from `contracts`, with a test keeping the two equal): storing it would change `canonicalBlocksJson` and so the revision of every bundle. 🟡 `TypingProgramSchema` accepts a romaji atom as a first typed atom, requires the spellings of a unit to be distinct, and requires a unit with a spelling that is a proper prefix of another (`n` and `nn`) to be followed somewhere by a literal, a romaji unit, or a line break, since such a unit is settled only by the next key. A content bundle for a `ja-*` pool holds only romaji atoms and line breaks, and no other pool holds a romaji atom.
 
-**Units.** The reading is split into units, so each has a small closed set of spellings:
+**Units.** A line's readings are joined and cut into units, from the right, because the spellings of `ん` and `っ` depend on the unit after them:
 
-| Case | Unit | Example |
+| Case | Unit | Spellings |
 | --- | --- | --- |
-| `っ` | Joined with the following kana | `っか` → `kka`, `xtuka`, `ltuka`, `xtsuka`, `ltsuka` |
-| `ん` followed by a vowel, a `な`-row kana, a `や`-row kana, or another `ん` | Joined with the following kana | `んあ` → `nna`, `n'a`, `xna` |
-| `ん` at the end of a block | Alone | `nn`, `n'` |
-| `ん` otherwise | Alone | `n`, `nn`, `n'` |
-| A kana with a small `ゃゅょ` | Joined with the kana before | `しゃ` → `sha`, `sya` |
-| `ー` `、` `。` | Alone | `-` `,` `.` |
-| Any other kana | Alone | `し` → `si`, `shi` |
+| Any other kana, a small-kana combination, `ー` `、` `。` | One unit | The table below; `-` `,` `.` |
+| `ん` | Alone | `nn`, `n'`, `xn`, and also a bare `n` when a unit follows on the line and none of its spellings starts with a vowel, `n`, or `y`. So `nn` is needed before a vowel, な-row, や-row, or another ん, and at the end of a line (also before a line break); a bare `n` is enough before any other kana, `っ`, `ー`, or a mark. This replaces the first draft, which joined ん to the kana after it |
+| `っ` followed by a kana | Joined with that kana | For each spelling `B` of the kana: `B[0]+B` unless `B` starts with a vowel or `n`, `t+B` when `B` starts with `ch` (`tchi`), and `xtu+B`, `ltu+B`, `xtsu+B`, `ltsu+B` |
+| `っ` at the end of a line | Alone | `xtu`, `ltu`, `xtsu`, `ltsu` |
+| `っ` before `ん`, another `っ`, `ー`, or a mark | — | Not supported: a compile error, for the content to be rewritten |
 
-Accepted spellings include `si/shi`, `ti/chi`, `tu/tsu`, `zi/ji`, `hu/fu`, `wo` for `を`, and `we` (also `whe`) for `うぇ`. Typing a small kana on its own (`xya`, `xtu` outside the rule above) is **not supported**.
+**Spellings.** Standard Hepburn and kunrei-style spellings, the Hepburn one shown first. Special kana: `し` `shi si`, `ち` `chi ti`, `つ` `tsu tu`, `ふ` `fu hu`, `じ` `ji zi`, `ぢ` `di`, `づ` `du`, `を` `wo`, `しゃ` `sha sya`, `じゃ` `ja jya zya`, `ちゃ` `cha tya`, `しぇ` `she sye`, `ちぇ` `che tye`, `じぇ` `je jye zye`, `ふぁ ふぃ ふぇ ふぉ` `fa fi fe fo`, `うぃ` `wi`, `うぇ` `we whe`, `うぉ` `who`, `てぃ` `thi`, `でぃ` `dhi`; katakana are spelled as hiragana and shown as written. **Not supported:** a small kana typed on its own (`xya`, and `xtu` apart from a `っ` at the end of a line), ゐ ゑ ヴ ヶ, and any combination not in the table. Uppercase letters, Space, Tab, and Enter inside a line are misses.
+
+**Display.** The text above a unit is the concatenation of the texts of the segments (a kanji word with its reading, or a kana) whose first kana lies in the unit, so a kanji is shown over the unit where its reading starts, and a unit that only continues a reading shows nothing.
 
 **Matching.** Let `typed` be the keys entered in the current unit. A key is judged as:
 
-1. If some alternative starts with `typed + key`, the key is `CORRECT` and is appended. When `typed` equals an alternative and no longer alternative is still possible, the cursor moves to the next unit.
-2. Otherwise, if `typed` already equals an alternative, the unit is complete: the cursor moves on and **the same key is judged again at the next unit** (so `ん` typed as `n`, then `k`, works).
-3. Otherwise the key is a `MISS`, deduplicated per cursor position as in §3.4.
+1. If some spelling starts with `typed + key`, the key is `CORRECT` and is appended. When `typed` equals a spelling that no longer spelling extends, the cursor moves to the next unit.
+2. Otherwise, if `typed` already equals a spelling (a bare `n`), the unit is complete: the cursor moves on and **the same key is judged again at the next unit**, where it may be right or a miss. Either way the unit stays settled as typed, so `n'` can no longer follow a bare `n` that a wrong key has passed (the same rule as a space in §3.4).
+3. Otherwise the key is a `MISS`, deduplicated per cursor position as in §3.4; the position is the unit and the number of keys typed in it.
 
-The lower line shows the shortest spelling, redrawn to the route actually taken once a key rules out the others.
+The lower line shows the first spelling, redrawn to the route actually taken once a key rules out the others.
 
-**Keystrokes 🟡.** Every key the player presses counts, so `shi` is three effective keystrokes and `si` two. This breaks §3.5 for Japanese pools on purpose: the score measures real key speed, and a Japanese block's total depends on the spelling. `canonicalKeystrokes` is the shortest route, used for a block's nominal length and for the CPU and Ghost pace; `maxKeystrokes` bounds what a submission may claim (§9.8). **Accepted consequence:** the same text can score a little higher for a player who spells `shi`, `chi`, `tsu` than for one who spells `si`, `ti`, `tu`. Rankings show only the player's own runs (§6.1), so nobody is disadvantaged relative to another.
+**Keystrokes 🟡.** Every key the player presses counts, so `shi` is three effective keystrokes and `si` two. This breaks §3.5 for Japanese pools on purpose: the score measures real key speed, and a Japanese block's total depends on the spelling. The CPU and the Ghost type the shortest spelling (the first when several are as short), so the pace they are given is the shortest route's. The ceiling of a run (§9.8) is the **longest** way to type the blocks it reached, `maxReached` in `typing-engine`, and the server checks against that: with the shortest total as the ceiling, a run that spelled `shi` would be refused. **Accepted consequence:** the same text can score a little higher for a player who spells `shi`, `chi`, `tsu` than for one who spells `si`, `ti`, `tu`. Rankings show only the player's own runs (§6.1), so nobody is disadvantaged relative to another.
 
 **Line breaks.** A multi-line Japanese block ends each line with a required Enter separator, exactly as code does (§3.3.2). There are no in-line space separators in Japanese.
 
@@ -1505,3 +1505,10 @@ These are industry articles and community measurements rather than peer-reviewed
 | 1.43 | Kind CHECK | **Spec bug found while implementing N1.** The `chk_languages_kind` of the first v1.43 draft accepted a natural-language pool with no kind, because `NULL IN (...)` is NULL; it now requires `"kind" IS NOT NULL`, as §9.3 asks of every nullable comparison |
 | 1.43 | Track consistency at startup | `ContentConsistency` refuses to start when a row's `(track, kind)` differs from `POOLS[slug]`, since the constraints cannot tie a slug to its track |
 | 1.43 | No default rating count | `RATING_LANGUAGE_COUNT` is replaced by `RATING_LANGUAGE_COUNTS` per track and the functions take the count with no default; the web standing counts only the asked track's languages |
+| 1.43 | `ん` is one unit with context-dependent spellings | Instead of joining ん to the kana after it, ん stays a unit of its own and gets a bare `n` only when the next unit cannot begin with the same key (vowel, `n`, `y`, or nothing on the line). The accepted language is the same as the joined form, with far fewer combinations; `xn` is accepted in every case, and a bare `n` is not offered at the end of a line, before a line break either |
+| 1.43 | A settled bare `n` stays settled | When a bare `n` is followed by a key that is not part of a longer spelling, the unit is left even if the key then misses at the next unit (as a space is at §3.4's C state), so `n'` cannot follow. The reference definition in the tests is told of the settlement; everything else is judged from the definition |
+| 1.43 | `maxKeystrokes` is derived | Not stored on the program: it is `countMaxKeystrokes(atoms)`, so the canonical JSON and every revision of the existing bundles are unchanged. `typing-engine` repeats the two small counting functions because it may import only types from `contracts`, and a test keeps the copies equal |
+| 1.43 | Run ceiling is the longest way | `checkPlausibility` compares effective keystrokes with `maxReached`, the sum of the longest ways to type the blocks reached; for code and English it equals the canonical total. A Japanese run spelled `shi` would otherwise be refused as implausible |
+| 1.43 | Japanese bundle shape | A `ja-*` bundle holds only romaji units and line breaks, and no other pool holds a romaji unit, checked by `ContentBundleSchema` |
+| 1.43 | Shown spelling | Hepburn first (`shi`, `chi`, `tsu`, `fu`, `ji`); the shortest spelling sets `canonicalKeystrokes` and what the CPU types, which need not be the one shown |
+| 1.43 | Romaji compiler | `compileJapanese` in `block-compiler` turns lines of segments (a kanji with its reading, or kana) into a program; the pipeline that reads them from files is a later commit |

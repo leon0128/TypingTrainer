@@ -42,26 +42,80 @@ export const SeparatorAtomSchema = z.object({
   required: z.boolean(),
 });
 
+/** The keys a romaji spelling is made of: lowercase letters, and `'` `-` `,` `.` (§13.5). */
+const ROMAJI_SPELLING = /^[a-z'.,-]+$/;
+
+/**
+ * One unit of Japanese typed as romaji (§13.5): a kana, a small-kana combination, a sokuon with
+ * the kana it doubles, or a mark. The player may spell it any of `alternatives`; the first is the
+ * one shown, and the shortest sets the block's canonical length.
+ */
+export const RomajiAtomSchema = z.object({
+  kind: z.literal('romaji'),
+  /**
+   * The text shown above the romaji: the kana of this unit, or the kanji whose reading starts in
+   * it. Empty for a unit that continues a kanji's reading.
+   */
+  display: z.string().max(32),
+  alternatives: z.array(z.string().regex(ROMAJI_SPELLING)).min(1).max(32),
+});
+
 /** Smallest unit of a typing program (§3.2). */
 export const AtomSchema = z.discriminatedUnion('kind', [
   LiteralAtomSchema,
   AutoAtomSchema,
   PaddingAtomSchema,
   SeparatorAtomSchema,
+  RomajiAtomSchema,
 ]);
 
 export type LiteralAtom = z.infer<typeof LiteralAtomSchema>;
 export type AutoAtom = z.infer<typeof AutoAtomSchema>;
 export type PaddingAtom = z.infer<typeof PaddingAtomSchema>;
 export type SeparatorAtom = z.infer<typeof SeparatorAtomSchema>;
+export type RomajiAtom = z.infer<typeof RomajiAtomSchema>;
 export type Atom = z.infer<typeof AtomSchema>;
 
-/** Maximum effective keystrokes: literal characters + separator count (§3.2). */
+/** The shortest spelling of a romaji unit; the first of them when several are as short (§13.5). */
+export function shortestSpelling(atom: RomajiAtom): string {
+  let shortest = atom.alternatives[0] ?? '';
+  for (const spelling of atom.alternatives) {
+    if (spelling.length < shortest.length) shortest = spelling;
+  }
+  return shortest;
+}
+
+/**
+ * The keystrokes of the shortest way to type the atoms: literal characters, separators, and the
+ * shortest spelling of every romaji unit (§3.2, §13.5). For code and English this is the only
+ * count there is (§3.5).
+ */
 export function countCanonicalKeystrokes(atoms: readonly Atom[]): number {
   let total = 0;
   for (const atom of atoms) {
     if (atom.kind === 'literal') total += atom.text.length;
     else if (atom.kind === 'separator') total += 1;
+    else if (atom.kind === 'romaji') total += shortestSpelling(atom).length;
+  }
+  return total;
+}
+
+/**
+ * The keystrokes of the longest way to type the atoms: as `countCanonicalKeystrokes`, but with the
+ * longest spelling of every romaji unit. Japanese effective keystrokes count every key pressed, so
+ * this, not the canonical count, is what a run can reach at most (§13.5).
+ */
+export function countMaxKeystrokes(atoms: readonly Atom[]): number {
+  let total = 0;
+  for (const atom of atoms) {
+    if (atom.kind === 'literal') total += atom.text.length;
+    else if (atom.kind === 'separator') total += 1;
+    else if (atom.kind === 'romaji') {
+      total += atom.alternatives.reduce(
+        (longest, spelling) => Math.max(longest, spelling.length),
+        0,
+      );
+    }
   }
   return total;
 }
@@ -74,7 +128,7 @@ export function countCanonicalKeystrokes(atoms: readonly Atom[]): number {
  *    by the line-break separator immediately before it; any other `auto` text (a closing
  *    bracket or quote) is filled by an earlier literal. Which literal opens the pair is
  *    language-specific, so the block compiler guarantees it, not this schema.
- * 3. The first typed atom (ignoring auto and padding atoms) is a literal.
+ * 3. The first typed atom (ignoring auto and padding atoms) is a literal or a romaji unit.
  * 4. A required in-line space separator is always followed by a literal somewhere later.
  * 5. A line-break separator is always required.
  * 6. A literal that follows a separator (ignoring auto and padding atoms) does not start with a
@@ -82,6 +136,10 @@ export function countCanonicalKeystrokes(atoms: readonly Atom[]): number {
  *    it.
  * 7. A `padding` atom directly follows a literal or a non-blank `auto` atom and directly
  *    precedes an in-line space separator.
+ * 8. The spellings of a romaji unit are distinct, and when one is a proper prefix of another (`n`
+ *    and `nn`) a literal, a romaji unit, or a line break follows somewhere later. The engine
+ *    settles such a unit only when the next key is not part of a longer spelling, so a unit that
+ *    ended the program could never be completed.
  */
 export const TypingProgramSchema = z
   .object({
@@ -103,11 +161,11 @@ export const TypingProgramSchema = z
     }
 
     const firstTyped = atoms.find((atom) => !isUntyped(atom));
-    if (firstTyped?.kind !== 'literal') {
+    if (firstTyped?.kind !== 'literal' && firstTyped?.kind !== 'romaji') {
       ctx.addIssue({
         code: 'custom',
         path: ['atoms'],
-        message: 'the first typed atom must be a literal',
+        message: 'the first typed atom must be a literal or a romaji unit',
       });
     }
 
@@ -140,6 +198,38 @@ export const TypingProgramSchema = z
             });
           }
         }
+        return;
+      }
+
+      if (atom.kind === 'romaji') {
+        const spellings = atom.alternatives;
+        if (new Set(spellings).size !== spellings.length) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['atoms', index, 'alternatives'],
+            message: 'the spellings of a romaji unit must be distinct',
+          });
+        }
+        const extendable = spellings.some((spelling) =>
+          spellings.some((other) => other.length > spelling.length && other.startsWith(spelling)),
+        );
+        const typedLater = atoms
+          .slice(index + 1)
+          .some(
+            (later) =>
+              later.kind === 'literal' ||
+              later.kind === 'romaji' ||
+              (later.kind === 'separator' && later.canonical === '\n'),
+          );
+        if (extendable && !typedLater) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['atoms', index, 'alternatives'],
+            message:
+              'a romaji unit with a spelling that is a prefix of another must be followed by something typed',
+          });
+        }
+        previousTyped = atom;
         return;
       }
 
@@ -176,7 +266,7 @@ export const TypingProgramSchema = z
     let literalSeenFromEnd = false;
     for (let index = atoms.length - 1; index >= 0; index -= 1) {
       const atom = atoms[index];
-      if (atom?.kind === 'literal') {
+      if (atom?.kind === 'literal' || atom?.kind === 'romaji') {
         literalSeenFromEnd = true;
       } else if (atom?.kind === 'separator') {
         if (atom.canonical === '\n' && !atom.required) {

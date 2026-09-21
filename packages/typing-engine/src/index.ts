@@ -20,6 +20,7 @@ export {
   IDLE_LIMIT_MS,
   buildSessionLog,
   canonicalReached,
+  maxReached,
   createSession,
   endSessionByTime,
   isSessionIdleExpired,

@@ -1,4 +1,4 @@
-import type { Atom, TypingProgram } from '@typing-trainer/contracts';
+import { countCanonicalKeystrokes, type Atom, type TypingProgram } from '@typing-trainer/contracts';
 
 import { createEngineState, handleKey, type EngineState, type Verdict } from '../src';
 
@@ -8,13 +8,15 @@ export const P = (text: string): Atom => ({ kind: 'padding', text });
 export const SP = (required: boolean): Atom => ({ kind: 'separator', canonical: ' ', required });
 export const NL: Atom = { kind: 'separator', canonical: '\n', required: true };
 
+/** A romaji unit (§13.5): what is shown above it, and the spellings, the first being displayed. */
+export const RM = (display: string, ...alternatives: string[]): Atom => ({
+  kind: 'romaji',
+  display,
+  alternatives,
+});
+
 export function program(atoms: Atom[]): TypingProgram {
-  let canonicalKeystrokes = 0;
-  for (const atom of atoms) {
-    if (atom.kind === 'literal') canonicalKeystrokes += atom.text.length;
-    else if (atom.kind === 'separator') canonicalKeystrokes += 1;
-  }
-  return { blockId: 'test', atoms, canonicalKeystrokes };
+  return { blockId: 'test', atoms, canonicalKeystrokes: countCanonicalKeystrokes(atoms) };
 }
 
 /** Splits a compact key script into keys: `⏎` is Enter, `⇥` is Tab, anything else is itself. */

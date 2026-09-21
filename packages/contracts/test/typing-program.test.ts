@@ -63,10 +63,10 @@ describe('TypingProgramSchema', () => {
 
   it('rejects a program whose first typed atom is a separator', () => {
     expect(issues(program([A('  ', 0), S(false), L('x')]))).toContain(
-      'the first typed atom must be a literal',
+      'the first typed atom must be a literal or a romaji unit',
     );
     expect(issues(program([P(' '), S(false), L('x')]))).toContain(
-      'the first typed atom must be a literal',
+      'the first typed atom must be a literal or a romaji unit',
     );
   });
 

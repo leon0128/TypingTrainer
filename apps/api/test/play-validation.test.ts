@@ -1,4 +1,4 @@
-import type { SessionLog, TypingProgram } from '@typing-trainer/contracts';
+import type { Atom, SessionLog, TypingProgram } from '@typing-trainer/contracts';
 import { IDLE_LIMIT_MS, replaySession, type SessionReplay } from '@typing-trainer/typing-engine';
 import { describe, expect, it } from 'vitest';
 
@@ -89,11 +89,52 @@ describe('checkPlausibility', () => {
     expect(checkPlausibility(submitted, atLimit, 10_000)).toBeUndefined();
   });
 
+  describe('a Japanese block, where a longer spelling is more keys (§13.5)', () => {
+    // 100 units of し: `si` is two keys and `shi` three, so a run may spell either.
+    const SHI: Atom = { kind: 'romaji', display: 'し', alternatives: ['shi', 'si'] };
+    const japanese: TypingProgram = {
+      blockId: 'ja-word/probe',
+      canonicalKeystrokes: 200,
+      atoms: Array.from({ length: 100 }, () => SHI),
+    };
+    const replayJapanese = (spelling: string, count: number) => {
+      const keys = spelling.repeat(count);
+      const submitted: SessionLog = {
+        version: 1,
+        keys,
+        deltas: Array.from({ length: keys.length }, (_, index) => (index === 0 ? 0 : 100)),
+      };
+      return { log: submitted, replay: replaySession([japanese], submitted) };
+    };
+
+    it('accepts a run spelled with the longest spelling, which passes the shortest total', () => {
+      const { log: submitted, replay } = replayJapanese('shi', 100);
+      expect(replay.counters.effective).toBe(300);
+      expect(replay.counters.effective).toBeGreaterThan(replay.canonicalReached);
+      expect(replay.maxReached).toBe(300);
+      expect(checkPlausibility(submitted, replay, 60_000)).toBeUndefined();
+    });
+
+    it('still refuses more effective keys than the longest spelling of the blocks reached', () => {
+      const { log: submitted, replay } = replayJapanese('shi', 100);
+      const inflated = {
+        ...replay,
+        counters: { ...replay.counters, effective: replay.maxReached + 1 },
+      };
+      expect(checkPlausibility(submitted, inflated, 60_000)?.reason).toBe('progress');
+      const atCeiling = {
+        ...replay,
+        counters: { ...replay.counters, effective: replay.maxReached },
+      };
+      expect(checkPlausibility(submitted, atCeiling, 60_000)).toBeUndefined();
+    });
+  });
+
   it('refuses more effective keys than the blocks reached can hold', () => {
     const { log: submitted, replay } = plain();
     const inflated = {
       ...replay,
-      counters: { ...replay.counters, effective: replay.canonicalReached + 1 },
+      counters: { ...replay.counters, effective: replay.maxReached + 1 },
     };
     expect(checkPlausibility(submitted, inflated, 10_000)?.reason).toBe('progress');
   });

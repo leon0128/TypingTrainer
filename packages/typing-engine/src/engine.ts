@@ -18,8 +18,17 @@ export interface EngineState {
   readonly program: TypingProgram;
   /** Index of the current atom. Never an auto or padding atom; `atoms.length` once complete. */
   readonly atomIndex: number;
-  /** Character offset inside the current literal atom. */
+  /**
+   * Character offset inside the current literal atom, or the number of keys typed in the current
+   * romaji unit (`typed.length`).
+   */
   readonly charIndex: number;
+  /**
+   * The keys typed so far in the current romaji unit (§13.5); empty in any other atom. A unit is
+   * left as soon as the keys typed are a spelling no other spelling extends, or when the next key
+   * is not part of any longer spelling.
+   */
+  readonly typed: string;
   /** Whether a space has been consumed at the current in-line separator. */
   readonly separatorConsumed: boolean;
   /** Whether a miss has already been recorded at the current cursor position. */
@@ -41,6 +50,7 @@ interface Draft {
   readonly atoms: readonly Atom[];
   atomIndex: number;
   charIndex: number;
+  typed: string;
   separatorConsumed: boolean;
   missMarkedHere: boolean;
   raw: number;
@@ -72,6 +82,7 @@ export function createEngineState(program: TypingProgram): EngineState {
     atoms: program.atoms,
     atomIndex: 0,
     charIndex: 0,
+    typed: '',
     separatorConsumed: false,
     missMarkedHere: false,
     raw: 0,
@@ -99,6 +110,7 @@ export function handleKey(state: EngineState, key: string): KeyResult {
     atoms: state.program.atoms,
     atomIndex: state.atomIndex,
     charIndex: state.charIndex,
+    typed: state.typed,
     separatorConsumed: state.separatorConsumed,
     missMarkedHere: state.missMarkedHere,
     ...state.counters,
@@ -116,6 +128,30 @@ function dispatch(d: Draft, key: string): Verdict {
     // already have completed the program.
     if (atom === undefined || atom.kind === 'auto' || atom.kind === 'padding') {
       throw new Error(`Engine invariant violated at atom ${String(d.atomIndex)}`);
+    }
+
+    if (atom.kind === 'romaji') {
+      const typed = d.typed + key;
+      if (atom.alternatives.some((spelling) => spelling.startsWith(typed))) {
+        // Every key pressed counts, whichever spelling it belongs to (§13.5).
+        d.effective += 1;
+        d.typed = typed;
+        d.charIndex = typed.length;
+        d.missMarkedHere = false;
+        const finished = atom.alternatives.includes(typed);
+        const extendable = atom.alternatives.some(
+          (spelling) => spelling.length > typed.length && spelling.startsWith(typed),
+        );
+        if (finished && !extendable) advanceAtom(d);
+        return 'CORRECT';
+      }
+      if (d.typed !== '' && atom.alternatives.includes(d.typed)) {
+        // The spelling typed is complete and the key is not part of a longer one: the unit is
+        // done, and the key is judged at the next atom (`n` of んか, then `k`).
+        advanceAtom(d);
+        continue;
+      }
+      return markMiss(d);
     }
 
     if (atom.kind === 'literal') {
@@ -176,6 +212,7 @@ function advanceChar(d: Draft, literal: LiteralAtom): void {
 function advanceAtom(d: Draft): void {
   d.atomIndex += 1;
   d.charIndex = 0;
+  d.typed = '';
   d.separatorConsumed = false;
   d.missMarkedHere = false;
   settle(d);
@@ -197,6 +234,7 @@ function settle(d: Draft): void {
     }
     d.atomIndex = d.atoms.length;
     d.charIndex = 0;
+    d.typed = '';
     d.separatorConsumed = false;
   }
 
@@ -207,7 +245,7 @@ function hasPassableTail(d: Draft): boolean {
   for (let index = d.atomIndex; index < d.atoms.length; index += 1) {
     const atom = d.atoms[index];
     if (atom === undefined || atom.kind === 'auto' || atom.kind === 'padding') continue;
-    if (atom.kind === 'literal') return false;
+    if (atom.kind === 'literal' || atom.kind === 'romaji') return false;
     const consumed = index === d.atomIndex && d.separatorConsumed;
     if (atom.required && !consumed) return false;
   }
@@ -225,6 +263,7 @@ function toState(program: TypingProgram, d: Draft): EngineState {
     program,
     atomIndex: d.atomIndex,
     charIndex: d.charIndex,
+    typed: d.typed,
     separatorConsumed: d.separatorConsumed,
     missMarkedHere: d.missMarkedHere,
     counters: { raw: d.raw, effective: d.effective, miss: d.miss, ignored: d.ignored },

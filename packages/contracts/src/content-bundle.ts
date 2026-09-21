@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { trackOf } from './tracks';
 import { TypingProgramSchema, type TypingProgram } from './typing-program';
 
 /** Programming languages: the pools of the code track (§13.1). */
@@ -38,7 +39,24 @@ export const ContentBundleSchema = z
   })
   .superRefine((bundle, ctx) => {
     const prefix = `${bundle.language}/`;
+    const japanese = trackOf(bundle.language) === 'natural-ja';
     bundle.blocks.forEach((block, index) => {
+      // Japanese is typed as romaji and nothing else, apart from line breaks; no other pool has
+      // romaji (§13.5).
+      block.atoms.forEach((atom, atomIndex) => {
+        const allowed = japanese
+          ? atom.kind === 'romaji' || (atom.kind === 'separator' && atom.canonical === '\n')
+          : atom.kind !== 'romaji';
+        if (!allowed) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['blocks', index, 'atoms', atomIndex, 'kind'],
+            message: japanese
+              ? 'a Japanese block holds only romaji units and line breaks'
+              : 'only a Japanese block holds romaji units',
+          });
+        }
+      });
       if (!block.blockId.startsWith(prefix)) {
         ctx.addIssue({
           code: 'custom',
@@ -78,6 +96,8 @@ export function canonicalBlocksJson(blocks: readonly TypingProgram[]): string {
             return { kind: atom.kind, text: atom.text };
           case 'separator':
             return { kind: atom.kind, canonical: atom.canonical, required: atom.required };
+          case 'romaji':
+            return { kind: atom.kind, display: atom.display, alternatives: atom.alternatives };
         }
       }),
     })),

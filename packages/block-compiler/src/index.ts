@@ -22,3 +22,5 @@ export { PythonTokenKind } from './adapters/python-scanner';
 export { javaAdapter } from './adapters/java';
 export { pythonAdapter } from './adapters/python';
 export { typescriptAdapter } from './adapters/typescript';
+export { JapaneseCompileError, KANA_TABLE, compileJapanese, kanaSegments } from './japanese';
+export type { JapaneseCompileErrorCode, JapaneseSegment } from './japanese';

@@ -2,11 +2,21 @@ export {
   AtomSchema,
   AutoAtomSchema,
   LiteralAtomSchema,
+  RomajiAtomSchema,
   SeparatorAtomSchema,
   TypingProgramSchema,
   countCanonicalKeystrokes,
+  countMaxKeystrokes,
+  shortestSpelling,
 } from './typing-program';
-export type { Atom, AutoAtom, LiteralAtom, SeparatorAtom, TypingProgram } from './typing-program';
+export type {
+  Atom,
+  AutoAtom,
+  LiteralAtom,
+  RomajiAtom,
+  SeparatorAtom,
+  TypingProgram,
+} from './typing-program';
 export { MAX_SESSION_KEYS, SessionLogSchema } from './session-log';
 export {
   CODE_LANGUAGES,

@@ -11,6 +11,7 @@ import {
   type KeystrokeCounters,
   type Verdict,
 } from './engine';
+import { maxKeystrokes } from './keystrokes';
 import { PLAY_DURATION_MS, computeMetrics, type OfficialMetrics } from './metrics';
 
 /**
@@ -134,6 +135,18 @@ export function canonicalReached(state: SessionState): number {
     .reduce((sum, program) => sum + program.canonicalKeystrokes, 0);
 }
 
+/**
+ * Sum of the longest way to type every block the run has reached: the ceiling for `effective`. For
+ * code and English it equals `canonicalReached`; Japanese counts every key pressed, so a player who
+ * spells `shi` reaches more than the shortest route's total (§13.5).
+ */
+export function maxReached(state: SessionState): number {
+  const reached = Math.min(state.blockIndex + 1, state.programs.length);
+  return state.programs
+    .slice(0, reached)
+    .reduce((sum, program) => sum + maxKeystrokes(program.atoms), 0);
+}
+
 /** Idle time of a session (see IDLE_LIMIT_MS). */
 export function sessionIdleMs(wallElapsedMs: number, activeMs: number): number {
   return Math.max(0, wallElapsedMs - activeMs);
@@ -181,6 +194,8 @@ export interface SessionReplay {
   readonly counters: KeystrokeCounters;
   readonly blocksReached: number;
   readonly canonicalReached: number;
+  /** The most effective keys the blocks reached can hold; see `maxReached`. */
+  readonly maxReached: number;
   /** How the run ended; `log-end` when the log stops before time runs out or blocks are done. */
   readonly endedBy: SessionEnd | 'log-end';
   /** Run time of the last applied key, or 0 when none was applied. */
@@ -221,6 +236,7 @@ export function replaySession(programs: readonly TypingProgram[], log: SessionLo
     counters,
     blocksReached: Math.min(state.blockIndex + 1, programs.length),
     canonicalReached: canonicalReached(state),
+    maxReached: maxReached(state),
     endedBy: state.endedBy ?? 'log-end',
     lastKeyMs: applied.at(-1) ?? 0,
     expiredKeys,

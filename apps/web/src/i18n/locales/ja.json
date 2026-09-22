@@ -215,7 +215,12 @@
     "sendAgain": "もう一度送信",
     "matchLine": "{{opponent}}のスコアは {{opponentScore}}、あなたは {{score}} でした。",
     "tieWins": "同点は勝ちです。",
-    "unknownOpponent": "対戦相手"
+    "unknownOpponent": "対戦相手",
+    "rematch": "もう一度対戦",
+    "raiseLevel": "レベルを上げて対戦",
+    "lowerLevel": "レベルを下げて対戦",
+    "sameLevel": "同じレベルで対戦",
+    "backToPlay": "プレイ画面へ"
   },
   "languageNames": {
     "en": "English",

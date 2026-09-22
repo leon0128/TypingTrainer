@@ -216,7 +216,12 @@
     "sendAgain": "Send again",
     "matchLine": "{{opponent}} scored {{opponentScore}}; you scored {{score}}.",
     "tieWins": "A tie counts as a win.",
-    "unknownOpponent": "The opponent"
+    "unknownOpponent": "The opponent",
+    "rematch": "Play again",
+    "raiseLevel": "Raise the level",
+    "lowerLevel": "Lower the level",
+    "sameLevel": "Same level",
+    "backToPlay": "Play screen"
   },
   "languageNames": {
     "en": "English",

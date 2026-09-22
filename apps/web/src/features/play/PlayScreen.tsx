@@ -5,6 +5,8 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseE
 import { Navigate, useNavigate } from 'react-router';
 
 import { useTranslation } from '../../i18n';
+import { describeError } from '../../lib/api/describe-error';
+import { startSession, type Opponent } from '../../lib/api/play';
 import { soundPlayer } from '../sound/sound';
 import { CodeView } from './CodeView';
 import { JaView } from './JaView';
@@ -50,8 +52,11 @@ function RunView({ run }: { run: RunStore }) {
   const [focused, setFocused] = useState(false);
   const [imeActive, setImeActive] = useState(false);
   const [capsLock, setCapsLock] = useState(false);
+  const [rematching, setRematching] = useState(false);
+  const [rematchError, setRematchError] = useState<string | null>(null);
   const track = trackOf(run.issued.language);
   const look = usePlayLook(track);
+  const begin = useRunSession((state) => state.begin);
 
   // One layout per block, built when the block is first shown rather than for all 20 at once.
   const layouts = useMemo(() => new Map<string, Layout>(), []);
@@ -129,6 +134,25 @@ function RunView({ run }: { run: RunStore }) {
       setLeaveGuard(null);
     };
   }, [running, setLeaveGuard, t]);
+
+  const rematch = (opponent: Opponent) => {
+    if (rematching) return;
+    setRematching(true);
+    setRematchError(null);
+    startSession(run.issued.language, opponent)
+      .then((issued) => {
+        begin(issued, performance.now());
+      })
+      .catch((cause: unknown) => {
+        setRematchError(describeError(cause));
+        setRematching(false);
+      });
+  };
+
+  const backToPlay = () => {
+    clear();
+    void navigate(`/${track}`, { replace: true });
+  };
 
   const focusInput = (event: MouseEvent) => {
     // Keep focus on the hidden input instead of letting the click blur it (and pause the run).
@@ -222,11 +246,14 @@ function RunView({ run }: { run: RunStore }) {
         <ResultPanel
           metrics={metrics}
           submission={submission}
+          mode={run.issued.mode}
+          cpuLevel={run.issued.cpuLevel}
+          ghostPeriod={run.issued.ghostPeriod}
           onRetry={() => void submit()}
-          onPlayAgain={() => {
-            clear();
-            void navigate('/', { replace: true });
-          }}
+          onRematch={rematch}
+          rematching={rematching}
+          rematchError={rematchError}
+          onBackToPlay={backToPlay}
         />
       )}
     </main>

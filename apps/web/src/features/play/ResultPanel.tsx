@@ -1,25 +1,54 @@
-import type { PlayRun } from '@typing-trainer/contracts';
-import type { OfficialMetrics } from '@typing-trainer/typing-engine';
+import type { GhostPeriod, PlayMode, PlayRun } from '@typing-trainer/contracts';
+import {
+  CPU_MAX_LEVEL,
+  CPU_MIN_LEVEL,
+  type OfficialMetrics,
+} from '@typing-trainer/typing-engine';
 import type { TFunction } from 'i18next';
 
 import { i18n, useTranslation } from '../../i18n';
+import type { Opponent } from '../../lib/api/play';
 import { RatingResult } from '../rating/RatingResult';
 import { formatPercent } from './format';
 import type { Submission } from './run-session';
+
+const GHOST_PERIODS: GhostPeriod[] = ['daily', 'weekly', 'total'];
 
 export interface ResultPanelProps {
   /** What the client counted, shown while the server's answer is still on its way. */
   readonly metrics: OfficialMetrics;
   readonly submission: Submission;
+  /** What the run just played, so the rematch buttons can offer to play it again. */
+  readonly mode: PlayMode;
+  readonly cpuLevel: number | null;
+  readonly ghostPeriod: GhostPeriod | null;
   readonly onRetry: () => void;
-  readonly onPlayAgain: () => void;
+  /** Starts a new run of the given kind right away, without going through the play screen. */
+  readonly onRematch: (opponent: Opponent) => void;
+  /** True while a rematch run is being requested, to keep the buttons from being pressed twice. */
+  readonly rematching: boolean;
+  /** What went wrong asking for a rematch, if anything did. */
+  readonly rematchError: string | null;
+  /** Leaves this run behind and goes to the track's play screen to choose a new one. */
+  readonly onBackToPlay: () => void;
 }
 
 /**
  * What the run scored (F-04, §3.6). Once the server answers, its stored numbers are the ones
  * shown: the client's own are never what counts (§9.8).
  */
-export function ResultPanel({ metrics, submission, onRetry, onPlayAgain }: ResultPanelProps) {
+export function ResultPanel({
+  metrics,
+  submission,
+  mode,
+  cpuLevel,
+  ghostPeriod,
+  onRetry,
+  onRematch,
+  rematching,
+  rematchError,
+  onBackToPlay,
+}: ResultPanelProps) {
   const { t } = useTranslation();
   const stored = submission.kind === 'saved' ? submission.run : null;
   const shown = stored ?? metrics;
@@ -82,10 +111,80 @@ export function ResultPanel({ metrics, submission, onRetry, onPlayAgain }: Resul
             {t('result.sendAgain')}
           </button>
         )}
-        <button className="ui-btn" type="button" onClick={onPlayAgain}>
-          {t('common.chooseLanguage')}
+        {mode === 'single' && (
+          <button
+            className="ui-tab"
+            type="button"
+            disabled={rematching}
+            onClick={() => {
+              onRematch({ mode: 'single' });
+            }}
+          >
+            {t('result.rematch')}
+          </button>
+        )}
+        {mode === 'cpu' && cpuLevel !== null && (
+          <>
+            {cpuLevel < CPU_MAX_LEVEL && (
+              <button
+                className="ui-tab"
+                type="button"
+                disabled={rematching}
+                onClick={() => {
+                  onRematch({ mode: 'cpu', cpuLevel: cpuLevel + 1 });
+                }}
+              >
+                {t('result.raiseLevel')}
+              </button>
+            )}
+            {cpuLevel > CPU_MIN_LEVEL && (
+              <button
+                className="ui-tab"
+                type="button"
+                disabled={rematching}
+                onClick={() => {
+                  onRematch({ mode: 'cpu', cpuLevel: cpuLevel - 1 });
+                }}
+              >
+                {t('result.lowerLevel')}
+              </button>
+            )}
+            <button
+              className="ui-tab"
+              type="button"
+              disabled={rematching}
+              onClick={() => {
+                onRematch({ mode: 'cpu', cpuLevel });
+              }}
+            >
+              {t('result.sameLevel')}
+            </button>
+          </>
+        )}
+        {mode === 'ghost' &&
+          GHOST_PERIODS.map((period) => (
+            <button
+              key={period}
+              className="ui-tab"
+              type="button"
+              aria-pressed={ghostPeriod === period}
+              disabled={rematching}
+              onClick={() => {
+                onRematch({ mode: 'ghost', ghostPeriod: period });
+              }}
+            >
+              {t(`periodsShort.${period}`)}
+            </button>
+          ))}
+        <button className="ui-btn" type="button" onClick={onBackToPlay}>
+          {t('result.backToPlay')}
         </button>
       </p>
+      {rematchError !== null && (
+        <p className="submission" role="alert">
+          {rematchError}
+        </p>
+      )}
     </section>
   );
 }

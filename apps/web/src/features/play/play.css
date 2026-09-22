@@ -254,18 +254,23 @@ body {
   margin: 12px 0;
 }
 
-/* vs CPU (§8.1): the player's column keeps the room 88 columns need at 18px, since a narrower
-   panel would hide the caret (v1.15); the CPU's column is smaller. Where the window cannot hold
-   both, the CPU's column goes below instead of squeezing the player's. */
+/* vs CPU/Ghost (§8.1): the player's own column stays exactly as wide and as centered as solo
+   play (the "you" column is a plain block inside `.play`, never a grid track). The opponent's
+   column floats beside it as a fixed panel that does not take part in that centering, so it
+   never pulls the player's own play area off-center. Below the floating breakpoint it simply
+   falls back into normal flow, stacked under the player's column. */
 .versus {
-  display: grid;
-  gap: 16px;
+  position: relative;
 }
 
 .column-title {
   margin: 8px 0;
   font-size: 15px;
   color: var(--muted);
+}
+
+.opponent-column {
+  margin-top: 16px;
 }
 
 .opponent-column .code {
@@ -276,14 +281,18 @@ body {
   cursor: default;
 }
 
+/* 520px (half of .play's 1040px) + 24px gap + 320px panel width must fit beside the centered
+   column, so the floating panel only turns on once the viewport is wide enough to hold it
+   without spilling off the right edge (1740px, matching the panel's own width requirement). */
 @media (min-width: 1740px) {
-  .play:has(.versus) {
-    max-width: 1732px;
-  }
-
-  .versus {
-    grid-template-columns: 992px minmax(0, 1fr);
-    align-items: start;
+  .opponent-column {
+    position: fixed;
+    top: 140px;
+    left: calc(50% + 544px);
+    width: 320px;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    margin-top: 0;
   }
 }
 

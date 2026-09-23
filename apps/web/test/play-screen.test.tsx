@@ -33,6 +33,8 @@ function renderScreen() {
         <Route element={<AppLayout />}>
           <Route path="/play" element={<PlayScreen />} />
           <Route path="/" element={<p>choose a language</p>} />
+          {/* Leaving a finished run goes back to its own track (e.g. "/code"), not "/" (§13.9). */}
+          <Route path="/:track" element={<p>choose a language</p>} />
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -173,7 +175,8 @@ describe('play screen', () => {
     expect(counted?.score).not.toBe(STORED.score);
     expect(panel).not.toContain(`Score${String(counted?.score)}`);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Home' }));
+    // "Play screen" leaves the run behind and goes back to the run's own track to choose a new one.
+    await userEvent.click(screen.getByRole('button', { name: 'Play screen' }));
     expect(await screen.findByText('choose a language')).toBeTruthy();
     expect(useRunSession.getState().run).toBeNull();
   });

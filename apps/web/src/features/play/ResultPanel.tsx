@@ -1,9 +1,5 @@
 import type { GhostPeriod, PlayMode, PlayRun } from '@typing-trainer/contracts';
-import {
-  CPU_MAX_LEVEL,
-  CPU_MIN_LEVEL,
-  type OfficialMetrics,
-} from '@typing-trainer/typing-engine';
+import { CPU_MAX_LEVEL, CPU_MIN_LEVEL, type OfficialMetrics } from '@typing-trainer/typing-engine';
 import type { TFunction } from 'i18next';
 
 import { i18n, useTranslation } from '../../i18n';

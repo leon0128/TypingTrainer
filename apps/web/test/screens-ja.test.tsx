@@ -274,13 +274,25 @@ describe('the language screen in Japanese', () => {
     expectNoEnglish(container);
   });
 
-  it('shows the CPU level with its speed, and complains about a bad level, in Japanese', async () => {
+  it('shows the CPU level grid with its speed, in Japanese, as the default mode', async () => {
     renderAt('/');
-    await userEvent.click(await screen.findByRole('button', { name: 'vs CPU' }));
-    expect(screen.getByText('CPU の強さ(1–100)')).toBeTruthy();
+    const group = within(await screen.findByRole('group', { name: 'CPU の強さ(1–100)' }));
+    expect(group.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Lv.1',
+      'Lv.10',
+      'Lv.20',
+      'Lv.30',
+      'Lv.40',
+      'Lv.50',
+      'Lv.60',
+      'Lv.70',
+      'Lv.80',
+      'Lv.90',
+      'Lv.100',
+    ]);
     expect(screen.getByText('約 50 KPM')).toBeTruthy();
-    await userEvent.clear(screen.getByLabelText(/強さ/));
-    expect(screen.getByText('1〜100 の整数を入力してください')).toBeTruthy();
+    await userEvent.click(group.getByRole('button', { name: 'Lv.100' }));
+    expect(screen.getByText('約 800 KPM')).toBeTruthy();
   });
 
   it('shows the Ghost options, periods, and records in Japanese', async () => {

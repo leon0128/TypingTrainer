@@ -253,8 +253,7 @@ describe('each screen shows one track', () => {
     expect(screen.queryByRole('button', { name: /^Python/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /English words/ })).toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'vs CPU' }));
-    await userEvent.clear(screen.getByRole('textbox'));
-    await userEvent.type(screen.getByRole('textbox'), '100');
+    await userEvent.click(screen.getByRole('button', { name: 'Lv.100' }));
     expect(screen.getByText('about 1200 KPM')).toBeTruthy();
   });
 
@@ -264,8 +263,7 @@ describe('each screen shows one track', () => {
     expect(await screen.findByRole('button', { name: /^Python/ })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /^Words/ })).toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'vs CPU' }));
-    await userEvent.clear(screen.getByRole('textbox'));
-    await userEvent.type(screen.getByRole('textbox'), '100');
+    await userEvent.click(screen.getByRole('button', { name: 'Lv.100' }));
     expect(screen.getByText('about 800 KPM')).toBeTruthy();
   });
 

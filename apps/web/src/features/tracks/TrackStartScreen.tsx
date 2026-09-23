@@ -17,6 +17,9 @@ type Mode = 'single' | 'cpu' | 'ghost';
 
 const MODES: Mode[] = ['single', 'cpu', 'ghost'];
 
+/** The CPU levels offered in the level grid: coarse enough to fit on screen (F-10, 1–100). */
+const LEVEL_PRESETS = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
 /** The record a Ghost reproduces, by period (§4.4). */
 const GHOST_PERIODS: GhostPeriod[] = ['daily', 'weekly', 'total'];
 
@@ -38,13 +41,12 @@ export function TrackStartScreen() {
 
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState<ContentLanguage | null>(null);
-  const [mode, setMode] = useState<Mode>('single');
-  const [levelText, setLevelText] = useState('1');
+  // CPU is the main mode (F-10): the screen opens straight onto its level grid.
+  const [mode, setMode] = useState<Mode>('cpu');
+  const [level, setLevel] = useState<number>(LEVEL_PRESETS[0] ?? CPU_MIN_LEVEL);
   const [ghostPeriod, setGhostPeriod] = useState<GhostPeriod>('daily');
   const [records, setRecords] = useState<GhostRecordsResponse | null>(null);
-  const level = /^\d{1,3}$/.test(levelText) ? Number(levelText) : NaN;
-  const levelValid = level >= CPU_MIN_LEVEL && level <= CPU_MAX_LEVEL;
-  const canStart = starting === null && (mode !== 'cpu' || levelValid);
+  const canStart = starting === null;
 
   /** The score of the record a Ghost would reproduce, or null when there is none to race (§4.4). */
   const recordFor = (language: ContentLanguage): number | null => {
@@ -115,26 +117,34 @@ export function TrackStartScreen() {
             {t(`modes.${entry}`)}
           </button>
         ))}
-        {mode === 'cpu' && (
-          <label className="flex items-center gap-2 text-sm">
-            {t('home.cpuLevel', { min: CPU_MIN_LEVEL, max: CPU_MAX_LEVEL })}
-            <input
-              className="ui-input w-20 px-2 py-1"
-              inputMode="numeric"
-              value={levelText}
-              aria-invalid={!levelValid}
-              onChange={(event) => {
-                setLevelText(event.target.value.trim());
-              }}
-            />
-            <span className="text-slate-600 dark:text-slate-400">
-              {levelValid
-                ? t('home.aboutKpm', { kpm: Math.round(cpuBaseKpm(level, track)) })
-                : t('home.levelInvalid', { min: CPU_MIN_LEVEL, max: CPU_MAX_LEVEL })}
-            </span>
-          </label>
-        )}
       </div>
+
+      {mode === 'cpu' && (
+        <div className="flex flex-col gap-2">
+          <div
+            className="grid grid-cols-4 gap-2 sm:grid-cols-6"
+            role="group"
+            aria-label={t('home.cpuLevel', { min: CPU_MIN_LEVEL, max: CPU_MAX_LEVEL })}
+          >
+            {LEVEL_PRESETS.map((entry) => (
+              <button
+                key={entry}
+                type="button"
+                aria-pressed={level === entry}
+                className={level === entry ? SELECTED : UNSELECTED}
+                onClick={() => {
+                  setLevel(entry);
+                }}
+              >
+                {t('home.levelButton', { level: entry })}
+              </button>
+            ))}
+          </div>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            {t('home.aboutKpm', { kpm: Math.round(cpuBaseKpm(level, track)) })}
+          </p>
+        </div>
+      )}
 
       {mode === 'ghost' && (
         <div className="flex flex-col gap-2">

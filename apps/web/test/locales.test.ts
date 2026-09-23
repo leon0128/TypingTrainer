@@ -61,6 +61,7 @@ const SAME_IN_EVERY_LANGUAGE = new Set<string>([
   'history.kpm',
   'settings.sizeValue',
   'settings.presets.okabe-ito',
+  'home.levelButton',
   // "30%": a number and a symbol, which Japanese writes the same way.
   'settings.volumeText',
   // Arcade-style labels kept in Latin capitals in both languages.

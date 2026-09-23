@@ -1,6 +1,6 @@
 import type { TypingProgram } from '@typing-trainer/contracts';
 import type { EngineState } from '@typing-trainer/typing-engine';
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { Fragment, useLayoutEffect, useMemo, useRef } from 'react';
 
 import { useTranslation } from '../../i18n';
 
@@ -61,19 +61,25 @@ export function JaView({ program, engine, missSeq, lastMiss }: JaViewProps) {
           </div>
           <div className="ja-romaji">
             {line.groups.flatMap((group) =>
-              group.units.map((unit) => (
-                <span
-                  key={unit.atomIndex}
-                  className={
-                    unit.state === 'cursor'
-                      ? `cell cell-cursor${flashing > 0 ? ' miss-flash' : ''}`
-                      : `cell cell-${unit.state}`
-                  }
-                >
-                  {unit.typed !== '' && <span className="cell-typed">{unit.typed}</span>}
-                  {unit.rest}
-                </span>
-              )),
+              group.units.map((unit) =>
+                unit.state === 'cursor' ? (
+                  // Highlight one romaji key at a time, not the whole unit (e.g. "k" of "ka", then "a").
+                  <Fragment key={unit.atomIndex}>
+                    {unit.typed !== '' && <span className="cell-typed">{unit.typed}</span>}
+                    <span className={`cell cell-cursor${flashing > 0 ? ' miss-flash' : ''}`}>
+                      {unit.rest.slice(0, 1)}
+                    </span>
+                    {unit.rest.length > 1 && (
+                      <span className="cell-pending">{unit.rest.slice(1)}</span>
+                    )}
+                  </Fragment>
+                ) : (
+                  <span key={unit.atomIndex} className={`cell cell-${unit.state}`}>
+                    {unit.typed !== '' && <span className="cell-typed">{unit.typed}</span>}
+                    {unit.rest}
+                  </span>
+                ),
+              ),
             )}
           </div>
         </div>

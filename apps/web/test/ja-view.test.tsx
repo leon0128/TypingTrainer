@@ -66,7 +66,18 @@ describe('JaView', () => {
       <JaView program={PROGRAM} engine={press(['k'])} missSeq={0} lastMiss={null} />,
     );
     expect(container.querySelector('.ja-text')?.textContent).toBe('今日');
-    expect(container.querySelector('.cell-cursor')?.textContent).toBe('kyo');
+    // Only the next romaji key is highlighted, not the whole unit: "k" of "kyo" has been typed
+    // already, so the cursor cell is "y" and "o" trails behind it, dimmed (the untyped second
+    // unit, "u", is also a whole cell-pending span, so both are checked by position, scoped to
+    // the first line's romaji row to leave out the second line's untouched "shi").
+    expect(container.querySelector('.cell-typed')?.textContent).toBe('k');
+    expect(container.querySelector('.cell-cursor')?.textContent).toBe('y');
+    const firstLineRomaji = container.querySelector('.ja-line .ja-romaji');
+    expect(
+      [...(firstLineRomaji?.querySelectorAll('.cell-pending') ?? [])].map(
+        (cell) => cell.textContent,
+      ),
+    ).toEqual(['o', 'u']);
   });
 
   it('keeps the text on a row of its own, so the romaji cannot open gaps in it', () => {
